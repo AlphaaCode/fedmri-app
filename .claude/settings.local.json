@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\" -Recurse -File)",
+      "Bash(Select-Object FullName)",
+      "Bash(mv ADR-*.md docs/adr/)",
+      "Bash(mv domain.md docs/agents/)",
+      "Bash(mv issue-tracker.md docs/agents/)",
+      "Bash(mv triage-labels.md docs/agents/)",
+      "Bash(mv phase-*.md tasks/)",
+      "Bash(mv backend/schema.prisma apps/backend/prisma/)",
+      "Bash(mv backend/seed.ts apps/backend/prisma/)",
+      "Bash(mv backend/package.json apps/backend/)",
+      "Bash(mv backend/turbo.json apps/backend/)",
+      "Bash(mv backend/index.ts packages/shared/src/types/)",
+      "Bash(mv backend/docker-compose.yml apps/fl-coordinator/)",
+      "Bash(rm -rf backend)",
+      "Bash(grep -E \"\\\\.\\(md|txt\\)$\")",
+      "Bash(grep -E \"\\\\.md$\")",
+      "Bash(grep -E \"^-.*\\\\.md$\")",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(git add *)"
+    ]
+  }
+}

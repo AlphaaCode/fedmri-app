@@ -1,0 +1,16 @@
+{
+  "name": "fedmri",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "db:push": "cd apps/backend && npx prisma db push",
+    "db:seed": "cd apps/backend && npx prisma db seed",
+    "db:studio": "cd apps/backend && npx prisma studio"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0"
+  }
+}

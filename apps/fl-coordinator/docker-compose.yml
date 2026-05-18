@@ -1,0 +1,85 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: fedmri
+      POSTGRES_PASSWORD: fedmri
+      POSTGRES_DB: fedmri
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fedmri"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3001"
+    env_file: .env
+    volumes:
+      - ./apps/backend:/app
+      - /app/node_modules
+      - ./uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  ml-service:
+    build:
+      context: ./apps/ml-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    env_file: .env
+    volumes:
+      - ./apps/ml-service:/app
+      - ./checkpoints:/app/checkpoints
+
+  fl-coordinator:
+    build:
+      context: ./apps/fl-coordinator
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    env_file: .env
+    volumes:
+      - ./apps/fl-coordinator:/app
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    env_file: .env
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
