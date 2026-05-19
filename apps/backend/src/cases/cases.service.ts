@@ -6,10 +6,8 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { InferenceService } from '../inference/inference.service';
 import { FlService } from '../fl/fl.service';
-import { mkdir, rename } from 'fs/promises';
-import { extname } from 'path';
 import { randomUUID } from 'crypto';
-import { CaseScope, CaseStatus } from '@prisma/client';
+import { CaseScope, CaseStatus, FeedbackType } from '@prisma/client';
 
 @Injectable()
 export class CasesService {
@@ -154,7 +152,43 @@ export class CasesService {
 
     return {
       ...caseData,
-      probs: caseData.probs, // Ensure probs is returned as array
+      probs: caseData.probs,
     };
+  }
+
+  async submitFeedback(
+    user: any,
+    id: string,
+    body: { type: 'VALIDATE' | 'DISPUTE'; correctSubtype?: string; justification?: string },
+  ): Promise<any> {
+    // Silo check — reuse findOne
+    await this.findOne(user, id);
+
+    const feedback = await this.prisma.feedback.create({
+      data: {
+        id: randomUUID(),
+        caseId: id,
+        doctorId: user.id,
+        feedbackType: body.type === 'DISPUTE' ? FeedbackType.DISPUTE : FeedbackType.VALIDATE,
+        correctedSubtype: body.correctSubtype ?? null,
+        evidenceTypes: [],
+        justification: body.justification ?? null,
+      },
+    });
+
+    // On DISPUTE: update case status
+    if (body.type === 'DISPUTE') {
+      await this.prisma.case.update({
+        where: { id },
+        data: { status: CaseStatus.DISPUTED },
+      });
+    } else {
+      await this.prisma.case.update({
+        where: { id },
+        data: { status: CaseStatus.VALIDATED },
+      });
+    }
+
+    return feedback;
   }
 }

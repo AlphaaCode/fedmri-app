@@ -19,6 +19,8 @@ export default function HomePage() {
       router.replace("/login");
     } else if (user?.role === "DOCTOR") {
       router.replace("/doctor/scan");
+    } else if (user?.role === "PATIENT") {
+      router.replace("/patient/chat");
     } else {
       router.replace("/login");
     }

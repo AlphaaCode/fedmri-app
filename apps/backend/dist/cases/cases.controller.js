@@ -35,6 +35,9 @@ let CasesController = class CasesController {
     async getAttention(user, id) {
         return this.casesService.getAttention(user, id);
     }
+    async submitFeedback(user, id, body) {
+        return this.casesService.submitFeedback(user, id, body);
+    }
 };
 exports.CasesController = CasesController;
 __decorate([
@@ -72,6 +75,16 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], CasesController.prototype, "getAttention", null);
+__decorate([
+    (0, common_1.Post)(':id/feedback'),
+    (0, common_1.HttpCode)(201),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], CasesController.prototype, "submitFeedback", null);
 exports.CasesController = CasesController = __decorate([
     (0, common_1.Controller)('cases'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

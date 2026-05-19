@@ -19,6 +19,15 @@ export async function apiFetch<T = any>(
 
   const res = await fetch(`${API}${path}`, { ...init, headers });
   if (!res.ok) {
+    if (res.status === 401) {
+      // Token expired or missing — clear auth and force re-login
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+      }
+      throw new Error("Session expired — please sign in again");
+    }
     let detail = "Request failed";
     try {
       detail = (await res.json()).message || detail;
@@ -54,6 +63,18 @@ export async function apiGetAttention(
   caseId: string,
 ): Promise<{ attention: number[]; size: number }> {
   return apiFetch(`/cases/${caseId}/attention`);
+}
+
+export async function apiSubmitFeedback(
+  caseId: string,
+  type: "VALIDATE" | "DISPUTE",
+  correctSubtype?: string,
+  justification?: string,
+): Promise<any> {
+  return apiFetch(`/cases/${caseId}/feedback`, {
+    method: "POST",
+    body: JSON.stringify({ type, correctSubtype, justification }),
+  });
 }
 
 export const API_URL = API;

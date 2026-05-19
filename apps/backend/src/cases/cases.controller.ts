@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Param,
+  Body,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -47,5 +48,15 @@ export class CasesController {
   @Get(':id/attention')
   async getAttention(@CurrentUser() user: any, @Param('id') id: string) {
     return this.casesService.getAttention(user, id);
+  }
+
+  @Post(':id/feedback')
+  @HttpCode(201)
+  async submitFeedback(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() body: { type: 'VALIDATE' | 'DISPUTE'; correctSubtype?: string; justification?: string },
+  ) {
+    return this.casesService.submitFeedback(user, id, body);
   }
 }

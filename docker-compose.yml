@@ -31,6 +31,24 @@ services:
       timeout: 5s
       retries: 5
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: fedmri-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      # Model blobs live on D: drive (avoid C: pressure)
+      - D:/ollama-models:/root/.ollama
+    environment:
+      OLLAMA_KEEP_ALIVE: "30m"
+      OLLAMA_NUM_PARALLEL: "2"
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:

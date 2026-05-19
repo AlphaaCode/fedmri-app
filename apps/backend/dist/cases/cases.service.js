@@ -130,8 +130,37 @@ let CasesService = class CasesService {
         }
         return {
             ...caseData,
-            probs: caseData.probs, // Ensure probs is returned as array
+            probs: caseData.probs,
         };
+    }
+    async submitFeedback(user, id, body) {
+        // Silo check — reuse findOne
+        await this.findOne(user, id);
+        const feedback = await this.prisma.feedback.create({
+            data: {
+                id: (0, crypto_1.randomUUID)(),
+                caseId: id,
+                doctorId: user.id,
+                feedbackType: body.type === 'DISPUTE' ? client_1.FeedbackType.DISPUTE : client_1.FeedbackType.VALIDATE,
+                correctedSubtype: body.correctSubtype ?? null,
+                evidenceTypes: [],
+                justification: body.justification ?? null,
+            },
+        });
+        // On DISPUTE: update case status
+        if (body.type === 'DISPUTE') {
+            await this.prisma.case.update({
+                where: { id },
+                data: { status: client_1.CaseStatus.DISPUTED },
+            });
+        }
+        else {
+            await this.prisma.case.update({
+                where: { id },
+                data: { status: client_1.CaseStatus.VALIDATED },
+            });
+        }
+        return feedback;
     }
 };
 exports.CasesService = CasesService;

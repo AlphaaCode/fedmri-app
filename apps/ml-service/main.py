@@ -65,18 +65,11 @@ async def predict(file: UploadFile = File(...)):
             detail="Set checkpoint path and INFERENCE_MODE=real to enable real inference",
         )
 
-    # Deterministic seed from filename
+    # Deterministic seed from filename — same file always returns same result
     seed = int(hashlib.md5(file.filename.encode()).hexdigest(), 16) % len(MOCK_RESULTS)
     result = MOCK_RESULTS[seed].copy()
-
-    # Add Gaussian noise and softmax renormalize
-    probs = np.array(result["probs"], dtype=np.float32)
-    noise = np.random.normal(0, 0.025, 4)
-    probs = probs + noise
-    # Softmax renormalization
-    probs_exp = np.exp(probs)
-    probs = probs_exp / probs_exp.sum()
-    result["probs"] = probs.tolist()
+    # Probs are already normalised in mock_results; return as-is for reproducibility
+    result["probs"] = [float(p) for p in result["probs"]]
 
     # Simulate inference latency (1.5-3s)
     await asyncio.sleep(random.uniform(1.5, 3.0))

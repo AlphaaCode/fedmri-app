@@ -12,5 +12,10 @@ export declare class CasesController {
         attention: number[];
         size: number;
     }>;
+    submitFeedback(user: any, id: string, body: {
+        type: 'VALIDATE' | 'DISPUTE';
+        correctSubtype?: string;
+        justification?: string;
+    }): Promise<any>;
 }
 //# sourceMappingURL=cases.controller.d.ts.map

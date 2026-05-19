@@ -19,5 +19,10 @@ export declare class CasesService {
         size: number;
     }>;
     findOne(user: any, id: string): Promise<any>;
+    submitFeedback(user: any, id: string, body: {
+        type: 'VALIDATE' | 'DISPUTE';
+        correctSubtype?: string;
+        justification?: string;
+    }): Promise<any>;
 }
 //# sourceMappingURL=cases.service.d.ts.map

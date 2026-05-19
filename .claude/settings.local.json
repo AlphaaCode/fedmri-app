@@ -33,7 +33,12 @@
       "Bash(npx tsc *)",
       "Bash(uvicorn main:app --host 0.0.0.0 --port 8001 --log-level info)",
       "Bash(FL_WEBHOOK_SECRET=dev-webhook-secret BACKEND_URL=http://localhost:3001 uvicorn main:app --host 0.0.0.0 --port 8002 --log-level info)",
-      "Bash(docker exec fedmri-postgres *)"
+      "Bash(docker exec fedmri-postgres *)",
+      "Bash(docker compose *)",
+      "Bash(curl -s http://localhost:11434/api/tags)",
+      "Bash(python -c \"import sys,json; print\\(json.load\\(sys.stdin\\)\\)\")",
+      "Bash(docker exec fedmri-ollama *)",
+      "Bash(npm uninstall *)"
     ]
   }
 }
