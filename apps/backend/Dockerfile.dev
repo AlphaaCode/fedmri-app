@@ -1,0 +1,16 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml* npm-shrinkwrap.json* ./
+COPY apps/backend ./apps/backend
+COPY packages ./packages
+COPY tsconfig.json .
+COPY .env .
+
+RUN npm install
+
+WORKDIR /app/apps/backend
+EXPOSE 3001
+
+CMD ["npm", "run", "start:dev"]

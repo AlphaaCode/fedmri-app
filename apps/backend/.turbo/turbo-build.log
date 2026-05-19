@@ -1,0 +1,9 @@
+
+> @fedmri/backend@1.0.0 build
+> nest build
+
+npm notice
+npm notice New minor version of npm available! 11.6.2 -> 11.14.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.14.1
+npm notice To update run: npm install -g npm@11.14.1
+npm notice
