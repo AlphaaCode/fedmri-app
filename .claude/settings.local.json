@@ -23,7 +23,10 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(npm install *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\apps\\\\fl-coordinator\" -Recurse -Force | ForEach-Object { $_.FullName.Replace\\(\"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\\", \"\"\\) + $\\(if\\($_.PSIsContainer\\){\" [dir]\"}else{\"\"}\\) })",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\apps\\\\backend\\\\src\" -Recurse -Force | ForEach-Object { $_.FullName.Replace\\(\"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\\", \"\"\\) + $\\(if\\($_.PSIsContainer\\){\" [dir]\"}else{\"\"}\\) })",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\packages\\\\shared\" -Recurse -Force | ForEach-Object { $_.FullName.Replace\\(\"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\\", \"\"\\) + $\\(if\\($_.PSIsContainer\\){\" [dir]\"}else{\"\"}\\) })"
     ]
   }
 }
