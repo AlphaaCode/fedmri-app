@@ -26,7 +26,14 @@
       "Bash(npm run *)",
       "PowerShell(Get-ChildItem -Path \"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\apps\\\\fl-coordinator\" -Recurse -Force | ForEach-Object { $_.FullName.Replace\\(\"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\\", \"\"\\) + $\\(if\\($_.PSIsContainer\\){\" [dir]\"}else{\"\"}\\) })",
       "PowerShell(Get-ChildItem -Path \"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\apps\\\\backend\\\\src\" -Recurse -Force | ForEach-Object { $_.FullName.Replace\\(\"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\\", \"\"\\) + $\\(if\\($_.PSIsContainer\\){\" [dir]\"}else{\"\"}\\) })",
-      "PowerShell(Get-ChildItem -Path \"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\packages\\\\shared\" -Recurse -Force | ForEach-Object { $_.FullName.Replace\\(\"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\\", \"\"\\) + $\\(if\\($_.PSIsContainer\\){\" [dir]\"}else{\"\"}\\) })"
+      "PowerShell(Get-ChildItem -Path \"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\packages\\\\shared\" -Recurse -Force | ForEach-Object { $_.FullName.Replace\\(\"D:\\\\study\\\\BioInfo M2 \\(2026\\)\\\\Memoir\\\\fedmri-app\\\\\", \"\"\\) + $\\(if\\($_.PSIsContainer\\){\" [dir]\"}else{\"\"}\\) })",
+      "Bash(npm i *)",
+      "Bash(python -c ' *)",
+      "Bash(npx --yes create-next-app@latest web --typescript --tailwind --app --eslint --no-src-dir --import-alias \"@/*\" --use-npm --skip-install --turbopack)",
+      "Bash(npx tsc *)",
+      "Bash(uvicorn main:app --host 0.0.0.0 --port 8001 --log-level info)",
+      "Bash(FL_WEBHOOK_SECRET=dev-webhook-secret BACKEND_URL=http://localhost:3001 uvicorn main:app --host 0.0.0.0 --port 8002 --log-level info)",
+      "Bash(docker exec fedmri-postgres *)"
     ]
   }
 }

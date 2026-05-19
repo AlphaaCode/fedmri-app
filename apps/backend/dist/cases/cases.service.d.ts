@@ -14,6 +14,10 @@ export declare class CasesService {
         data: any[];
         total: number;
     }>;
+    getAttention(user: any, id: string): Promise<{
+        attention: number[];
+        size: number;
+    }>;
     findOne(user: any, id: string): Promise<any>;
 }
 //# sourceMappingURL=cases.service.d.ts.map

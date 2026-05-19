@@ -21,16 +21,33 @@ let FlController = class FlController {
         this.flService = flService;
         this.configService = configService;
     }
-    async roundComplete(body, secret) {
-        const expectedSecret = this.configService.get('FL_WEBHOOK_SECRET', '');
-        if (!secret || secret !== expectedSecret) {
+    verifySecret(secret) {
+        const expected = this.configService.get('FL_WEBHOOK_SECRET', '');
+        if (!secret || secret !== expected) {
             throw new common_1.BadRequestException('Invalid FL webhook secret');
         }
+    }
+    async progress(body, secret) {
+        this.verifySecret(secret);
+        await this.flService.handleProgress(body);
+        return { status: 'ok' };
+    }
+    async roundComplete(body, secret) {
+        this.verifySecret(secret);
         await this.flService.handleRoundComplete(body);
         return { status: 'ok' };
     }
 };
 exports.FlController = FlController;
+__decorate([
+    (0, common_1.Post)('progress'),
+    (0, common_1.HttpCode)(200),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Headers)('x-fl-secret')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], FlController.prototype, "progress", null);
 __decorate([
     (0, common_1.Post)('round-complete'),
     (0, common_1.HttpCode)(200),

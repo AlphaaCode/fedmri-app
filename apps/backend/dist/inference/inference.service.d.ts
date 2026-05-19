@@ -12,6 +12,10 @@ export declare class InferenceService {
     private httpService;
     private mlServiceUrl;
     constructor(configService: ConfigService, httpService: HttpService);
+    getAttention(caseId: string): Promise<{
+        attention: number[];
+        size: number;
+    }>;
     predict(filePath: string): Promise<PredictionResult>;
 }
 export {};

@@ -26,6 +26,13 @@ let InferenceService = class InferenceService {
         this.httpService = httpService;
         this.mlServiceUrl = this.configService.get('ML_SERVICE_URL', 'http://localhost:8001');
     }
+    async getAttention(caseId) {
+        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.mlServiceUrl}/attention/${caseId}`));
+        return {
+            attention: response.data.attention,
+            size: response.data.size,
+        };
+    }
     async predict(filePath) {
         const fileStream = (0, fs_1.createReadStream)(filePath);
         const fileName = (0, path_1.basename)(filePath);

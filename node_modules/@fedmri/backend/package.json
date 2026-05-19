@@ -25,6 +25,8 @@
     "@nestjs/jwt": "^11.0.1",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.2.0",
+    "@nestjs/platform-socket.io": "^11.1.21",
+    "@nestjs/websockets": "^11.1.21",
     "@prisma/client": "^5.5.0",
     "axios": "^1.16.1",
     "bcryptjs": "^2.4.3",
@@ -38,6 +40,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^5.0.5",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.8.3",
     "uuid": "^14.0.0"
   },
   "devDependencies": {

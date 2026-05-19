@@ -43,4 +43,9 @@ export class CasesController {
   async findOne(@CurrentUser() user: any, @Param('id') id: string) {
     return this.casesService.findOne(user, id);
   }
+
+  @Get(':id/attention')
+  async getAttention(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.casesService.getAttention(user, id);
+  }
 }

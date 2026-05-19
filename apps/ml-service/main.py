@@ -30,6 +30,8 @@ with open(MOCK_RESULTS_PATH) as f:
 
 # Configuration
 INFERENCE_MODE = os.getenv("INFERENCE_MODE", "mock")
+ATTN_MODE = os.getenv("ATTN_MODE", "blob")
+ATTN_GRID = 224
 
 
 @app.get("/health")
@@ -80,6 +82,57 @@ async def predict(file: UploadFile = File(...)):
     await asyncio.sleep(random.uniform(1.5, 3.0))
 
     return result
+
+
+def _gaussian_blob(grid: np.ndarray, cx: int, cy: int, sigma: float, amplitude: float) -> np.ndarray:
+    """Add a Gaussian blob centered at (cx, cy) with given sigma + amplitude to grid in-place."""
+    h, w = grid.shape
+    y, x = np.ogrid[:h, :w]
+    blob = amplitude * np.exp(-(((x - cx) ** 2 + (y - cy) ** 2) / (2.0 * sigma ** 2)))
+    return grid + blob
+
+
+@app.get("/attention/{case_id}")
+async def attention(case_id: str):
+    """
+    Return a 224x224 attention heatmap as a flat list of 50176 floats in [0,1].
+
+    Blob mode: 2-3 Gaussian blobs centered in the upper-left quadrant, seeded by case_id.
+    MIL mode: not implemented (set ATTN_MODE=mil + checkpoint to enable).
+    """
+    if ATTN_MODE == "mil":
+        raise HTTPException(
+            status_code=501,
+            detail="Set checkpoint path and ATTN_MODE=mil to enable MIL attention",
+        )
+
+    if ATTN_MODE != "blob":
+        raise HTTPException(status_code=400, detail=f"Unknown ATTN_MODE: {ATTN_MODE}")
+
+    # Deterministic seeding from case_id
+    seed = int(hashlib.md5(case_id.encode()).hexdigest()[:8], 16)
+    rng = np.random.default_rng(seed)
+
+    grid = np.zeros((ATTN_GRID, ATTN_GRID), dtype=np.float32)
+
+    # 2-3 blobs placed in center-left region
+    num_blobs = int(rng.integers(2, 4))  # 2 or 3
+    for _ in range(num_blobs):
+        cx = int(rng.integers(80, 161))
+        cy = int(rng.integers(80, 161))
+        sigma = float(rng.uniform(20, 35))
+        amplitude = float(rng.uniform(0.6, 1.0))
+        grid = _gaussian_blob(grid, cx, cy, sigma, amplitude)
+
+    # Uniform noise floor
+    grid = grid + 0.05
+
+    # Normalize to [0,1]
+    gmax = float(grid.max())
+    if gmax > 0:
+        grid = grid / gmax
+
+    return {"attention": grid.flatten().tolist(), "size": ATTN_GRID}
 
 
 @app.on_event("startup")

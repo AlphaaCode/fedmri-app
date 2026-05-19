@@ -28,6 +28,16 @@ export class InferenceService {
     );
   }
 
+  async getAttention(caseId: string): Promise<{ attention: number[]; size: number }> {
+    const response = await firstValueFrom(
+      this.httpService.get<any>(`${this.mlServiceUrl}/attention/${caseId}`),
+    );
+    return {
+      attention: response.data.attention,
+      size: response.data.size,
+    };
+  }
+
   async predict(filePath: string): Promise<PredictionResult> {
     const fileStream = createReadStream(filePath);
     const fileName = basename(filePath);

@@ -123,6 +123,12 @@ export class CasesService {
     };
   }
 
+  async getAttention(user: any, id: string): Promise<{ attention: number[]; size: number }> {
+    // Reuse findOne for silo enforcement (throws ForbiddenException on mismatch)
+    await this.findOne(user, id);
+    return this.inferenceService.getAttention(id);
+  }
+
   async findOne(user: any, id: string): Promise<any> {
     const caseData = await this.prisma.case.findUnique({
       where: { id },

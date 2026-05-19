@@ -32,6 +32,12 @@ describe('Cases (e2e)', () => {
       .overrideProvider(InferenceService)
       .useValue({
         predict: jest.fn().mockResolvedValue(FIXED_PREDICTION),
+        getAttention: jest.fn().mockResolvedValue({
+          attention: new Array(224 * 224).fill(0).map((_, i) =>
+            i % 3 === 0 ? 0.5 : 0.1,
+          ),
+          size: 224,
+        }),
       })
       .compile();
 
@@ -252,6 +258,27 @@ describe('Cases (e2e)', () => {
       expect(response.body.id).toBe(caseA_id);
       expect(response.body.hospitalId).toBe(hospitalA_id);
       expect(response.body.predictedSubtype).toBe('Luminal A');
+    });
+  });
+
+  describe('GET /cases/:id/attention', () => {
+    it('should return attention array of length 50176 for own case', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/cases/${caseA_id}/attention`)
+        .set('Authorization', `Bearer ${doctorA_token}`)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('attention');
+      expect(Array.isArray(response.body.attention)).toBe(true);
+      expect(response.body.attention.length).toBe(50176);
+      expect(response.body.size).toBe(224);
+    });
+
+    it('should return 403 when Doctor B requests attention for Doctor A case', async () => {
+      await request(app.getHttpServer())
+        .get(`/cases/${caseA_id}/attention`)
+        .set('Authorization', `Bearer ${doctorB_token}`)
+        .expect(403);
     });
   });
 });
