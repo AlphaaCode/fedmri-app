@@ -4,12 +4,15 @@ import {
   Get,
   Param,
   Body,
+  Res,
   UseGuards,
   UseInterceptors,
   UploadedFile,
   Query,
   HttpCode,
 } from '@nestjs/common';
+import type { Response } from 'express';
+import { PdfService } from './pdf.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CasesService } from './cases.service';
@@ -19,7 +22,10 @@ import { multerOptions } from '../common/config/multer.config';
 @Controller('cases')
 @UseGuards(JwtAuthGuard)
 export class CasesController {
-  constructor(private casesService: CasesService) {}
+  constructor(
+    private casesService: CasesService,
+    private pdfService: PdfService,
+  ) {}
 
   @Post()
   @HttpCode(201)
@@ -48,6 +54,22 @@ export class CasesController {
   @Get(':id/attention')
   async getAttention(@CurrentUser() user: any, @Param('id') id: string) {
     return this.casesService.getAttention(user, id);
+  }
+
+  @Get(':id/pdf')
+  async downloadPdf(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
+    const caseData = await this.casesService.findOne(user, id);
+    const buf = await this.pdfService.generate(caseData);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="fedmri-case-${id.slice(0, 8)}.pdf"`,
+      'Content-Length': buf.length,
+    });
+    res.end(buf);
   }
 
   @Post(':id/feedback')

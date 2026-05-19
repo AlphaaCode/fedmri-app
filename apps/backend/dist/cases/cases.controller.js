@@ -14,14 +14,16 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CasesController = void 0;
 const common_1 = require("@nestjs/common");
+const pdf_service_1 = require("./pdf.service");
 const platform_express_1 = require("@nestjs/platform-express");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const cases_service_1 = require("./cases.service");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const multer_config_1 = require("../common/config/multer.config");
 let CasesController = class CasesController {
-    constructor(casesService) {
+    constructor(casesService, pdfService) {
         this.casesService = casesService;
+        this.pdfService = pdfService;
     }
     async create(user, file) {
         return this.casesService.create(user, file);
@@ -34,6 +36,16 @@ let CasesController = class CasesController {
     }
     async getAttention(user, id) {
         return this.casesService.getAttention(user, id);
+    }
+    async downloadPdf(user, id, res) {
+        const caseData = await this.casesService.findOne(user, id);
+        const buf = await this.pdfService.generate(caseData);
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="fedmri-case-${id.slice(0, 8)}.pdf"`,
+            'Content-Length': buf.length,
+        });
+        res.end(buf);
     }
     async submitFeedback(user, id, body) {
         return this.casesService.submitFeedback(user, id, body);
@@ -76,6 +88,15 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CasesController.prototype, "getAttention", null);
 __decorate([
+    (0, common_1.Get)(':id/pdf'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], CasesController.prototype, "downloadPdf", null);
+__decorate([
     (0, common_1.Post)(':id/feedback'),
     (0, common_1.HttpCode)(201),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
@@ -88,6 +109,7 @@ __decorate([
 exports.CasesController = CasesController = __decorate([
     (0, common_1.Controller)('cases'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __metadata("design:paramtypes", [cases_service_1.CasesService])
+    __metadata("design:paramtypes", [cases_service_1.CasesService,
+        pdf_service_1.PdfService])
 ], CasesController);
 //# sourceMappingURL=cases.controller.js.map

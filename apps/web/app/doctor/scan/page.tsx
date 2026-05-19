@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useToastStore } from "@/components/ToastProvider";
 import { AnimatePresence, motion } from "framer-motion";
 import { ScanUpload } from "@/components/ScanUpload";
 import { PredictionCard } from "@/components/PredictionCard";
@@ -12,6 +13,7 @@ import type { CaseResult } from "@/lib/types";
 export default function ScanPage() {
   const [result, setResult] = useState<CaseResult | null>(null);
   const [feedbackDone, setFeedbackDone] = useState(false);
+  const push = useToastStore((s) => s.push);
 
   function handleReset() {
     setResult(null);
@@ -30,7 +32,11 @@ export default function ScanPage() {
         </p>
       </div>
 
-      <ScanUpload onUploaded={(r) => { setResult(r); setFeedbackDone(false); }} />
+      <ScanUpload onUploaded={(r) => {
+        setResult(r);
+        setFeedbackDone(false);
+        push(`Prediction ready — ${r.predictedSubtype}`, "success");
+      }} />
 
       <AnimatePresence>
         {result && (

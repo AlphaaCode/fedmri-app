@@ -17,6 +17,7 @@ const fl_module_1 = require("../fl/fl.module");
 const cases_service_1 = require("./cases.service");
 const cases_controller_1 = require("./cases.controller");
 const al_service_1 = require("./al.service");
+const pdf_service_1 = require("./pdf.service");
 const multer_config_1 = require("../common/config/multer.config");
 let CasesModule = class CasesModule {
 };
@@ -31,7 +32,7 @@ exports.CasesModule = CasesModule = __decorate([
             inference_module_1.InferenceModule,
             fl_module_1.FlModule,
         ],
-        providers: [cases_service_1.CasesService, al_service_1.AlService],
+        providers: [cases_service_1.CasesService, al_service_1.AlService, pdf_service_1.PdfService],
         controllers: [cases_controller_1.CasesController],
     })
 ], CasesModule);

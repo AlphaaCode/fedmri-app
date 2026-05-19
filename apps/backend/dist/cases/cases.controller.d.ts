@@ -1,7 +1,10 @@
+import type { Response } from 'express';
+import { PdfService } from './pdf.service';
 import { CasesService } from './cases.service';
 export declare class CasesController {
     private casesService;
-    constructor(casesService: CasesService);
+    private pdfService;
+    constructor(casesService: CasesService, pdfService: PdfService);
     create(user: any, file: Express.Multer.File): Promise<any>;
     findAll(user: any, page?: number, limit?: number): Promise<{
         data: any[];
@@ -12,6 +15,7 @@ export declare class CasesController {
         attention: number[];
         size: number;
     }>;
+    downloadPdf(user: any, id: string, res: Response): Promise<void>;
     submitFeedback(user: any, id: string, body: {
         type: 'VALIDATE' | 'DISPUTE';
         correctSubtype?: string;

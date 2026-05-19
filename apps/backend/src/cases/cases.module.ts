@@ -8,6 +8,7 @@ import { FlModule } from '../fl/fl.module';
 import { CasesService } from './cases.service';
 import { CasesController } from './cases.controller';
 import { AlService } from './al.service';
+import { PdfService } from './pdf.service';
 import { multerOptions } from '../common/config/multer.config';
 
 @Module({
@@ -19,7 +20,7 @@ import { multerOptions } from '../common/config/multer.config';
     InferenceModule,
     FlModule,
   ],
-  providers: [CasesService, AlService],
+  providers: [CasesService, AlService, PdfService],
   controllers: [CasesController],
 })
 export class CasesModule {}

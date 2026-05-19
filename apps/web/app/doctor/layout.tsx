@@ -6,6 +6,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/lib/auth-store";
 import { FlTopology } from "@/components/FlTopology";
+import { useFlStore } from "@/lib/fl-store";
+import { useToastStore } from "@/components/ToastProvider";
 
 export default function DoctorLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -13,6 +15,7 @@ export default function DoctorLayout({ children }: { children: ReactNode }) {
   const token = useAuthStore((s) => s.token);
   const user = useAuthStore((s) => s.user);
   const clear = useAuthStore((s) => s.clear);
+  const flPhase = useFlStore((s) => s.phase);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -80,6 +83,24 @@ export default function DoctorLayout({ children }: { children: ReactNode }) {
           </button>
         </div>
       </header>
+
+      {/* Silo status bar */}
+      <div
+        className="px-6 py-1.5 text-[11px] flex items-center gap-2 shrink-0"
+        style={{
+          background: flPhase === "local_training" || flPhase === "aggregating" ? "#f59e0b15" : "var(--teal-glow)",
+          color: flPhase === "local_training" || flPhase === "aggregating" ? "#fbbf24" : "#99f6e4",
+          borderBottom: "1px solid var(--border)",
+        }}
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M6 1L10 3v4c0 2.2-1.6 4-4 4.5C3.6 11 2 9.2 2 7V3L6 1z" stroke="currentColor" strokeWidth="1.2"/>
+        </svg>
+        {flPhase === "idle" && "Your hospital silo is active — data stays here"}
+        {flPhase === "local_training" && "FL round running — only model weights leaving hospital, 0 bytes of patient data"}
+        {flPhase === "aggregating" && "Aggregating updates — still 0 bytes of patient data transmitted"}
+        {flPhase === "complete" && "Round complete — your hospital silo remained intact throughout"}
+      </div>
 
       {/* Main two-column layout */}
       <div className="flex-1 grid lg:grid-cols-[1fr_300px] gap-5 p-5 max-w-7xl mx-auto w-full">
