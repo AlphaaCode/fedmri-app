@@ -31,7 +31,7 @@ exports.FlModule = FlModule = __decorate([
         ],
         providers: [fl_service_1.FlService, fl_gateway_1.FlGateway],
         controllers: [fl_controller_1.FlController, fl_public_controller_1.FlPublicController],
-        exports: [fl_service_1.FlService],
+        exports: [fl_service_1.FlService, fl_gateway_1.FlGateway],
     })
 ], FlModule);
 //# sourceMappingURL=fl.module.js.map

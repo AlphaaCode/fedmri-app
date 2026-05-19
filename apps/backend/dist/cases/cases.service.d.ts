@@ -1,11 +1,13 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { InferenceService } from '../inference/inference.service';
 import { FlService } from '../fl/fl.service';
+import { AlService } from './al.service';
 export declare class CasesService {
     private prisma;
     private inferenceService;
     private flService;
-    constructor(prisma: PrismaService, inferenceService: InferenceService, flService: FlService);
+    private alService;
+    constructor(prisma: PrismaService, inferenceService: InferenceService, flService: FlService, alService: AlService);
     create(user: any, file: Express.Multer.File): Promise<any>;
     findAll(user: any, query?: {
         page?: number;

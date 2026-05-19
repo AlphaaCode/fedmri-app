@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { InferenceService } from '../inference/inference.service';
 import { FlService } from '../fl/fl.service';
+import { AlService } from './al.service';
 import { randomUUID } from 'crypto';
 import { CaseScope, CaseStatus, FeedbackType } from '@prisma/client';
 
@@ -15,6 +16,7 @@ export class CasesService {
     private prisma: PrismaService,
     private inferenceService: InferenceService,
     private flService: FlService,
+    private alService: AlService,
   ) {}
 
   async create(user: any, file: Express.Multer.File): Promise<any> {
@@ -161,32 +163,41 @@ export class CasesService {
     id: string,
     body: { type: 'VALIDATE' | 'DISPUTE'; correctSubtype?: string; justification?: string },
   ): Promise<any> {
-    // Silo check — reuse findOne
-    await this.findOne(user, id);
+    // Silo check — reuse findOne (throws ForbiddenException on cross-hospital access)
+    const caseRow = await this.findOne(user, id);
+
+    const isDispute = body.type === 'DISPUTE';
+
+    if (isDispute && !body.correctSubtype) {
+      throw new ForbiddenException('correctSubtype is required for DISPUTE feedback');
+    }
 
     const feedback = await this.prisma.feedback.create({
       data: {
         id: randomUUID(),
         caseId: id,
         doctorId: user.id,
-        feedbackType: body.type === 'DISPUTE' ? FeedbackType.DISPUTE : FeedbackType.VALIDATE,
+        feedbackType: isDispute ? FeedbackType.DISPUTE : FeedbackType.VALIDATE,
         correctedSubtype: body.correctSubtype ?? null,
         evidenceTypes: [],
         justification: body.justification ?? null,
+        alTriggered: isDispute,
       },
     });
 
-    // On DISPUTE: update case status
-    if (body.type === 'DISPUTE') {
-      await this.prisma.case.update({
-        where: { id },
-        data: { status: CaseStatus.DISPUTED },
-      });
-    } else {
-      await this.prisma.case.update({
-        where: { id },
-        data: { status: CaseStatus.VALIDATED },
-      });
+    await this.prisma.case.update({
+      where: { id },
+      data: { status: isDispute ? CaseStatus.DISPUTED : CaseStatus.VALIDATED },
+    });
+
+    // On DISPUTE: fire-and-forget active-learning fine-tune
+    if (isDispute && body.correctSubtype) {
+      this.alService.triggerUpdate(
+        id,
+        body.correctSubtype,
+        caseRow.predictedSubtype,
+        feedback.id,
+      );
     }
 
     return feedback;

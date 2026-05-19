@@ -38,7 +38,9 @@
       "Bash(curl -s http://localhost:11434/api/tags)",
       "Bash(python -c \"import sys,json; print\\(json.load\\(sys.stdin\\)\\)\")",
       "Bash(docker exec fedmri-ollama *)",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(curl -s -X POST http://localhost:8001/feedback -H 'Content-Type: application/json' -d '{\"case_id\":\"x\",\"correct_subtype\":\"HER2\",\"predicted_subtype\":\"Luminal A\"}')",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('model_v:', d['model_version'], '| f1_macro:', d['f1_macro'], '| corrected:', d['corrected_class']\\)\")"
     ]
   }
 }

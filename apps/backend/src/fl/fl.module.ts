@@ -19,6 +19,6 @@ import { FlGateway } from './fl.gateway';
   ],
   providers: [FlService, FlGateway],
   controllers: [FlController, FlPublicController],
-  exports: [FlService],
+  exports: [FlService, FlGateway],
 })
 export class FlModule {}

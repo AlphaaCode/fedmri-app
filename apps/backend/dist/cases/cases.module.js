@@ -9,12 +9,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CasesModule = void 0;
 const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
+const axios_1 = require("@nestjs/axios");
 const prisma_module_1 = require("../prisma/prisma.module");
 const auth_module_1 = require("../auth/auth.module");
 const inference_module_1 = require("../inference/inference.module");
 const fl_module_1 = require("../fl/fl.module");
 const cases_service_1 = require("./cases.service");
 const cases_controller_1 = require("./cases.controller");
+const al_service_1 = require("./al.service");
 const multer_config_1 = require("../common/config/multer.config");
 let CasesModule = class CasesModule {
 };
@@ -23,12 +25,13 @@ exports.CasesModule = CasesModule = __decorate([
     (0, common_1.Module)({
         imports: [
             platform_express_1.MulterModule.register(multer_config_1.multerOptions),
+            axios_1.HttpModule,
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,
             inference_module_1.InferenceModule,
             fl_module_1.FlModule,
         ],
-        providers: [cases_service_1.CasesService],
+        providers: [cases_service_1.CasesService, al_service_1.AlService],
         controllers: [cases_controller_1.CasesController],
     })
 ], CasesModule);

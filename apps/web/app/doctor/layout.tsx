@@ -42,6 +42,7 @@ export default function DoctorLayout({ children }: { children: ReactNode }) {
             {[
               { href: "/doctor/scan", label: "Scan" },
               { href: "/doctor/chat", label: "Assistant" },
+              { href: "/doctor/model", label: "Metrics" },
             ].map((item) => {
               const active = pathname?.startsWith(item.href);
               return (

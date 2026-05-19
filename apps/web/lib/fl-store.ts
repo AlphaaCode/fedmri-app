@@ -16,9 +16,11 @@ interface FlState {
   modelVersion: number | null;
   lastF1Delta: number | null;
   lastF1After: number | null;
+  lastUpdateSource: "fl" | "al" | null;
   onRoundStarted: (p: WsRoundStarted) => void;
   onProgress: (p: WsRoundProgress) => void;
   onRoundComplete: (p: WsRoundComplete) => void;
+  onModelUpdated: (p: { modelVersion: number; f1Delta: number; f1Macro: number; correctedSubtype: string }) => void;
   reset: () => void;
 }
 
@@ -29,11 +31,13 @@ export const useFlStore = create<FlState>((set) => ({
   modelVersion: null,
   lastF1Delta: null,
   lastF1After: null,
+  lastUpdateSource: null,
   onRoundStarted: (p) =>
     set({
       phase: "local_training",
       roundId: p.roundId,
       activeHospitalId: p.hospitalId,
+      lastUpdateSource: "fl",
     }),
   onProgress: (p) =>
     set({
@@ -52,6 +56,15 @@ export const useFlStore = create<FlState>((set) => ({
       lastF1Delta: p.f1Delta,
       modelVersion: p.modelVersion,
       activeHospitalId: null,
+      lastUpdateSource: "fl",
+    }),
+  onModelUpdated: (p) =>
+    set({
+      modelVersion: p.modelVersion,
+      lastF1Delta: p.f1Delta,
+      lastF1After: p.f1Macro,
+      lastUpdateSource: "al",
+      phase: "complete",
     }),
   reset: () =>
     set({

@@ -14,13 +14,15 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const inference_service_1 = require("../inference/inference.service");
 const fl_service_1 = require("../fl/fl.service");
+const al_service_1 = require("./al.service");
 const crypto_1 = require("crypto");
 const client_1 = require("@prisma/client");
 let CasesService = class CasesService {
-    constructor(prisma, inferenceService, flService) {
+    constructor(prisma, inferenceService, flService, alService) {
         this.prisma = prisma;
         this.inferenceService = inferenceService;
         this.flService = flService;
+        this.alService = alService;
     }
     async create(user, file) {
         if (!file) {
@@ -134,31 +136,31 @@ let CasesService = class CasesService {
         };
     }
     async submitFeedback(user, id, body) {
-        // Silo check — reuse findOne
-        await this.findOne(user, id);
+        // Silo check — reuse findOne (throws ForbiddenException on cross-hospital access)
+        const caseRow = await this.findOne(user, id);
+        const isDispute = body.type === 'DISPUTE';
+        if (isDispute && !body.correctSubtype) {
+            throw new common_1.ForbiddenException('correctSubtype is required for DISPUTE feedback');
+        }
         const feedback = await this.prisma.feedback.create({
             data: {
                 id: (0, crypto_1.randomUUID)(),
                 caseId: id,
                 doctorId: user.id,
-                feedbackType: body.type === 'DISPUTE' ? client_1.FeedbackType.DISPUTE : client_1.FeedbackType.VALIDATE,
+                feedbackType: isDispute ? client_1.FeedbackType.DISPUTE : client_1.FeedbackType.VALIDATE,
                 correctedSubtype: body.correctSubtype ?? null,
                 evidenceTypes: [],
                 justification: body.justification ?? null,
+                alTriggered: isDispute,
             },
         });
-        // On DISPUTE: update case status
-        if (body.type === 'DISPUTE') {
-            await this.prisma.case.update({
-                where: { id },
-                data: { status: client_1.CaseStatus.DISPUTED },
-            });
-        }
-        else {
-            await this.prisma.case.update({
-                where: { id },
-                data: { status: client_1.CaseStatus.VALIDATED },
-            });
+        await this.prisma.case.update({
+            where: { id },
+            data: { status: isDispute ? client_1.CaseStatus.DISPUTED : client_1.CaseStatus.VALIDATED },
+        });
+        // On DISPUTE: fire-and-forget active-learning fine-tune
+        if (isDispute && body.correctSubtype) {
+            this.alService.triggerUpdate(id, body.correctSubtype, caseRow.predictedSubtype, feedback.id);
         }
         return feedback;
     }
@@ -168,6 +170,7 @@ exports.CasesService = CasesService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         inference_service_1.InferenceService,
-        fl_service_1.FlService])
+        fl_service_1.FlService,
+        al_service_1.AlService])
 ], CasesService);
 //# sourceMappingURL=cases.service.js.map

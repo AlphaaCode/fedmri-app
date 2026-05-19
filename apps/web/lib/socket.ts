@@ -26,6 +26,7 @@ export function getSocket(token: string): Socket {
   socket.on("fl:round:started", fl.onRoundStarted);
   socket.on("fl:round:progress", fl.onProgress);
   socket.on("fl:round:complete", fl.onRoundComplete);
+  socket.on("model:updated", fl.onModelUpdated);
 
   socket.on("connect_error", (err) => {
     // eslint-disable-next-line no-console
