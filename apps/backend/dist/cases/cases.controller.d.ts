@@ -5,6 +5,11 @@ export declare class CasesController {
     private casesService;
     private pdfService;
     constructor(casesService: CasesService, pdfService: PdfService);
+    verify(file: Express.Multer.File): Promise<{
+        valid: boolean;
+        confidence: number;
+        reason: string;
+    }>;
     create(user: any, file: Express.Multer.File): Promise<any>;
     findAll(user: any, page?: number, limit?: number): Promise<{
         data: any[];

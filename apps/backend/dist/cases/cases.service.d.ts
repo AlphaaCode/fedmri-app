@@ -21,6 +21,11 @@ export declare class CasesService {
         size: number;
     }>;
     findOne(user: any, id: string): Promise<any>;
+    verifyImage(file: Express.Multer.File): Promise<{
+        valid: boolean;
+        confidence: number;
+        reason: string;
+    }>;
     submitFeedback(user: any, id: string, body: {
         type: 'VALIDATE' | 'DISPUTE';
         correctSubtype?: string;

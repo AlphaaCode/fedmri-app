@@ -53,6 +53,17 @@ export async function apiLogin(
   return res.json();
 }
 
+export async function apiVerifyImage(file: File): Promise<{ valid: boolean; confidence: number; reason: string }> {
+  const form = new FormData();
+  form.append("file", file);
+  const t = token();
+  const headers: Record<string, string> = {};
+  if (t) headers["Authorization"] = `Bearer ${t}`;
+  const res = await fetch(`${API}/cases/verify`, { method: "POST", body: form, headers });
+  if (!res.ok) return { valid: true, confidence: 0.5, reason: "Could not verify — proceeding" };
+  return res.json();
+}
+
 export async function apiUploadCase(file: File): Promise<any> {
   const form = new FormData();
   form.append("file", file);

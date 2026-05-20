@@ -38,6 +38,18 @@ export class InferenceService {
     };
   }
 
+  async verifyImage(buffer: Buffer, filename: string): Promise<{ valid: boolean; confidence: number; reason: string }> {
+    const form = new FormData();
+    form.append('file', buffer, { filename, contentType: 'image/jpeg' });
+
+    const response = await firstValueFrom(
+      this.httpService.post<any>(`${this.mlServiceUrl}/verify`, form, {
+        headers: form.getHeaders(),
+      }),
+    );
+    return response.data;
+  }
+
   async predict(filePath: string): Promise<PredictionResult> {
     const fileStream = createReadStream(filePath);
     const fileName = basename(filePath);

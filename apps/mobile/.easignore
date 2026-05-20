@@ -1,0 +1,45 @@
+# Exclude everything outside the mobile app to avoid uploading the whole monorepo.
+# EAS only needs the mobile app's source + its own node_modules.
+
+# Monorepo siblings (the 1.9 GB problem)
+../web/**
+../backend/**
+../ml-service/**
+../fl-coordinator/**
+../../packages/**
+../../docs/**
+../../tasks/**
+../../uploads-tmp/**
+../../uploads/**
+../../.scratch/**
+../../graphify-out/**
+
+# Root-level monorepo files (don't need them in the mobile build)
+../../docker-compose.yml
+../../README.md
+../../CONTEXT.md
+../../CLAUDE.md
+../../package.json
+../../package-lock.json
+../../turbo.json
+../../tsconfig.json
+../../.env*
+
+# Mobile app local trash
+node_modules/.cache
+.expo/
+android/
+ios/
+*.log
+.DS_Store
+expo-export/
+
+# Build outputs
+dist/
+web-build/
+*.apk
+*.ipa
+
+# Git artifacts
+.git/
+.gitignore

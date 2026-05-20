@@ -158,6 +158,10 @@ export class CasesService {
     };
   }
 
+  async verifyImage(file: Express.Multer.File): Promise<{ valid: boolean; confidence: number; reason: string }> {
+    return this.inferenceService.verifyImage(file.buffer, file.originalname || 'scan.jpg');
+  }
+
   async submitFeedback(
     user: any,
     id: string,

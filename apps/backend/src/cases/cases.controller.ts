@@ -14,6 +14,7 @@ import {
 import type { Response } from 'express';
 import { PdfService } from './pdf.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CasesService } from './cases.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -26,6 +27,13 @@ export class CasesController {
     private casesService: CasesService,
     private pdfService: PdfService,
   ) {}
+
+  @Post('verify')
+  @HttpCode(200)
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
+  async verify(@UploadedFile() file: Express.Multer.File) {
+    return this.casesService.verifyImage(file);
+  }
 
   @Post()
   @HttpCode(201)

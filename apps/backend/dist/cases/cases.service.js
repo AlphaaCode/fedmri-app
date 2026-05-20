@@ -135,6 +135,9 @@ let CasesService = class CasesService {
             probs: caseData.probs,
         };
     }
+    async verifyImage(file) {
+        return this.inferenceService.verifyImage(file.buffer, file.originalname || 'scan.jpg');
+    }
     async submitFeedback(user, id, body) {
         // Silo check — reuse findOne (throws ForbiddenException on cross-hospital access)
         const caseRow = await this.findOne(user, id);

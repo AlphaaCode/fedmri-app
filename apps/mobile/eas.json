@@ -1,0 +1,30 @@
+{
+  "cli": {
+    "version": ">= 19.0.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": { "buildType": "apk", "image": "latest" },
+      "node": "20.18.0"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": { "buildType": "apk", "image": "latest" },
+      "node": "20.18.0",
+      "env": {
+        "EAS_SKIP_AUTO_FINGERPRINT": "1"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "android": { "buildType": "app-bundle", "image": "latest" },
+      "node": "20.18.0"
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

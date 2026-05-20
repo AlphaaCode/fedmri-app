@@ -5,8 +5,12 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // CORS — allow web (localhost:3000) and any origin for mobile/Expo dev
+  // (RN/Expo doesn't send an Origin header, so this is effectively web-only)
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(',').map((s) => s.trim())
+      : ['http://localhost:3000', /\.expo\.dev$/, /^http:\/\/10\.0\.2\.2/],
     credentials: true,
   });
 

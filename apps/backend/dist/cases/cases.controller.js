@@ -16,6 +16,7 @@ exports.CasesController = void 0;
 const common_1 = require("@nestjs/common");
 const pdf_service_1 = require("./pdf.service");
 const platform_express_1 = require("@nestjs/platform-express");
+const multer_1 = require("multer");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const cases_service_1 = require("./cases.service");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
@@ -24,6 +25,9 @@ let CasesController = class CasesController {
     constructor(casesService, pdfService) {
         this.casesService = casesService;
         this.pdfService = pdfService;
+    }
+    async verify(file) {
+        return this.casesService.verifyImage(file);
     }
     async create(user, file) {
         return this.casesService.create(user, file);
@@ -52,6 +56,15 @@ let CasesController = class CasesController {
     }
 };
 exports.CasesController = CasesController;
+__decorate([
+    (0, common_1.Post)('verify'),
+    (0, common_1.HttpCode)(200),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', { storage: (0, multer_1.memoryStorage)() })),
+    __param(0, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], CasesController.prototype, "verify", null);
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.HttpCode)(201),

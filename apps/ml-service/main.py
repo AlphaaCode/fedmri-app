@@ -137,6 +137,58 @@ async def attention(case_id: str):
     return {"attention": grid.flatten().tolist(), "size": ATTN_GRID}
 
 
+@app.post("/verify")
+async def verify_image(file: UploadFile = File(...)):
+    """
+    Check whether the uploaded image looks like a grayscale medical (breast MRI) scan.
+    Returns {valid, confidence, reason}.
+    """
+    import io
+    from PIL import Image as PILImage
+
+    contents = await file.read()
+    try:
+        img = PILImage.open(io.BytesIO(contents)).convert("RGB")
+        arr = np.array(img, dtype=np.int32)
+
+        h, w = arr.shape[:2]
+        if h < 64 or w < 64:
+            return {"valid": False, "confidence": 0.95, "reason": "Image resolution is too small for MRI analysis"}
+
+        r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
+        mean_intensity = float(np.mean(arr))
+        if mean_intensity < 15:
+            return {"valid": False, "confidence": 0.90, "reason": "Image appears to be blank or completely dark"}
+        if mean_intensity > 240:
+            return {"valid": False, "confidence": 0.90, "reason": "Image appears to be overexposed or blank white"}
+
+        # Grayscale check: MRI scans have very low channel-to-channel variance
+        rg_diff = float(np.mean(np.abs(r - g)))
+        rb_diff = float(np.mean(np.abs(r - b)))
+        gb_diff = float(np.mean(np.abs(g - b)))
+        color_variance = (rg_diff + rb_diff + gb_diff) / 3.0
+
+        is_grayscale = color_variance < 25.0
+        if not is_grayscale:
+            return {
+                "valid": False,
+                "confidence": round(min(0.95, color_variance / 100.0), 2),
+                "reason": "Image appears to be a color photograph, not a grayscale MRI scan",
+            }
+
+        # Texture check: MRI scans have varied texture (not a solid fill)
+        gray = np.mean(arr, axis=2)
+        texture_std = float(np.std(gray))
+        if texture_std < 10:
+            return {"valid": False, "confidence": 0.80, "reason": "Image appears to be a solid color, not an MRI scan"}
+
+        confidence = round(min(0.94, 0.60 + (texture_std / 128.0) * 0.34), 2)
+        return {"valid": True, "confidence": confidence, "reason": "Image appears to be a valid grayscale medical scan"}
+
+    except Exception as e:
+        return {"valid": False, "confidence": 0.50, "reason": f"Could not process image: {str(e)}"}
+
+
 from pydantic import BaseModel
 
 

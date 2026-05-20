@@ -16,6 +16,11 @@ export declare class InferenceService {
         attention: number[];
         size: number;
     }>;
+    verifyImage(buffer: Buffer, filename: string): Promise<{
+        valid: boolean;
+        confidence: number;
+        reason: string;
+    }>;
     predict(filePath: string): Promise<PredictionResult>;
 }
 export {};

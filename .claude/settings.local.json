@@ -40,7 +40,20 @@
       "Bash(docker exec fedmri-ollama *)",
       "Bash(npm uninstall *)",
       "Bash(curl -s -X POST http://localhost:8001/feedback -H 'Content-Type: application/json' -d '{\"case_id\":\"x\",\"correct_subtype\":\"HER2\",\"predicted_subtype\":\"Luminal A\"}')",
-      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('model_v:', d['model_version'], '| f1_macro:', d['f1_macro'], '| corrected:', d['corrected_class']\\)\")"
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('model_v:', d['model_version'], '| f1_macro:', d['f1_macro'], '| corrected:', d['corrected_class']\\)\")",
+      "Bash(npx --yes create-expo-app@latest mobile --template blank-typescript --no-install)",
+      "Bash(npx expo *)",
+      "Bash(curl -s http://localhost:3001/health)",
+      "PowerShell(where.exe ngrok 2>$null; if \\($LASTEXITCODE -ne 0\\) { \"ngrok not found\" })",
+      "PowerShell(winget install *)",
+      "PowerShell(ngrok version *)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); Start-Process -FilePath \"ngrok\" -ArgumentList \"http 3001\" -WindowStyle Normal)",
+      "PowerShell(Start-Sleep -Seconds 3; $env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); try { \\(Invoke-RestMethod -Uri \"http://localhost:4040/api/tunnels\" -TimeoutSec 5\\).tunnels | ForEach-Object { \"$\\($_.name\\): $\\($_.public_url\\)\" } } catch { \"ngrok API not ready yet\" })",
+      "PowerShell(Start-Sleep -Seconds 4; try { \\(Invoke-RestMethod -Uri \"http://localhost:4040/api/tunnels\" -TimeoutSec 5\\).tunnels | ForEach-Object { \"$\\($_.name\\): $\\($_.public_url\\)\" } } catch { \"still not ready\" })",
+      "PowerShell(Get-Process *)",
+      "PowerShell(Get-Content *)",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:8001/health\" -TimeoutSec 3 2>&1)",
+      "PowerShell(node -e \"try { require\\('D:/study/BioInfo M2 \\(2026\\)/Memoir/fedmri-app/apps/web/node_modules/next/font/google/index.js'\\); console.log\\('next/font/google OK'\\) } catch\\(e\\) { console.log\\('ERROR:', e.message\\) }\")"
     ]
   }
 }

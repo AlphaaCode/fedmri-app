@@ -33,6 +33,14 @@ let InferenceService = class InferenceService {
             size: response.data.size,
         };
     }
+    async verifyImage(buffer, filename) {
+        const form = new form_data_1.default();
+        form.append('file', buffer, { filename, contentType: 'image/jpeg' });
+        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(`${this.mlServiceUrl}/verify`, form, {
+            headers: form.getHeaders(),
+        }));
+        return response.data;
+    }
     async predict(filePath) {
         const fileStream = (0, fs_1.createReadStream)(filePath);
         const fileName = (0, path_1.basename)(filePath);
