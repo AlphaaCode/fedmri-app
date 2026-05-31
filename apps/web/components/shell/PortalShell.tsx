@@ -17,12 +17,19 @@ function BrandMark() {
   return <img src="/logo-mark.png" alt="FedMRI" className="w-full h-full object-contain" />;
 }
 
-export function PortalShell({ identity, nav, footerNav, primaryAction, headerStatus, children }: {
+const ROLE_HOME: Record<string, string> = {
+  DOCTOR: "/doctor/scan",
+  PATIENT: "/patient/chat",
+  RESEARCHER: "/researcher",
+};
+
+export function PortalShell({ identity, nav, footerNav, primaryAction, headerStatus, requiredRole, children }: {
   identity: ShellIdentity;
   nav: NavItem[];
   footerNav?: FooterItem[];
   primaryAction?: { label: string; href: string; icon?: LucideIcon };
   headerStatus?: ReactNode;
+  requiredRole?: string;
   children: ReactNode;
 }) {
   const router = useRouter();
@@ -33,10 +40,15 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
 
   useEffect(() => {
     const t = setTimeout(() => {
-      if (!useAuthStore.getState().token) router.replace("/login");
+      const { token: tok, user: u } = useAuthStore.getState();
+      if (!tok) { router.replace("/login"); return; }
+      // Enforce the portal's role: send mismatched users to their own portal.
+      if (requiredRole && u && u.role !== requiredRole) {
+        router.replace(ROLE_HOME[u.role] ?? "/login");
+      }
     }, 120);
     return () => clearTimeout(t);
-  }, [token, router]);
+  }, [token, router, requiredRole]);
 
   const statusColor =
     identity.status === "active" ? "var(--amber)" :

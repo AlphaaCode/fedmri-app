@@ -19,7 +19,12 @@ export default function DoctorLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      if (!useAuthStore.getState().token) router.replace("/login");
+      const { token: tok, user: u } = useAuthStore.getState();
+      if (!tok) { router.replace("/login"); return; }
+      // Keep non-doctors out of the doctor portal.
+      if (u && u.role !== "DOCTOR") {
+        router.replace(u.role === "PATIENT" ? "/patient/chat" : u.role === "RESEARCHER" ? "/researcher" : "/login");
+      }
     }, 120);
     return () => clearTimeout(t);
   }, [token, router]);

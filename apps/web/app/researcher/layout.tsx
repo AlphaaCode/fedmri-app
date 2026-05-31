@@ -12,6 +12,7 @@ export default function ResearcherLayout({ children }: { children: ReactNode }) 
 
   return (
     <PortalShell
+      requiredRole="RESEARCHER"
       identity={{ title: "Node Alpha-7", subtitle: "Synchronized", status: "ok" }}
       nav={[
         { href: "/researcher", label: "Models", icon: BarChart3 },

@@ -24,6 +24,11 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
     const t = setTimeout(() => {
       const { token: tok, user: u } = useAuthStore.getState();
       if (!tok) { router.replace("/login"); return; }
+      // Keep non-patients out of the patient portal.
+      if (u && u.role !== "PATIENT") {
+        router.replace(u.role === "DOCTOR" ? "/doctor/scan" : u.role === "RESEARCHER" ? "/researcher" : "/login");
+        return;
+      }
       // Redirect to onboarding if not done (skip for onboarding page itself)
       if (u && !(u as any).onboardingDone && !pathname?.includes("onboarding")) {
         router.replace("/patient/onboarding");
