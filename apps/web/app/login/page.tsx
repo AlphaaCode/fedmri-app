@@ -25,6 +25,8 @@ export default function LoginPage() {
         router.replace("/doctor/scan");
       } else if (user.role === "PATIENT") {
         router.replace("/patient/chat");
+      } else if (user.role === "RESEARCHER") {
+        router.replace("/researcher");
       } else {
         setError("Unknown role — contact support.");
       }
