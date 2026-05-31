@@ -190,3 +190,33 @@ Each unit is independently testable and understandable without reading the other
 - **Prisma migration** on a Postgres dev DB — migration must be additive (enum value add)
   and reversible; seed idempotent.
 - **Figma-vs-domain drift** — handled by the explicit reconciliation rules (§7); flagged per screen.
+
+## 10. Phase A outcomes & carried-over items (added 2026-05-31)
+
+Phase A is **complete and verified** on branch `redesign/figma-portals` (12 commits,
+`4c1b6be`..`e1a74e2`). Backend e2e 7/7; web production build green (14 routes); live
+browser QA confirmed: researcher login → `/researcher` renders the new sidebar shell;
+doctor/patient portals unchanged (no regression). A pre-existing Next-16 build blocker
+(`doctor/chat` `useSearchParams` without Suspense) was fixed during the QA sweep.
+
+**Carried into Phase B (must-fix FIRST, before any researcher screen fetches data):**
+- **[P0 privacy] Guard `CasesController` against `RESEARCHER`.** Today it is guarded only
+  by `JwtAuthGuard`; a `RESEARCHER` token can reach `GET /cases`, `GET /cases/:id`,
+  `POST /cases` and receive `Case.imagePath` (raw scan path). This violates the researcher
+  privacy boundary (§5/§7). Fix: deny `RESEARCHER` on `cases.controller.ts` — note
+  `RolesGuard` reads `context.getHandler()`, so apply `@Roles('DOCTOR','PATIENT')` at the
+  **method** level (or a service-level `ForbiddenException` for `RESEARCHER`) — plus an
+  e2e test asserting a researcher gets 403. This is Phase B Task 1.
+
+**Deferred debt (address in the owning phase):**
+- `packages/shared` `dist/` is stale (`UserRole` lacks `RESEARCHER`) and its `package.json`
+  `types` path is wrong (tsconfig `outDir` nests under `dist/packages/shared/src/`).
+  Inert now (no source imports `@fedmri/shared`); rebuild + fix `outDir` when Phase B first
+  imports shared types.
+- `PortalShell` active-nav uses `startsWith(href + "/")`, so the `/researcher` "Models"
+  item will read active on every sub-route once Phase B adds them. Fix nav-active
+  (exact-match for index items, or longest-prefix wins) in Phase B.
+- Login subtitle is hardcoded "Doctor portal" for all roles — fix in the Phase C/D login
+  redesign (the Figma redesigns login/signup anyway).
+- Add an automated researcher **login** e2e (seed account) alongside the existing register
+  test when convenient.
