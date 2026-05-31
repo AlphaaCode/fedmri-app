@@ -37,7 +37,14 @@ describe('Researcher (e2e)', () => {
     await app.close();
   });
 
-  const endpoints = ['/researcher/overview', '/researcher/training-log', '/researcher/model-versions'];
+  const endpoints = [
+    '/researcher/overview',
+    '/researcher/training-log',
+    '/researcher/model-versions',
+    '/researcher/topology',
+    '/researcher/datasets',
+    '/researcher/system-logs',
+  ];
 
   describe('RESEARCHER access (200)', () => {
     it('GET /researcher/overview returns aggregate metrics with rawBytesSent 0', async () => {
@@ -72,6 +79,36 @@ describe('Researcher (e2e)', () => {
       expect(Array.isArray(res.body.versions)).toBe(true);
       expect(res.body.versions.length).toBeGreaterThan(0);
       expect(typeof res.body.versions[0].hash).toBe('string');
+    });
+
+    it('GET /researcher/topology returns 3 nodes and correct globalDataVolume', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/researcher/topology')
+        .set('Authorization', `Bearer ${researcherToken}`)
+        .expect(200);
+      expect(res.body.nodes.length).toBe(3);
+      expect(res.body.globalDataVolume).toBe(737);
+      expect(JSON.stringify(res.body)).not.toContain('imagePath');
+    });
+
+    it('GET /researcher/datasets returns 3 cohorts and totalRecords 737', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/researcher/datasets')
+        .set('Authorization', `Bearer ${researcherToken}`)
+        .expect(200);
+      expect(res.body.cohorts.length).toBe(3);
+      expect(res.body.totalRecords).toBe(737);
+      expect(JSON.stringify(res.body)).not.toContain('imagePath');
+    });
+
+    it('GET /researcher/system-logs returns events array with correct totalNodes', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/researcher/system-logs')
+        .set('Authorization', `Bearer ${researcherToken}`)
+        .expect(200);
+      expect(Array.isArray(res.body.events)).toBe(true);
+      expect(res.body.totalNodes).toBe(3);
+      expect(JSON.stringify(res.body)).not.toContain('imagePath');
     });
   });
 

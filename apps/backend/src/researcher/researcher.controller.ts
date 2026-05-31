@@ -30,4 +30,27 @@ export class ResearcherController {
   modelVersions() {
     return this.svc.getModelVersions();
   }
+
+  @Get('topology')
+  topology() {
+    return this.svc.getTopology();
+  }
+
+  @Get('datasets')
+  datasets() {
+    return this.svc.getDatasets();
+  }
+
+  @Get('system-logs')
+  systemLogs(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('severity') severity?: string,
+  ) {
+    return this.svc.getSystemLogs(
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 50,
+      severity,
+    );
+  }
 }

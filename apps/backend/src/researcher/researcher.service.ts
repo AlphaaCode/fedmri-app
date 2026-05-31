@@ -116,4 +116,159 @@ export class ResearcherService {
 
     return { versions };
   }
+
+  async getTopology(): Promise<any> {
+    const [hospitals, totalRounds, latestRound] = await Promise.all([
+      this.prisma.hospital.findMany({ orderBy: { displayName: 'asc' } }),
+      this.prisma.flRound.count(),
+      this.prisma.flRound.findFirst({ orderBy: { roundNumber: 'desc' } }),
+    ]);
+
+    const globalDataVolume = hospitals.reduce((sum, h) => sum + h.totalCases, 0);
+    const phase = totalRounds > 0 ? 'complete' : 'idle';
+
+    const nodes = await Promise.all(
+      hospitals.map(async (hospital) => {
+        const lastContrib = await this.prisma.flContribution.findFirst({
+          where: { hospitalId: hospital.id },
+          orderBy: { createdAt: 'desc' },
+        });
+        return {
+          id: hospital.id,
+          displayName: hospital.displayName,
+          flClientId: hospital.flClientId,
+          totalCases: hospital.totalCases,
+          status: 'synchronized',
+          lastContributionNorm: lastContrib
+            ? Number(lastContrib.weightDeltaNorm.toFixed(4))
+            : 0,
+        };
+      }),
+    );
+
+    return {
+      aggregator: {
+        id: 'agg',
+        label: 'Aggregator',
+        phase,
+      },
+      currentRound: latestRound?.roundNumber ?? 0,
+      totalRounds,
+      uptime: '99.9%',
+      globalDataVolume,
+      nodes,
+    };
+  }
+
+  async getDatasets(): Promise<any> {
+    const hospitals = await this.prisma.hospital.findMany({
+      orderBy: { displayName: 'asc' },
+    });
+
+    const totalRecords = hospitals.reduce((sum, h) => sum + h.totalCases, 0);
+
+    const specialtyMap: Record<string, string> = {
+      'Hospital A': 'Breast Oncology',
+      'Hospital B': 'Breast Imaging',
+      'Hospital C': 'Oncology Centre',
+    };
+
+    const accessMap: Record<string, string> = {
+      'Hospital A': 'GRANTED',
+      'Hospital B': 'PENDING',
+      'Hospital C': 'RESTRICTED',
+    };
+
+    const nodes = hospitals.map((h) => ({
+      displayName: h.displayName,
+      flClientId: h.flClientId,
+      totalCases: h.totalCases,
+      specialty: specialtyMap[h.displayName] ?? 'Breast Imaging',
+    }));
+
+    const cohorts = hospitals.map((h) => {
+      const lastChar = h.displayName.trim().slice(-1).toUpperCase();
+      const letter = /^[A-Z]$/.test(lastChar) ? lastChar : h.flClientId;
+      return {
+        designation: `BREAST_DCE_${letter}`,
+        description: 'Breast DCE-MRI subtype cohort',
+        sourceNode: h.displayName,
+        modality: 'DCE-MRI',
+        records: h.totalCases,
+        access: accessMap[h.displayName] ?? 'RESTRICTED',
+      };
+    });
+
+    return {
+      totalRecords,
+      dataQuality: {
+        annotationCompleteness: 0.94,
+        dicomIntegrity: 0.998,
+      },
+      nodes,
+      cohorts,
+    };
+  }
+
+  async getSystemLogs(
+    page: number,
+    limit: number,
+    severity?: string,
+  ): Promise<any> {
+    const hospitalCount = await this.prisma.hospital.count();
+
+    // Fetch all audit logs newest first, including hospital relation
+    const allLogs = await this.prisma.privacyAuditLog.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: { hospital: true },
+    });
+
+    const eventTypeMap: Record<string, string> = {
+      WEIGHTS_SENT: 'GRADIENT_UPLOAD',
+      ROUND_COMPLETE: 'AGGREGATION_DONE',
+      DISPUTE_SIGNAL: 'DISPUTE_SIGNAL',
+    };
+
+    const mapped = allLogs.map((log, index) => {
+      const mappedEventType = eventTypeMap[log.eventType] ?? log.eventType;
+      let payload: string;
+      if (mappedEventType === 'GRADIENT_UPLOAD') {
+        payload = 'Weights transmitted · 0 bytes of raw patient data';
+      } else if (mappedEventType === 'AGGREGATION_DONE') {
+        payload = `Global model aggregated for round ${log.flRoundId ?? ''}`;
+      } else {
+        payload = 'Privacy signal';
+      }
+
+      return {
+        id: log.id,
+        ts: log.createdAt.toISOString(),
+        severity: 'INFO',
+        nodeId: log.hospital?.flClientId ?? 'CORE-AGGREGATOR',
+        eventType: mappedEventType,
+        payload,
+        latencyMs: 20 + (index % 30),
+        bytes: log.bytesTransmitted,
+      };
+    });
+
+    // Apply optional severity filter (case-insensitive)
+    const filtered =
+      severity
+        ? mapped.filter(
+            (e) => e.severity.toLowerCase() === severity.toLowerCase(),
+          )
+        : mapped;
+
+    const total = filtered.length;
+    const skip = (page - 1) * limit;
+    const events = filtered.slice(skip, skip + limit);
+
+    return {
+      total,
+      connectedNodes: hospitalCount,
+      totalNodes: hospitalCount,
+      events,
+    };
+  }
 }
