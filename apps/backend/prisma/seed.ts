@@ -10,6 +10,7 @@ async function main() {
   ]);
 
   await prisma.user.upsert({ where:{email:"admin@fedmri.local"}, update:{}, create:{email:"admin@fedmri.local",passwordHash:await bcrypt.hash("admin1234",10),name:"Admin",role:Role.ADMIN,onboardingDone:true} });
+  await prisma.user.upsert({ where:{email:"researcher@fedmri.local"}, update:{}, create:{email:"researcher@fedmri.local",passwordHash:await bcrypt.hash("research1234",10),name:"Dr. Imene Researcher",role:Role.RESEARCHER,onboardingDone:true} });
 
   const doctorDefs = [
     {email:"dr.benali@fedmri.local",name:"Dr. Benali",h:0},
