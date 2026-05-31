@@ -53,7 +53,7 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
     <div className="min-h-screen flex">
       <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
         <div className="px-4 py-4 flex items-center gap-3 border-b" style={{ borderColor: "var(--border)" }}>
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--teal-glow)", border: "1px solid var(--teal)40" }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--teal-glow)", border: "1px solid #2dd4bf40" }}>
             {identity.icon ?? <BrandMark />}
           </div>
           <div className="min-w-0">
@@ -88,7 +88,7 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
                 style={{
                   background: active ? "var(--teal-glow)" : "transparent",
                   color: active ? "var(--teal)" : "var(--text-secondary)",
-                  border: "1px solid " + (active ? "var(--teal)40" : "transparent"),
+                  border: "1px solid " + (active ? "#2dd4bf40" : "transparent"),
                 }}
               >
                 <Icon size={16} />
