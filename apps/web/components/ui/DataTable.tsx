@@ -23,7 +23,7 @@ export function DataTable<T>({ columns, rows, getRowKey, empty = "No data", clas
             {columns.map((c) => (
               <th
                 key={c.key}
-                className={cn("font-medium pb-2 text-xs uppercase tracking-wider", c.align === "right" ? "text-right" : "text-left")}
+                className={cn("font-medium pb-2 text-xs uppercase tracking-wider [&:not(:last-child)]:pr-4", c.align === "right" ? "text-right" : "text-left")}
                 style={{ color: "var(--text-secondary)" }}
               >
                 {c.header}
@@ -42,7 +42,7 @@ export function DataTable<T>({ columns, rows, getRowKey, empty = "No data", clas
                 {columns.map((c) => (
                   <td
                     key={c.key}
-                    className={cn("py-3", c.align === "right" ? "text-right tabular-nums" : "text-left")}
+                    className={cn("py-3 [&:not(:last-child)]:pr-4", c.align === "right" ? "text-right tabular-nums" : "text-left")}
                     style={{ color: "var(--text-primary)" }}
                   >
                     {c.render(row)}
