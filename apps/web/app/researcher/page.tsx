@@ -228,7 +228,7 @@ export default function ResearcherHome() {
         <DataTable<TrainingRound>
           columns={trainingCols}
           rows={trainingRounds}
-          getRowKey={(r) => String(r.roundNumber)}
+          getRowKey={(r, i) => `${r.roundNumber}-${i}`}
           empty="No training rounds found"
         />
       </Panel>
@@ -244,9 +244,9 @@ export default function ResearcherHome() {
               No versions found
             </span>
           ) : (
-            modelVersions.map((mv) => (
+            modelVersions.map((mv, i) => (
               <Card
-                key={mv.modelVersion}
+                key={`${mv.hash}-${i}`}
                 className="min-w-[160px] flex-shrink-0"
               >
                 <div className="flex items-center justify-between mb-1.5">
