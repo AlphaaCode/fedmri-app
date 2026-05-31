@@ -111,6 +111,8 @@ describe('Auth (e2e)', () => {
         })
         .expect(201);
 
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body).toHaveProperty('refreshToken');
       expect(response.body.user).toEqual({
         id: expect.any(String),
         email: 'test.researcher@fedmri.local',
