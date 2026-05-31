@@ -39,7 +39,7 @@ Adapt visuals, keep honesty:
 | "Federated ResNet-50 v4.2.1" | **DINOv2-MIL**, integer `modelVersion`. |
 | 2×2 classification matrix | Real **4×4** (`/model/confusion-matrix`). |
 | "Gradient Norm" | `FlContribution.weightDeltaNorm` (Δw). |
-| "Request Access / Add Dataset / Export CSV" | Clearly-labeled **demo** actions: Export CSV is real (client-side from loaded rows); Add Dataset / Request Access are visibly disabled or show a "demo — read-only network" toast (no real mutation backend in this educational app). |
+| "Request Access / Add Dataset / Export CSV" | Export CSV is real (client-side from loaded rows). Add Dataset / Request Access are **simulated in-memory** (Request Access → "Pending" → "Granted"; Add Dataset prepends a local cohort row) — clearly labeled as a non-persisted local demo (a small "demo · not saved" note); no backend mutation. |
 | "Security Anomalies: 0 blocked / handshakes verified" | Keep — aligns with the privacy invariant; back it with `rawDataTransmitted=0`. |
 
 ## 4. Backend — new `researcher` module (all `@Roles('RESEARCHER')`)
@@ -90,7 +90,9 @@ the layout), the Phase A primitives, and `recharts` (already a dep). Set the top
    Records (Σ totalCases) + 3 node cards (Hospital A/B/C with totals + specialty label),
    Data Quality Index (annotation completeness / DICOM integrity — static demo metrics),
    cohort filter chips, **Available Cohorts** `DataTable` (designation, source node, modality
-   DCE-MRI, records N, action = demo). Data: `/researcher/datasets`.
+   DCE-MRI, records N, action). Actions are **simulated in-memory**: "Request Access" cycles
+   the row state PENDING→GRANTED locally; "Add Dataset" prepends a local row; both show a
+   "demo · not saved" note. Export is real (client-side CSV). Data: `/researcher/datasets`.
 4. **System Logs** (`/researcher/logs`): "Live Telemetry" — 3 stat cards (aggregation cycle,
    avg latency mock, security anomalies 0/handshakes verified), severity filter, **log
    `DataTable`** (ts, severity badge, nodeId, eventType, payload, lat/bw), footer (connected
