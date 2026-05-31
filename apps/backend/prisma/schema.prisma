@@ -11,6 +11,7 @@ enum Role {
   DOCTOR
   PATIENT
   ADMIN
+  RESEARCHER
 }
 
 enum CaseScope {

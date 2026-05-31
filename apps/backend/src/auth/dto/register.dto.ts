@@ -13,8 +13,8 @@ export class RegisterDto {
   @IsString()
   name: string;
 
-  @IsEnum(['DOCTOR', 'PATIENT', 'ADMIN'])
-  role: 'DOCTOR' | 'PATIENT' | 'ADMIN';
+  @IsEnum(['DOCTOR', 'PATIENT', 'ADMIN', 'RESEARCHER'])
+  role: 'DOCTOR' | 'PATIENT' | 'ADMIN' | 'RESEARCHER';
 
   @IsOptional()
   @IsString()

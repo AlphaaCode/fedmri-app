@@ -36,6 +36,7 @@ describe('Auth (e2e)', () => {
             'test.doctor@fedmri.local',
             'test.patient@fedmri.local',
             'invalid.doctor@fedmri.local',
+            'test.researcher@fedmri.local',
           ],
         },
       },
@@ -95,6 +96,26 @@ describe('Auth (e2e)', () => {
         email: 'test.patient@fedmri.local',
         name: 'Test Patient',
         role: 'PATIENT',
+        hospitalId: null,
+      });
+    });
+
+    it('should register a RESEARCHER without hospitalId and return 201', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          email: 'test.researcher@fedmri.local',
+          password: 'SecurePass123!',
+          name: 'Test Researcher',
+          role: 'RESEARCHER',
+        })
+        .expect(201);
+
+      expect(response.body.user).toEqual({
+        id: expect.any(String),
+        email: 'test.researcher@fedmri.local',
+        name: 'Test Researcher',
+        role: 'RESEARCHER',
         hospitalId: null,
       });
     });
