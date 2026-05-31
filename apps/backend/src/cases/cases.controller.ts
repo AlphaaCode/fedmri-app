@@ -16,12 +16,15 @@ import { PdfService } from './pdf.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 import { CasesService } from './cases.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { multerOptions } from '../common/config/multer.config';
 
 @Controller('cases')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('DOCTOR', 'PATIENT')
 export class CasesController {
   constructor(
     private casesService: CasesService,

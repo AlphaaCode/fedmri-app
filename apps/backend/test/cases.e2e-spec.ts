@@ -24,6 +24,7 @@ describe('Cases (e2e)', () => {
   let patient_token: string;
   let patient_id: string;
   let caseA_id: string;
+  let researcher_token: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -124,6 +125,24 @@ describe('Cases (e2e)', () => {
         password: 'SecurePass123!',
       });
     patient_token = patient_response.body.accessToken;
+
+    // Register and login Researcher
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        email: 'test.researcher.cases@fedmri.local',
+        password: 'SecurePass123!',
+        name: 'Test Researcher Cases',
+        role: 'RESEARCHER',
+      });
+
+    const researcher_response = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({
+        email: 'test.researcher.cases@fedmri.local',
+        password: 'SecurePass123!',
+      });
+    researcher_token = researcher_response.body.accessToken;
   });
 
   afterAll(async () => {
@@ -132,6 +151,7 @@ describe('Cases (e2e)', () => {
       'test.doctor.a@fedmri.local',
       'test.doctor.b@fedmri.local',
       'test.patient.cases@fedmri.local',
+      'test.researcher.cases@fedmri.local',
     ];
 
     // Get user IDs from emails to delete their cases
@@ -278,6 +298,19 @@ describe('Cases (e2e)', () => {
       await request(app.getHttpServer())
         .get(`/cases/${caseA_id}/attention`)
         .set('Authorization', `Bearer ${doctorB_token}`)
+        .expect(403);
+    });
+  });
+
+  describe('RBAC — RESEARCHER role', () => {
+    it('forbids RESEARCHER from reading cases', async () => {
+      await request(app.getHttpServer())
+        .get('/cases')
+        .set('Authorization', `Bearer ${researcher_token}`)
+        .expect(403);
+      await request(app.getHttpServer())
+        .get('/cases/any-id')
+        .set('Authorization', `Bearer ${researcher_token}`)
         .expect(403);
     });
   });
