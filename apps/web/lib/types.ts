@@ -65,7 +65,7 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
-  role: "DOCTOR" | "PATIENT" | "ADMIN";
+  role: "DOCTOR" | "PATIENT" | "ADMIN" | "RESEARCHER";
   hospitalId?: string;
 }
 

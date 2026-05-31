@@ -1,4 +1,4 @@
-export type UserRole = "DOCTOR" | "PATIENT" | "ADMIN";
+export type UserRole = "DOCTOR" | "PATIENT" | "ADMIN" | "RESEARCHER";
 export type Subtype  = "Luminal A" | "Luminal B" | "HER2" | "Triple Negative";
 export const SUBTYPES: Subtype[] = ["Luminal A", "Luminal B", "HER2", "Triple Negative"];
 
