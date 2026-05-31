@@ -43,13 +43,21 @@ async function main() {
   ];
 
   const samples = [247,312,178];
-  let mv = 1;
-  for (const rd of rounds) {
-    const flRound = await prisma.flRound.create({ data:{roundNumber:rd.r,strategy:rd.s,participants:hospitals.map(h=>h.id),globalF1Before:rd.fb,globalF1After:rd.fa,f1PerClassAfter:{lumA:rd.fa+0.3,lumB:rd.fa-0.1,her2:rd.fa-0.2,tn:rd.fa-0.15},durationSeconds:rd.dur,modelVersion:mv++,triggeredBy:FLTrigger.SCHEDULED} });
-    for (let i=0;i<3;i++) {
-      await prisma.flContribution.create({ data:{flRoundId:flRound.id,hospitalId:hospitals[i].id,localEpochs:3,samplesUsed:samples[i],localF1Before:rd.fb-0.02*(i+1),localF1After:rd.fa-0.01*(i+1),weightDeltaNorm:0.12+Math.random()*0.08,privacyBudgetUsed:0.1} });
-      await prisma.privacyAuditLog.create({ data:{hospitalId:hospitals[i].id,flRoundId:flRound.id,eventType:PrivacyEvent.WEIGHTS_SENT,bytesTransmitted:12_582_912,rawDataTransmitted:0} });
+  // Idempotent: only seed the canonical FL rounds when none exist yet, so
+  // re-running `prisma db seed` does not duplicate rounds (each create() is
+  // non-upsertable). Reset the FL tables first if you need to re-seed clean.
+  const existingRounds = await prisma.flRound.count();
+  if (existingRounds === 0) {
+    let mv = 1;
+    for (const rd of rounds) {
+      const flRound = await prisma.flRound.create({ data:{roundNumber:rd.r,strategy:rd.s,participants:hospitals.map(h=>h.id),globalF1Before:rd.fb,globalF1After:rd.fa,f1PerClassAfter:{lumA:rd.fa+0.3,lumB:rd.fa-0.1,her2:rd.fa-0.2,tn:rd.fa-0.15},durationSeconds:rd.dur,modelVersion:mv++,triggeredBy:FLTrigger.SCHEDULED} });
+      for (let i=0;i<3;i++) {
+        await prisma.flContribution.create({ data:{flRoundId:flRound.id,hospitalId:hospitals[i].id,localEpochs:3,samplesUsed:samples[i],localF1Before:rd.fb-0.02*(i+1),localF1After:rd.fa-0.01*(i+1),weightDeltaNorm:0.12+Math.random()*0.08,privacyBudgetUsed:0.1} });
+        await prisma.privacyAuditLog.create({ data:{hospitalId:hospitals[i].id,flRoundId:flRound.id,eventType:PrivacyEvent.WEIGHTS_SENT,bytesTransmitted:12_582_912,rawDataTransmitted:0} });
+      }
     }
+  } else {
+    console.log(`Skipping FL round seed (${existingRounds} rounds already exist)`);
   }
 
   await prisma.modelMetrics.upsert({ where:{modelVersion:10}, update:{}, create:{modelVersion:10,flRound:10,accuracy:0.55,f1Macro:0.41,f1PerClass:{lumA:0.71,lumB:0.29,her2:0.11,tn:0.21},strategy:"FedProx"} });
