@@ -5,19 +5,97 @@ import { usePortalTitle } from "@/lib/use-portal-title";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatCard } from "@/components/ui/StatCard";
 import { Panel } from "@/components/ui/Panel";
-import { Card } from "@/components/ui/Card";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/Button";
 import {
   getDatasets,
   DatasetsResponse,
+  DatasetNode,
   DatasetCohort,
 } from "@/lib/researcher-api";
 
-// ─── Node colour palette (one per hospital) ──────────────────────────────────
+// ─── Node colour palette (teal / blue-accent / amber per hospital) ─────────────
 
-const NODE_DOT_COLORS = ["var(--teal)", "var(--blue-accent)", "#a78bfa"];
+const NODE_COLORS = [
+  "var(--teal)",
+  "var(--blue-accent)",
+  "#f59e0b",
+] as const;
+
+// Raw hex/hsl values used for the gradient blob (CSS vars can't be used inside
+// radial-gradient alpha strings, so we fall back to approximate hex).
+const NODE_GRADIENT_COLORS = [
+  "#2dd4bf", // teal
+  "#6366f1", // blue-accent (indigo-ish)
+  "#f59e0b", // amber
+] as const;
+
+// ─── Figma-matched node card ──────────────────────────────────────────────────
+
+function NodeCard({ node, colorIdx }: { node: DatasetNode; colorIdx: number }) {
+  const dotColor = NODE_COLORS[colorIdx % NODE_COLORS.length];
+  const blobColor = NODE_GRADIENT_COLORS[colorIdx % NODE_GRADIENT_COLORS.length];
+
+  return (
+    <div
+      className="relative rounded-xl border p-4 flex flex-col gap-1 overflow-hidden"
+      style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+    >
+      {/* Decorative corner gradient blob */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-xl"
+        style={{
+          background: `radial-gradient(circle at top right, ${blobColor}22, transparent 70%)`,
+        }}
+      />
+
+      {/* Top row: dot + node name */}
+      <div className="flex items-center gap-2 relative">
+        <span
+          className="w-2 h-2 rounded-full flex-shrink-0"
+          style={{ background: dotColor }}
+        />
+        <span
+          className="text-xs font-semibold truncate"
+          style={{ color: "var(--text-primary)" }}
+        >
+          {node.displayName}
+        </span>
+      </div>
+
+      {/* Large case count */}
+      <div
+        className="text-2xl font-bold tabular-nums relative"
+        style={{ color: "var(--text-primary)" }}
+      >
+        {node.totalCases.toLocaleString()}
+      </div>
+
+      {/* Specialty label */}
+      <div
+        className="text-[11px] uppercase tracking-wide relative"
+        style={{ color: "var(--text-secondary)" }}
+      >
+        {node.specialty}
+      </div>
+    </div>
+  );
+}
+
+// ─── Unavailable inline note ──────────────────────────────────────────────────
+
+function Unavailable({ msg }: { msg?: string }) {
+  return (
+    <div
+      className="text-xs py-4 text-center"
+      style={{ color: "var(--text-secondary)", opacity: 0.6 }}
+    >
+      {msg ?? "Unavailable"}
+    </div>
+  );
+}
 
 // ─── Quality Bar ─────────────────────────────────────────────────────────────
 
@@ -90,7 +168,7 @@ export default function DatasetsPage() {
   const [data, setData] = useState<DatasetsResponse | null>(null);
   const [cohorts, setCohorts] = useState<DatasetCohort[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [dataErr, setDataErr] = useState<string | null>(null);
 
   useEffect(() => {
     getDatasets()
@@ -99,7 +177,7 @@ export default function DatasetsPage() {
         setCohorts(res.cohorts);
       })
       .catch((err) => {
-        setError(err?.message ?? "Failed to load dataset registry");
+        setDataErr(err?.message ?? "Failed to load dataset registry");
       })
       .finally(() => setLoading(false));
   }, []);
@@ -206,6 +284,8 @@ export default function DatasetsPage() {
     );
   }
 
+  const nodes: DatasetNode[] = data?.nodes ?? [];
+
   return (
     <div className="max-w-6xl space-y-5">
       <PageHeader
@@ -218,7 +298,7 @@ export default function DatasetsPage() {
         }
       />
 
-      {error && (
+      {dataErr && (
         <div
           className="text-xs px-3 py-2 rounded-lg border"
           style={{
@@ -227,57 +307,62 @@ export default function DatasetsPage() {
             borderColor: "#f59e0b40",
           }}
         >
-          {error}
+          {dataErr}
         </div>
       )}
 
       {/* ── Stat + Node cards row ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total records StatCard with subtle teal accent */}
         <StatCard
           label="Total Accessible Records"
           value={data ? data.totalRecords.toLocaleString() : "—"}
           accent="var(--teal)"
           hint="across all nodes"
         />
-        {(data?.nodes ?? []).map((node, i) => (
-          <Card key={node.flClientId} className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-2">
-              <span
-                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                style={{ background: NODE_DOT_COLORS[i % NODE_DOT_COLORS.length] }}
-              />
-              <span
-                className="text-xs font-semibold truncate"
-                style={{ color: "var(--text-primary)" }}
+
+        {/* Figma-matched node cards */}
+        {nodes.length === 0 && dataErr ? (
+          // If fetch failed, show 3 placeholder slots
+          <>
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="rounded-xl border p-4 flex items-center justify-center"
+                style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
               >
-                {node.displayName}
-              </span>
-            </div>
-            <div
-              className="text-2xl font-bold tabular-nums"
-              style={{ color: "var(--text-primary)" }}
-            >
-              {node.totalCases.toLocaleString()}
-            </div>
-            <div className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
-              {node.specialty}
-            </div>
-          </Card>
-        ))}
+                <span
+                  className="text-xs"
+                  style={{ color: "var(--text-secondary)", opacity: 0.5 }}
+                >
+                  Unavailable
+                </span>
+              </div>
+            ))}
+          </>
+        ) : (
+          nodes.map((node, i) => (
+            <NodeCard key={node.flClientId} node={node} colorIdx={i} />
+          ))
+        )}
       </div>
 
       {/* ── Data Quality Index ── */}
       <Panel title="Data Quality Index" subtitle="Computed across harmonized cohorts">
-        <div className="space-y-4 pt-1">
-          <QualityBar
-            label="Annotation Completeness"
-            pct={data ? (data.dataQuality.annotationCompleteness * 100).toFixed(0) : "0"}
-          />
-          <QualityBar
-            label="DICOM Header Integrity"
-            pct={data ? (data.dataQuality.dicomIntegrity * 100).toFixed(1) : "0"}
-          />
-        </div>
+        {dataErr ? (
+          <Unavailable msg={dataErr} />
+        ) : (
+          <div className="space-y-4 pt-1">
+            <QualityBar
+              label="Annotation Completeness"
+              pct={data ? (data.dataQuality.annotationCompleteness * 100).toFixed(0) : "0"}
+            />
+            <QualityBar
+              label="DICOM Header Integrity"
+              pct={data ? (data.dataQuality.dicomIntegrity * 100).toFixed(1) : "0"}
+            />
+          </div>
+        )}
       </Panel>
 
       {/* ── Cohort filter chips ── */}
@@ -295,18 +380,24 @@ export default function DatasetsPage() {
 
       {/* ── Available Cohorts table ── */}
       <Panel title="Available Cohorts">
-        <DataTable<DatasetCohort>
-          columns={cohortCols}
-          rows={cohorts}
-          getRowKey={(row, i) => `${row.designation}-${i}`}
-          empty="No cohorts found"
-        />
-        <p
-          className="mt-3 text-[11px]"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          Simulated actions — demo, not saved
-        </p>
+        {dataErr ? (
+          <Unavailable msg={dataErr} />
+        ) : (
+          <>
+            <DataTable<DatasetCohort>
+              columns={cohortCols}
+              rows={cohorts}
+              getRowKey={(row, i) => `${row.designation}-${i}`}
+              empty="No cohorts found"
+            />
+            <p
+              className="mt-3 text-[11px]"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Simulated actions — demo, not saved
+            </p>
+          </>
+        )}
       </Panel>
     </div>
   );

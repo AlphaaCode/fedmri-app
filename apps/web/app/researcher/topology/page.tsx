@@ -16,6 +16,19 @@ import {
   SystemLogEvent,
 } from "@/lib/researcher-api";
 
+// ─── Unavailable inline note ──────────────────────────────────────────────────
+
+function Unavailable({ msg }: { msg?: string }) {
+  return (
+    <div
+      className="text-xs py-4 text-center"
+      style={{ color: "var(--text-secondary)", opacity: 0.6 }}
+    >
+      {msg ?? "Unavailable"}
+    </div>
+  );
+}
+
 // ─── Consensus Stream Event Chip ──────────────────────────────────────────────
 
 function severityColor(severity: string): { bg: string; color: string; border: string } {
@@ -153,7 +166,7 @@ function NodeInspector({
         style={{ borderColor: "var(--border)" }}
       >
         {[
-          { label: "Total Scans", value: String(node.totalCases) },
+          { label: "Total Scans", value: node.totalCases.toLocaleString() },
           {
             label: "Recent Δw (gradient)",
             value:
@@ -206,20 +219,30 @@ export default function TopologyPage() {
   const [topology, setTopology] = useState<TopologyResponse | null>(null);
   const [logEvents, setLogEvents] = useState<SystemLogEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [topoErr, setTopoErr] = useState<string | null>(null);
+  const [logsErr, setLogsErr] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [auditNote, setAuditNote] = useState(false);
 
   useEffect(() => {
-    Promise.all([getTopology(), getSystemLogs({ limit: 6 })])
-      .then(([topo, logs]) => {
-        setTopology(topo);
-        setLogEvents(logs.events);
-      })
-      .catch((err) => {
-        setError(err?.message ?? "Failed to load topology data");
-      })
-      .finally(() => setLoading(false));
+    Promise.allSettled([
+      getTopology(),
+      getSystemLogs({ limit: 6 }),
+    ]).then(([topoRes, logsRes]) => {
+      if (topoRes.status === "fulfilled") {
+        setTopology(topoRes.value);
+      } else {
+        setTopoErr(topoRes.reason?.message ?? "Topology data unavailable");
+      }
+
+      if (logsRes.status === "fulfilled") {
+        setLogEvents(logsRes.value.events);
+      } else {
+        setLogsErr(logsRes.reason?.message ?? "Consensus stream unavailable");
+      }
+
+      setLoading(false);
+    });
   }, []);
 
   const selectedNode =
@@ -254,19 +277,6 @@ export default function TopologyPage() {
           ) : undefined
         }
       />
-
-      {error && (
-        <div
-          className="text-xs px-3 py-2 rounded-lg border"
-          style={{
-            color: "#f59e0b",
-            background: "#f59e0b10",
-            borderColor: "#f59e0b40",
-          }}
-        >
-          {error}
-        </div>
-      )}
 
       {/* ── Stat bar ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -306,7 +316,9 @@ export default function TopologyPage() {
       <div className="grid lg:grid-cols-[1fr_320px] gap-5">
         {/* Topology diagram */}
         <Panel title="Federated Network">
-          {topology ? (
+          {topoErr ? (
+            <Unavailable msg={topoErr} />
+          ) : topology ? (
             <div>
               <NetworkDiagram
                 topology={topology}
@@ -348,7 +360,9 @@ export default function TopologyPage() {
         title="Consensus Stream"
         subtitle="Recent system events across the federated network"
       >
-        {logEvents.length === 0 ? (
+        {logsErr ? (
+          <Unavailable msg={logsErr} />
+        ) : logEvents.length === 0 ? (
           <div
             className="text-xs py-4 text-center"
             style={{ color: "var(--text-secondary)" }}

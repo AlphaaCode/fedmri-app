@@ -21,36 +21,77 @@ import {
   ModelVersion,
 } from "@/lib/researcher-api";
 
+// ─── Small inline "section unavailable" note ──────────────────────────────────
+
+function Unavailable({ msg }: { msg?: string }) {
+  return (
+    <div
+      className="text-xs py-4 text-center"
+      style={{ color: "var(--text-secondary)", opacity: 0.6 }}
+    >
+      {msg ?? "Unavailable"}
+    </div>
+  );
+}
+
 export default function ResearcherHome() {
   usePortalTitle("MRI Federated Core");
 
   const [overview, setOverview] = useState<ResearcherOverview | null>(null);
-  const [trainingRounds, setTrainingRounds] = useState<TrainingRound[]>([]);
-  const [modelVersions, setModelVersions] = useState<ModelVersion[]>([]);
+  const [trainingRounds, setTrainingRounds] = useState<TrainingRound[] | null>(null);
+  const [modelVersions, setModelVersions] = useState<ModelVersion[] | null>(null);
   const [history, setHistory] = useState<any>(null);
   const [confusion, setConfusion] = useState<any>(null);
+
+  // Per-section error flags (null = ok or loading, string = error message)
+  const [overviewErr, setOverviewErr] = useState<string | null>(null);
+  const [logErr, setLogErr] = useState<string | null>(null);
+  const [versionsErr, setVersionsErr] = useState<string | null>(null);
+  const [historyErr, setHistoryErr] = useState<string | null>(null);
+  const [confusionErr, setConfusionErr] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([
+    Promise.allSettled([
       getOverview(),
       getTrainingLog(1, 20),
       getModelVersions(),
       getModelHistory(),
       getConfusionMatrix(),
-    ])
-      .then(([ov, log, mv, hist, conf]) => {
-        setOverview(ov);
-        setTrainingRounds(log.rounds);
-        setModelVersions(mv.versions);
-        setHistory(hist);
-        setConfusion(conf);
-      })
-      .catch((err) => {
-        setError(err?.message ?? "Failed to load model performance data");
-      })
-      .finally(() => setLoading(false));
+    ]).then(([ovRes, logRes, mvRes, histRes, confRes]) => {
+      if (ovRes.status === "fulfilled") {
+        setOverview(ovRes.value);
+      } else {
+        setOverviewErr(ovRes.reason?.message ?? "Overview unavailable");
+      }
+
+      if (logRes.status === "fulfilled") {
+        setTrainingRounds(logRes.value.rounds);
+      } else {
+        setLogErr(logRes.reason?.message ?? "Training log unavailable");
+      }
+
+      if (mvRes.status === "fulfilled") {
+        setModelVersions(mvRes.value.versions);
+      } else {
+        setVersionsErr(mvRes.reason?.message ?? "Model versions unavailable");
+      }
+
+      if (histRes.status === "fulfilled") {
+        setHistory(histRes.value);
+      } else {
+        setHistoryErr(histRes.reason?.message ?? "Convergence chart unavailable");
+      }
+
+      if (confRes.status === "fulfilled") {
+        setConfusion(confRes.value);
+      } else {
+        setConfusionErr(confRes.reason?.message ?? "Confusion matrix unavailable");
+      }
+
+      setLoading(false);
+    });
   }, []);
 
   const trainingCols: Column<TrainingRound>[] = [
@@ -143,26 +184,13 @@ export default function ResearcherHome() {
         }
       />
 
-      {error && (
-        <div
-          className="text-xs px-3 py-2 rounded-lg border"
-          style={{
-            color: "#f59e0b",
-            background: "#f59e0b10",
-            borderColor: "#f59e0b40",
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      {/* Stat cards */}
+      {/* Stat cards — degrade gracefully if overview failed */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Model Version"
-          value={overview ? `v${overview.modelVersion}` : "—"}
+          value={overview ? `v${overview.modelVersion}` : overviewErr ? "—" : "—"}
           accent="var(--teal)"
-          hint={overview?.strategy}
+          hint={overview?.strategy ?? (overviewErr ? "Unavailable" : undefined)}
         />
         <StatCard
           label="F1 Macro"
@@ -177,11 +205,7 @@ export default function ResearcherHome() {
         />
         <StatCard
           label="Accuracy"
-          value={
-            overview
-              ? `${(overview.accuracy * 100).toFixed(0)}%`
-              : "—"
-          }
+          value={overview ? `${(overview.accuracy * 100).toFixed(0)}%` : "—"}
           accent="var(--blue-accent)"
         />
         <StatCard
@@ -197,6 +221,8 @@ export default function ResearcherHome() {
         <Panel title="Convergence Metrics">
           {history ? (
             <ConvergenceChart data={history} />
+          ) : historyErr ? (
+            <Unavailable msg={historyErr} />
           ) : (
             <div
               className="h-64 flex items-center justify-center text-xs"
@@ -212,6 +238,8 @@ export default function ResearcherHome() {
         >
           {confusion ? (
             <ConfusionMatrix data={confusion} />
+          ) : confusionErr ? (
+            <Unavailable msg={confusionErr} />
           ) : (
             <div
               className="h-64 flex items-center justify-center text-xs"
@@ -225,64 +253,72 @@ export default function ResearcherHome() {
 
       {/* Training log */}
       <Panel title="Training Log">
-        <DataTable<TrainingRound>
-          columns={trainingCols}
-          rows={trainingRounds}
-          getRowKey={(r, i) => `${r.roundNumber}-${i}`}
-          empty="No training rounds found"
-        />
+        {logErr ? (
+          <Unavailable msg={logErr} />
+        ) : (
+          <DataTable<TrainingRound>
+            columns={trainingCols}
+            rows={trainingRounds ?? []}
+            getRowKey={(r, i) => `${r.roundNumber}-${i}`}
+            empty="No training rounds found"
+          />
+        )}
       </Panel>
 
       {/* Model versions */}
       <Panel title="Model Versions">
-        <div className="flex gap-3 overflow-x-auto pb-1">
-          {modelVersions.length === 0 ? (
-            <span
-              className="text-xs"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              No versions found
-            </span>
-          ) : (
-            modelVersions.map((mv, i) => (
-              <Card
-                key={`${mv.hash}-${i}`}
-                className="min-w-[160px] flex-shrink-0"
+        {versionsErr ? (
+          <Unavailable msg={versionsErr} />
+        ) : (
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {(modelVersions ?? []).length === 0 ? (
+              <span
+                className="text-xs"
+                style={{ color: "var(--text-secondary)" }}
               >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span
-                    className="text-base font-bold"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    v{mv.modelVersion}
-                  </span>
-                  <StatusBadge
-                    status={mv.status === "active" ? "active" : "pending"}
-                    label={mv.status === "active" ? "Active" : "Archived"}
-                  />
-                </div>
-                <div
-                  className="font-mono text-[10px] truncate mb-1.5"
-                  style={{ color: "var(--text-secondary)" }}
-                  title={mv.hash}
+                No versions found
+              </span>
+            ) : (
+              (modelVersions ?? []).map((mv, i) => (
+                <Card
+                  key={`${mv.hash}-${i}`}
+                  className="min-w-[160px] flex-shrink-0"
                 >
-                  {mv.hash}
-                </div>
-                <div className="text-xs">
-                  <span style={{ color: "var(--text-secondary)" }}>F1 </span>
-                  <span
-                    className="font-semibold tabular-nums"
-                    style={{ color: "var(--teal)" }}
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span
+                      className="text-base font-bold"
+                      style={{ color: "var(--text-primary)" }}
+                    >
+                      v{mv.modelVersion}
+                    </span>
+                    <StatusBadge
+                      status={mv.status === "active" ? "active" : "pending"}
+                      label={mv.status === "active" ? "Active" : "Archived"}
+                    />
+                  </div>
+                  <div
+                    className="font-mono text-[10px] truncate mb-1.5"
+                    style={{ color: "var(--text-secondary)" }}
+                    title={mv.hash}
                   >
-                    {typeof mv.f1Macro === "number"
-                      ? mv.f1Macro.toFixed(2)
-                      : String(mv.f1Macro)}
-                  </span>
-                </div>
-              </Card>
-            ))
-          )}
-        </div>
+                    {mv.hash}
+                  </div>
+                  <div className="text-xs">
+                    <span style={{ color: "var(--text-secondary)" }}>F1 </span>
+                    <span
+                      className="font-semibold tabular-nums"
+                      style={{ color: "var(--teal)" }}
+                    >
+                      {typeof mv.f1Macro === "number"
+                        ? mv.f1Macro.toFixed(2)
+                        : String(mv.f1Macro)}
+                    </span>
+                  </div>
+                </Card>
+              ))
+            )}
+          </div>
+        )}
       </Panel>
     </div>
   );

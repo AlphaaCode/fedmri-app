@@ -19,6 +19,19 @@ import {
 
 type Severity = "ALL" | "INFO" | "WARN" | "ERROR";
 
+// ─── Unavailable inline note ──────────────────────────────────────────────────
+
+function Unavailable({ msg }: { msg?: string }) {
+  return (
+    <div
+      className="text-xs py-4 text-center"
+      style={{ color: "var(--text-secondary)", opacity: 0.6 }}
+    >
+      {msg ?? "Unavailable"}
+    </div>
+  );
+}
+
 // ─── Severity chip styling ────────────────────────────────────────────────────
 
 function severityStyle(severity: string): { bg: string; color: string; border: string } {
@@ -76,7 +89,6 @@ function FilterChip({
 
 function escapeCSVField(value: string | number | null | undefined): string {
   const str = value == null ? "" : String(value);
-  // Wrap in double-quotes and double any internal double-quotes
   return `"${str.replace(/"/g, '""')}"`;
 }
 
@@ -121,25 +133,33 @@ export default function SystemLogsPage() {
   const [logsData, setLogsData] = useState<SystemLogsResponse | null>(null);
   const [overview, setOverview] = useState<ResearcherOverview | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [logsErr, setLogsErr] = useState<string | null>(null);
+  const [overviewErr, setOverviewErr] = useState<string | null>(null);
 
   // Reload logs when severity filter changes
   useEffect(() => {
     setLoading(true);
-    setError(null);
+    setLogsErr(null);
+    setOverviewErr(null);
 
-    Promise.all([
+    Promise.allSettled([
       getSystemLogs({ limit: 100, severity: severity === "ALL" ? undefined : severity }),
       getOverview(),
-    ])
-      .then(([logs, ov]) => {
-        setLogsData(logs);
-        setOverview(ov);
-      })
-      .catch((err) => {
-        setError(err?.message ?? "Failed to load system logs");
-      })
-      .finally(() => setLoading(false));
+    ]).then(([logsRes, ovRes]) => {
+      if (logsRes.status === "fulfilled") {
+        setLogsData(logsRes.value);
+      } else {
+        setLogsErr(logsRes.reason?.message ?? "System logs unavailable");
+      }
+
+      if (ovRes.status === "fulfilled") {
+        setOverview(ovRes.value);
+      } else {
+        setOverviewErr(ovRes.reason?.message ?? "Overview unavailable");
+      }
+
+      setLoading(false);
+    });
   }, [severity]);
 
   const events = logsData?.events ?? [];
@@ -248,32 +268,31 @@ export default function SystemLogsPage() {
         }
       />
 
-      {error && (
-        <div
-          className="text-xs px-3 py-2 rounded-lg border"
-          style={{
-            color: "#f59e0b",
-            background: "#f59e0b10",
-            borderColor: "#f59e0b40",
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      {/* ── 3 Stat cards ── */}
+      {/* ── 3 Stat cards — each degrades independently ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           label="Global Gradient Aggregation"
-          value={overview ? String(overview.totalRounds) : "—"}
+          value={
+            overview
+              ? String(overview.totalRounds)
+              : overviewErr
+              ? "—"
+              : "—"
+          }
           accent="var(--teal)"
-          hint="rounds processed"
+          hint={overviewErr ? "Unavailable" : "rounds processed"}
         />
         <StatCard
           label="Network Latency (Avg)"
-          value={latencyAvg === "—" ? "—" : `${latencyAvg}ms`}
+          value={
+            logsErr
+              ? "—"
+              : latencyAvg === "—"
+              ? "—"
+              : `${latencyAvg}ms`
+          }
           accent="var(--blue-accent)"
-          hint="across active nodes"
+          hint={logsErr ? "Unavailable" : "across active nodes"}
         />
         <StatCard
           label="Security Anomalies"
@@ -306,7 +325,7 @@ export default function SystemLogsPage() {
         title="System Event Log"
         subtitle={
           logsData
-            ? `${logsData.total} total events${severity !== "ALL" ? ` · filtered: ${severity}` : ""}`
+            ? `${logsData.total.toLocaleString()} total events${severity !== "ALL" ? ` · filtered: ${severity}` : ""}`
             : undefined
         }
         action={
@@ -337,21 +356,27 @@ export default function SystemLogsPage() {
           </div>
         }
       >
-        {loading && logsData ? (
-          <div
-            className="text-xs py-2 text-center"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Refreshing…
-          </div>
-        ) : null}
+        {logsErr ? (
+          <Unavailable msg={logsErr} />
+        ) : (
+          <>
+            {loading && logsData ? (
+              <div
+                className="text-xs py-2 text-center"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Refreshing…
+              </div>
+            ) : null}
 
-        <DataTable<SystemLogEvent>
-          columns={columns}
-          rows={events}
-          getRowKey={(row, i) => `${row.id}-${i}`}
-          empty="No events found for the selected severity filter"
-        />
+            <DataTable<SystemLogEvent>
+              columns={columns}
+              rows={events}
+              getRowKey={(row, i) => `${row.id}-${i}`}
+              empty="No events found for the selected severity filter"
+            />
+          </>
+        )}
       </Panel>
     </div>
   );
