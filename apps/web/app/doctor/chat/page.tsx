@@ -1,7 +1,7 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { ChatPanel } from "@/components/ChatPanel";
 import { apiFetch } from "@/lib/api";
 
@@ -12,7 +12,7 @@ const DOCTOR_STARTERS = [
   "How did the FL round improve this prediction?",
 ];
 
-export default function DoctorChatPage() {
+function DoctorChatInner() {
   const params = useSearchParams();
   const caseId = params.get("caseId") ?? undefined;
   const [ctx, setCtx] = useState<{ subtype: string; confidence: number; modelVersion: number } | null>(null);
@@ -34,5 +34,14 @@ export default function DoctorChatPage() {
       </div>
       <ChatPanel role="doctor" caseId={caseId} starters={DOCTOR_STARTERS} caseContext={ctx} />
     </div>
+  );
+}
+
+// useSearchParams() must be inside a Suspense boundary for Next 16 static prerendering.
+export default function DoctorChatPage() {
+  return (
+    <Suspense fallback={null}>
+      <DoctorChatInner />
+    </Suspense>
   );
 }
