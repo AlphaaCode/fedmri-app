@@ -10,7 +10,7 @@ export function Panel({ title, subtitle, action, children, className }: {
 }) {
   return (
     <div className={cn("rounded-xl border p-4", className)} style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
-      {(title || action) && (
+      {(title || subtitle || action) && (
         <div className="flex items-start justify-between mb-3">
           <div>
             {title && <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{title}</div>}
