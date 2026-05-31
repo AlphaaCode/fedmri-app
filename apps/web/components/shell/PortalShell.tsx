@@ -13,13 +13,8 @@ export interface FooterItem { label: string; icon: LucideIcon; href?: string; on
 export interface ShellIdentity { title: string; subtitle?: string; status?: "ok" | "active" | "idle"; icon?: ReactNode; }
 
 function BrandMark() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <circle cx="9" cy="9" r="4" stroke="var(--teal)" strokeWidth="1.5" />
-      <circle cx="9" cy="9" r="1.5" fill="var(--teal)" />
-      <path d="M2 9h2M14 9h2M9 2v2M9 14v2" stroke="var(--teal)" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/logo-mark.png" alt="FedMRI" className="w-full h-full object-contain" />;
 }
 
 export function PortalShell({ identity, nav, footerNav, primaryAction, headerStatus, children }: {
@@ -53,7 +48,7 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
     <div className="min-h-screen flex">
       <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
         <div className="px-4 py-4 flex items-center gap-3 border-b" style={{ borderColor: "var(--border)" }}>
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--teal-glow)", border: "1px solid #2dd4bf40" }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 overflow-hidden" style={{ background: "var(--bg-card2)", border: "1px solid var(--border)" }}>
             {identity.icon ?? <BrandMark />}
           </div>
           <div className="min-w-0">

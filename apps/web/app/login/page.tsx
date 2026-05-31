@@ -54,20 +54,10 @@ export default function LoginPage() {
         className="relative w-full max-w-sm rounded-2xl border p-8 space-y-6"
         style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
       >
-        {/* Logo mark */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ background: "var(--teal-glow)", border: "1px solid var(--teal)40" }}>
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="9" r="4" stroke="var(--teal)" strokeWidth="1.5"/>
-              <circle cx="9" cy="9" r="1.5" fill="var(--teal)"/>
-              <path d="M2 9h2M14 9h2M9 2v2M9 14v2" stroke="var(--teal)" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <div>
-            <div className="text-base font-bold" style={{ color: "var(--text-primary)" }}>FedMRI</div>
-            <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Doctor portal</div>
-          </div>
+        {/* Logo */}
+        <div className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-full.png" alt="FedMRI" className="h-11 w-auto object-contain" />
         </div>
 
         <div>
