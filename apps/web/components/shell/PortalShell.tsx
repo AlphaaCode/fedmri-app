@@ -18,7 +18,7 @@ function BrandMark() {
 }
 
 const ROLE_HOME: Record<string, string> = {
-  DOCTOR: "/doctor/scan",
+  DOCTOR: "/doctor",
   PATIENT: "/patient/chat",
   RESEARCHER: "/researcher",
 };
@@ -37,6 +37,14 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
   const token = useAuthStore((s) => s.token);
   const user = useAuthStore((s) => s.user);
   const chromeTitle = usePortalChrome((s) => s.title);
+
+  // Longest-matching-href wins → index items (/doctor, /researcher) no longer
+  // read active on every sub-route.
+  const activeHref = nav.reduce<string | null>((best, item) => {
+    const matches = pathname === item.href || (pathname?.startsWith(item.href + "/") ?? false);
+    if (!matches) return best;
+    return !best || item.href.length > best.length ? item.href : best;
+  }, null);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -85,7 +93,7 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {nav.map((item) => {
-            const active = pathname === item.href || pathname?.startsWith(item.href + "/");
+            const active = item.href === activeHref;
             const Icon = item.icon;
             return (
               <Link

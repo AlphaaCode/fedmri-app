@@ -22,7 +22,7 @@ export default function LoginPage() {
       const { accessToken, user } = await apiLogin(email, password);
       setAuth(user, accessToken);
       if (user.role === "DOCTOR") {
-        router.replace("/doctor/scan");
+        router.replace("/doctor");
       } else if (user.role === "PATIENT") {
         router.replace("/patient/chat");
       } else if (user.role === "RESEARCHER") {
