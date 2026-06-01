@@ -10,13 +10,19 @@ import { StatCard } from "@/components/ui/StatCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { DataTable, type Column } from "@/components/ui/DataTable";
-import { FlTopology } from "@/components/FlTopology";
+import { NetworkPerformanceCard } from "@/components/doctor/NetworkPerformanceCard";
 import { AttentionOverlay } from "@/components/AttentionOverlay";
 import { DoctorSiloBanner } from "@/components/doctor/DoctorSiloBanner";
 import { getCases, getModelComparison, type CasesResponse, type ModelComparison } from "@/lib/doctor-api";
 import { SUBTYPE_COLOR, type CaseResult, type Subtype } from "@/lib/types";
 
-const shortId = (id: string) => `#FED-${id.slice(0, 6).toUpperCase()}`;
+const shortId = (id: string) => `#FED-${id.slice(-6).toUpperCase()}`;
+
+function StatusCell({ status }: { status?: string }) {
+  if (status === "VALIDATED") return <StatusBadge status="validated" />;
+  if (status === "DISPUTED") return <StatusBadge status="disputed" />;
+  return <StatusBadge status="pending" label="Awaiting review" />;
+}
 
 export default function DoctorDashboardPage() {
   usePortalTitle("Dashboard");
@@ -39,7 +45,7 @@ export default function DoctorDashboardPage() {
     { key: "id", header: "Case", render: (r) => <span className="font-mono text-xs">{shortId(r.id)}</span> },
     { key: "subtype", header: "Subtype", render: (r) => <span style={{ color: SUBTYPE_COLOR[r.predictedSubtype as Subtype] }}>{r.predictedSubtype}</span> },
     { key: "conf", header: "AI Confidence", align: "right", render: (r) => `${Math.round(r.confidence * 100)}%` },
-    { key: "status", header: "Status", render: () => <StatusBadge status="pending" label="Awaiting review" /> },
+    { key: "status", header: "Status", render: (r) => <StatusCell status={r.status} /> },
     { key: "go", header: "", align: "right", render: (r) => <Link href={`/doctor/chat?caseId=${r.id}`} className="text-xs" style={{ color: "var(--teal)" }}>Discuss →</Link> },
   ];
 
@@ -58,7 +64,26 @@ export default function DoctorDashboardPage() {
         <Panel title="Recent Studies" action={<Link href="/doctor/history" className="text-xs" style={{ color: "var(--teal)" }}>View all →</Link>}>
           <DataTable columns={columns} rows={recent} getRowKey={(r) => r.id} empty="No studies yet — upload a scan to begin." />
         </Panel>
-        <FlTopology />
+        <div className="space-y-4">
+          <NetworkPerformanceCard />
+          <Panel title="Notifications">
+            <div className="space-y-2.5 text-xs">
+              {[
+                { c: "var(--teal)", t: "Training cycle complete", d: "Global model advanced to v10 (F1 0.41)." },
+                { c: "var(--blue-accent)", t: "Consensus verified", d: "All 3 nodes synchronized · 0 bytes patient data." },
+                { c: "var(--text-secondary)", t: "System nominal", d: "Aggregator online · 3 / 3 nodes reporting." },
+              ].map((n, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ background: n.c }} />
+                  <div>
+                    <div style={{ color: "var(--text-primary)" }}>{n.t}</div>
+                    <div style={{ color: "var(--text-secondary)" }}>{n.d}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        </div>
       </div>
 
       <div>

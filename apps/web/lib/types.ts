@@ -76,6 +76,7 @@ export interface CaseResult {
   confidence: number;
   probs: number[];
   modelVersion: number;
+  status?: "PENDING" | "VALIDATED" | "DISPUTED";
   hospitalId?: string | null;
   userId: string;
   createdAt: string;

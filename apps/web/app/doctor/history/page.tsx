@@ -13,7 +13,7 @@ import { getCases, type CasesResponse } from "@/lib/doctor-api";
 import { SUBTYPES, SUBTYPE_COLOR, type CaseResult, type Subtype } from "@/lib/types";
 
 const PAGE_SIZE = 10;
-const shortId = (id: string) => `#FED-${id.slice(0, 6).toUpperCase()}`;
+const shortId = (id: string) => `#FED-${id.slice(-6).toUpperCase()}`;
 
 export default function MedicalHistoryPage() {
   usePortalTitle("Medical History");

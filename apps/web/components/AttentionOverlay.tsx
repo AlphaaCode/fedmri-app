@@ -199,53 +199,52 @@ export function AttentionOverlay({ caseId }: { caseId: string }) {
         </button>
       </div>
 
-      {error ? (
-        <div className="text-xs rounded-lg p-2" style={{ background: "#fb718515", color: "#fb7185" }}>{error}</div>
-      ) : (
-        <>
-          <div
-            className="relative mx-auto overflow-hidden rounded-lg"
-            style={{ width: SIZE, height: SIZE, background: "#050a0e" }}
-          >
-            <canvas ref={bgRef} className="absolute inset-0" style={{ width: SIZE, height: SIZE }} />
-            <canvas
-              ref={heatRef}
-              className="absolute inset-0"
-              style={{ width: SIZE, height: SIZE, mixBlendMode: "screen", transition: "opacity 0.2s" }}
-            />
-            {loading && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-xs px-3 py-1.5 rounded-full" style={{ background: "rgba(0,0,0,0.7)", color: "var(--teal)" }}>
-                  Loading heatmap…
-                </div>
-              </div>
-            )}
-            {/* Scale bar */}
-            <div className="absolute bottom-2 right-2 flex items-center gap-1">
-              <div className="w-12 h-1 rounded" style={{
-                background: "linear-gradient(to right, #00f, #0ff, #0f0, #ff0, #f00)"
-              }} />
-              <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.5)" }}>activation</span>
+      <div
+        className="relative mx-auto overflow-hidden rounded-lg"
+        style={{ width: SIZE, height: SIZE, background: "#050a0e" }}
+      >
+        <canvas ref={bgRef} className="absolute inset-0" style={{ width: SIZE, height: SIZE }} />
+        <canvas
+          ref={heatRef}
+          className="absolute inset-0"
+          style={{ width: SIZE, height: SIZE, mixBlendMode: "screen", transition: "opacity 0.2s" }}
+        />
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-xs px-3 py-1.5 rounded-full" style={{ background: "rgba(0,0,0,0.7)", color: "var(--teal)" }}>
+              Loading heatmap…
             </div>
           </div>
-
-          <div className="mt-3 flex items-center gap-3">
-            <span className="text-xs w-14 shrink-0" style={{ color: "var(--text-secondary)" }}>Opacity</span>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={opacity}
-              onChange={(e) => setOpacity(parseInt(e.target.value, 10))}
-              disabled={!show}
-              className="flex-1 accent-teal-400"
-            />
-            <span className="text-xs tabular-nums w-8 text-right" style={{ color: "var(--text-secondary)" }}>
-              {opacity}%
-            </span>
+        )}
+        {!loading && error && (
+          <div className="absolute bottom-2 left-2 text-[10px] px-2 py-1 rounded" style={{ background: "rgba(0,0,0,0.6)", color: "var(--text-secondary)" }}>
+            Heatmap unavailable for this scan
           </div>
-        </>
-      )}
+        )}
+        {/* Scale bar */}
+        <div className="absolute bottom-2 right-2 flex items-center gap-1">
+          <div className="w-12 h-1 rounded" style={{
+            background: "linear-gradient(to right, #00f, #0ff, #0f0, #ff0, #f00)"
+          }} />
+          <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.5)" }}>activation</span>
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center gap-3">
+        <span className="text-xs w-14 shrink-0" style={{ color: "var(--text-secondary)" }}>Opacity</span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={opacity}
+          onChange={(e) => setOpacity(parseInt(e.target.value, 10))}
+          disabled={!show || !!error}
+          className="flex-1 accent-teal-400"
+        />
+        <span className="text-xs tabular-nums w-8 text-right" style={{ color: "var(--text-secondary)" }}>
+          {opacity}%
+        </span>
+      </div>
     </motion.div>
   );
 }
