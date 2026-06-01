@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { usePortalTitle } from "@/lib/use-portal-title";
 import { apiFetch } from "@/lib/api";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Panel } from "@/components/ui/Panel";
+import { StatCard } from "@/components/ui/StatCard";
 import { ConvergenceChart } from "@/components/ConvergenceChart";
 import { PerClassChart } from "@/components/PerClassChart";
 import { ConfusionMatrix } from "@/components/ConfusionMatrix";
@@ -13,6 +16,7 @@ interface Confusion { subtypes: string[]; matrix: any; }
 interface Compare { centralized: { f1Macro: number }; fedprox: { f1Macro: number }; gap: number; privacyCost: { patientsProtected: number }; totalCases: number; }
 
 export default function ModelMetricsPage() {
+  usePortalTitle("Model Performance");
   const [history, setHistory] = useState<History | null>(null);
   const [perClass, setPerClass] = useState<PerClass | null>(null);
   const [confusion, setConfusion] = useState<Confusion | null>(null);
@@ -36,54 +40,41 @@ export default function ModelMetricsPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>Model performance</h1>
-        <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-          Federated vs centralized convergence, per-class F1, and confusion matrix
-        </p>
-      </div>
+      <PageHeader title="Model performance" description="Federated vs centralized convergence, per-class F1, and confusion matrix" />
 
-      {/* Comparison card */}
       {compare && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-3"
-        >
-          <Stat label="Centralized F1" value={compare.centralized.f1Macro.toFixed(2)} color="#f59e0b" />
-          <Stat label="FedProx F1" value={compare.fedprox.f1Macro.toFixed(2)} color="#2dd4bf" />
-          <Stat
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <StatCard label="Centralized F1" value={compare.centralized.f1Macro.toFixed(2)} accent="#f59e0b" />
+          <StatCard label="FedProx F1" value={compare.fedprox.f1Macro.toFixed(2)} accent="#2dd4bf" />
+          <StatCard
             label="Privacy gap"
             value={`${compare.gap >= 0 ? "+" : ""}${compare.gap.toFixed(2)}`}
-            color={compare.gap < 0 ? "#fb7185" : "#2dd4bf"}
+            accent={compare.gap < 0 ? "#fb7185" : "#2dd4bf"}
             hint={`Centralized − FedProx: ${Math.abs(compare.gap).toFixed(2)} F1 lower`}
           />
-          <Stat
+          <StatCard
             label="Patients protected"
             value={compare.privacyCost.patientsProtected.toString()}
-            color="#60a5fa"
+            accent="#60a5fa"
             hint="Raw MRI volumes never shared"
           />
-        </motion.div>
+        </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Convergence */}
         <Panel title="Convergence curve" subtitle="F1 macro over FL rounds (Centralized dashed = upper bound with full data access)">
-          {history ? <ConvergenceChart data={history} /> : <Skeleton />}
+          {history ? <ConvergenceChart data={history} /> : <div className="h-[260px] rounded skeleton" />}
         </Panel>
 
-        {/* Per-class */}
         <Panel title="Per-class F1" subtitle="How each strategy performs across subtypes">
-          {perClass ? <PerClassChart data={perClass} /> : <Skeleton />}
+          {perClass ? <PerClassChart data={perClass} /> : <div className="h-[260px] rounded skeleton" />}
         </Panel>
 
-        {/* Confusion */}
         <Panel title="Confusion matrix" subtitle="True (corrected) vs predicted subtype — diagonal = correct" className="lg:col-span-2">
-          {confusion ? <ConfusionMatrix data={confusion} /> : <Skeleton />}
+          {confusion ? <ConfusionMatrix data={confusion} /> : <div className="h-[260px] rounded skeleton" />}
         </Panel>
       </div>
 
-      {/* Privacy framing */}
       {compare && (
         <div className="rounded-xl p-3 text-xs" style={{ background: "var(--teal-glow)", border: "1px solid var(--teal)30", color: "#99f6e4" }}>
           <strong style={{ color: "var(--teal)" }}>Privacy cost of centralization:</strong>{" "}
@@ -94,34 +85,4 @@ export default function ModelMetricsPage() {
       )}
     </div>
   );
-}
-
-function Stat({ label, value, color, hint }: { label: string; value: string; color: string; hint?: string }) {
-  return (
-    <div className="rounded-xl p-4 border" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
-      <div className="text-[11px] uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>{label}</div>
-      <div className="text-2xl font-bold mt-1 tabular-nums" style={{ color }}>{value}</div>
-      {hint && <div className="text-[11px] mt-1" style={{ color: "var(--text-secondary)" }}>{hint}</div>}
-    </div>
-  );
-}
-
-function Panel({ title, subtitle, className, children }: { title: string; subtitle?: string; className?: string; children: React.ReactNode }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-      className={`rounded-xl border p-4 ${className ?? ""}`}
-      style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
-      <div className="mb-3">
-        <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{title}</div>
-        {subtitle && <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>{subtitle}</div>}
-      </div>
-      {children}
-    </motion.div>
-  );
-}
-
-function Skeleton() {
-  return <div className="h-[260px] rounded skeleton" />;
 }
