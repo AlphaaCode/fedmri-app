@@ -79,3 +79,22 @@ body {
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }
+
+/* ── Accessibility: visible keyboard focus (a11y) ─────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ── Accessibility: respect the user's reduced-motion preference ──────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

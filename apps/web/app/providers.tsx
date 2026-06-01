@@ -1,6 +1,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MotionConfig } from "framer-motion";
 import { ReactNode, useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/auth-store";
 import { getSocket, disconnectSocket } from "@/lib/socket";
@@ -33,7 +34,9 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={client}>
-      <ToastProvider>{children}</ToastProvider>
+      <MotionConfig reducedMotion="user">
+        <ToastProvider>{children}</ToastProvider>
+      </MotionConfig>
     </QueryClientProvider>
   );
 }
