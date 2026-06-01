@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel } from "@/components/ui/Panel";
 import { StatCard } from "@/components/ui/StatCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { SectionLabel } from "@/components/ui/SectionLabel";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { FlTopology } from "@/components/FlTopology";
 import { AttentionOverlay } from "@/components/AttentionOverlay";
@@ -57,31 +58,29 @@ export default function DoctorDashboardPage() {
         <Panel title="Recent Studies" action={<Link href="/doctor/history" className="text-xs" style={{ color: "var(--teal)" }}>View all →</Link>}>
           <DataTable columns={columns} rows={recent} getRowKey={(r) => r.id} empty="No studies yet — upload a scan to begin." />
         </Panel>
-        <Panel title="Network Performance" subtitle={`Model v${version} · trained across 3 hospitals`}>
-          <FlTopology />
-        </Panel>
+        <FlTopology />
       </div>
 
-      {recent[0] ? (
-        <Panel title="Active Analysis" subtitle={shortId(recent[0].id)}>
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <SectionLabel>Active Analysis</SectionLabel>
+          {recent[0] && <span className="text-xs font-mono" style={{ color: "var(--text-secondary)" }}>{shortId(recent[0].id)}</span>}
+        </div>
+        {recent[0] ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AttentionOverlay caseId={recent[0].id} />
-            <div className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-              AI cross-referenced this scan against the model trained across 3 hospitals (737 cases).
-              Predicted subtype{" "}
-              <span style={{ color: SUBTYPE_COLOR[recent[0].predictedSubtype as Subtype] }}>{recent[0].predictedSubtype}</span>
-              {" "}· confidence {Math.round(recent[0].confidence * 100)}%.
+            <div className="rounded-xl border p-4 text-xs leading-relaxed" style={{ background: "var(--bg-card)", borderColor: "var(--border)", color: "var(--text-secondary)" }}>
+              AI cross-referenced this scan against the model trained across 3 hospitals ({model?.totalCases ?? 737} cases). Predicted subtype{" "}
+              <span style={{ color: SUBTYPE_COLOR[recent[0].predictedSubtype as Subtype] }}>{recent[0].predictedSubtype}</span>{" "}· confidence {Math.round(recent[0].confidence * 100)}%.
               <div className="mt-3">
                 <Link href={`/doctor/chat?caseId=${recent[0].id}`} className="text-xs px-3 py-2 rounded-lg inline-block" style={{ background: "var(--teal-glow)", color: "var(--teal)", border: "1px solid #2dd4bf40" }}>Discuss with AI assistant →</Link>
               </div>
             </div>
           </div>
-        </Panel>
-      ) : (
-        <Panel title="Active Analysis">
-          <div className="py-8 text-center text-sm" style={{ color: "var(--text-secondary)" }}>Upload a scan to begin.</div>
-        </Panel>
-      )}
+        ) : (
+          <div className="rounded-xl border p-4 py-8 text-center text-sm" style={{ background: "var(--bg-card)", borderColor: "var(--border)", color: "var(--text-secondary)" }}>Upload a scan to begin.</div>
+        )}
+      </div>
     </div>
   );
 }
