@@ -11,7 +11,6 @@ import { MedicationCard } from "@/components/MedicationCard";
 import { AttentionOverlay } from "@/components/AttentionOverlay";
 import { FlTopology } from "@/components/FlTopology";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Panel } from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import { DoctorSiloBanner } from "@/components/doctor/DoctorSiloBanner";
 import type { CaseResult } from "@/lib/types";
@@ -35,7 +34,7 @@ export default function ScanPage() {
               <motion.div key={result.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: "easeOut" }} className="space-y-4">
                 <MedicationCard subtype={result.predictedSubtype} />
                 <div className="grid md:grid-cols-2 gap-4">
-                  <PredictionCard result={result} onFeedbackSubmitted={() => {}} />
+                  <PredictionCard result={result} />
                   <AttentionOverlay caseId={result.id} />
                 </div>
                 <div className="flex justify-end gap-2">
@@ -47,9 +46,10 @@ export default function ScanPage() {
           </AnimatePresence>
         </div>
 
-        <Panel title="Federated Training" subtitle="Round fires automatically on upload">
+        <div className="space-y-2">
           <FlTopology />
-        </Panel>
+          <p className="text-xs px-1" style={{ color: "var(--text-secondary)" }}>Round fires automatically on upload</p>
+        </div>
       </div>
     </div>
   );
