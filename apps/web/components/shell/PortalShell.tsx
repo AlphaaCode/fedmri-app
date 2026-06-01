@@ -38,12 +38,16 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
   const user = useAuthStore((s) => s.user);
   const chromeTitle = usePortalChrome((s) => s.title);
 
-  // Longest-matching-href wins → index items (/doctor, /researcher) no longer
-  // read active on every sub-route.
-  const activeHref = nav.reduce<string | null>((best, item) => {
-    const matches = pathname === item.href || (pathname?.startsWith(item.href + "/") ?? false);
+  // Longest-matching-href wins across BOTH main nav and footer nav, so index
+  // items (/doctor, /researcher) no longer read active on every sub-route, and a
+  // footer route (e.g. /doctor/docs) resolves to its footer item rather than
+  // falling back to the index.
+  const activeHref = [...nav, ...(footerNav ?? [])].reduce<string | null>((best, item) => {
+    const href = item.href;
+    if (!href) return best;
+    const matches = pathname === href || (pathname?.startsWith(href + "/") ?? false);
     if (!matches) return best;
-    return !best || item.href.length > best.length ? item.href : best;
+    return !best || href.length > best.length ? href : best;
   }, null);
 
   useEffect(() => {
@@ -117,8 +121,13 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
           <div className="px-3 py-3 space-y-1 border-t" style={{ borderColor: "var(--border)" }}>
             {footerNav.map((item) => {
               const Icon = item.icon;
+              const active = item.href != null && item.href === activeHref;
               return item.href ? (
-                <Link key={item.label} href={item.href} className={footerItemClass} style={{ color: "var(--text-secondary)" }}>
+                <Link key={item.label} href={item.href} className={footerItemClass} style={{
+                  background: active ? "var(--teal-glow)" : "transparent",
+                  color: active ? "var(--teal)" : "var(--text-secondary)",
+                  border: "1px solid " + (active ? "#2dd4bf40" : "transparent"),
+                }}>
                   <Icon size={16} />{item.label}
                 </Link>
               ) : (
