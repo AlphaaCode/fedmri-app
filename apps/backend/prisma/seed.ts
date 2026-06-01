@@ -1,4 +1,4 @@
-import { PrismaClient, Role, FLStrategy, FLTrigger, PrivacyEvent } from "@prisma/client";
+import { PrismaClient, Role, FLStrategy, FLTrigger, PrivacyEvent, CaseScope, CaseStatus } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
@@ -61,6 +61,57 @@ async function main() {
   }
 
   await prisma.modelMetrics.upsert({ where:{modelVersion:10}, update:{}, create:{modelVersion:10,flRound:10,accuracy:0.55,f1Macro:0.41,f1PerClass:{lumA:0.71,lumB:0.29,her2:0.11,tn:0.21},strategy:"FedProx"} });
+
+  // Demo doctor cases for Hospital A (dr.benali's portal). Idempotent: only seed
+  // when the hospital has no cases. Inserted directly (NOT via the upload endpoint),
+  // so this does NOT trigger FL rounds or inflate researcher totals.
+  const docHospital = hospitals[0];
+  const existingCases = await prisma.case.count({ where: { hospitalId: docHospital.id } });
+  if (existingCases === 0) {
+    const doctor = await prisma.user.findUnique({ where: { email: "dr.benali@fedmri.local" } });
+    if (doctor) {
+      const SUB = ["Luminal A", "Luminal B", "HER2", "Triple Negative"];
+      const probsFor = (i: number, conf: number): number[] => {
+        const rem = (1 - conf) / 3;
+        return [0, 1, 2, 3].map((j) => (j === i ? conf : rem));
+      };
+      const defs: { i: number; conf: number; status: CaseStatus; days: number }[] = [
+        { i: 0, conf: 0.86, status: CaseStatus.VALIDATED, days: 1 },
+        { i: 0, conf: 0.78, status: CaseStatus.VALIDATED, days: 2 },
+        { i: 0, conf: 0.71, status: CaseStatus.PENDING, days: 3 },
+        { i: 1, conf: 0.66, status: CaseStatus.PENDING, days: 5 },
+        { i: 0, conf: 0.63, status: CaseStatus.PENDING, days: 6 },
+        { i: 1, conf: 0.72, status: CaseStatus.VALIDATED, days: 8 },
+        { i: 2, conf: 0.69, status: CaseStatus.VALIDATED, days: 10 },
+        { i: 0, conf: 0.58, status: CaseStatus.PENDING, days: 12 },
+        { i: 3, conf: 0.81, status: CaseStatus.VALIDATED, days: 14 },
+        { i: 1, conf: 0.52, status: CaseStatus.DISPUTED, days: 16 },
+        { i: 0, conf: 0.83, status: CaseStatus.VALIDATED, days: 18 },
+        { i: 3, conf: 0.55, status: CaseStatus.DISPUTED, days: 21 },
+        { i: 0, conf: 0.49, status: CaseStatus.PENDING, days: 24 },
+        { i: 0, conf: 0.74, status: CaseStatus.VALIDATED, days: 28 },
+      ];
+      const now = Date.now();
+      await prisma.case.createMany({
+        data: defs.map((d) => ({
+          userId: doctor.id,
+          hospitalId: docHospital.id,
+          scope: CaseScope.HOSPITAL,
+          imagePath: `uploads/hospitals/${docHospital.id}/demo-${d.i}-${d.days}.png`,
+          storedLocally: true,
+          predictedSubtype: SUB[d.i],
+          confidence: d.conf,
+          probs: probsFor(d.i, d.conf),
+          modelVersion: 10,
+          status: d.status,
+          createdAt: new Date(now - d.days * 24 * 60 * 60 * 1000),
+        })),
+      });
+      console.log(`Seeded ${defs.length} demo doctor cases for Hospital A`);
+    }
+  } else {
+    console.log(`Skipping demo cases (${existingCases} already exist for Hospital A)`);
+  }
 
   console.log("Seed complete");
 }
