@@ -23,7 +23,16 @@ export default function ScanPage() {
   return (
     <div className="space-y-4">
       <DoctorSiloBanner />
-      <PageHeader title="Scan Analysis" description="Upload a breast MRI scan — AI predicts molecular subtype in under 4 seconds" />
+      <PageHeader
+        title="Initiate New Analysis"
+        description="Federated diagnostic pipeline for medical imaging — molecular subtype in under 4 seconds."
+        action={
+          <span className="text-[11px] px-2 py-1 rounded-full inline-flex items-center gap-1.5" style={{ background: "var(--teal-glow)", color: "var(--teal)", border: "1px solid #2dd4bf40" }}>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--teal)" }} />
+            NODE ACTIVE
+          </span>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
         <div className="space-y-4 min-w-0">
@@ -46,7 +55,22 @@ export default function ScanPage() {
           </AnimatePresence>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-4">
+          <div className="rounded-xl border p-4" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+            <div className="flex items-start gap-3">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth="1.5" className="shrink-0 mt-0.5">
+                <rect x="5" y="11" width="14" height="9" rx="2" />
+                <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+              </svg>
+              <div>
+                <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Privacy Guarantee</div>
+                <p className="text-xs mt-1 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  Your raw scans never leave this hospital. Only encrypted model weight updates are shared with the global model —{" "}
+                  <span style={{ color: "var(--teal)" }}>0 bytes of patient data transmitted</span>.
+                </p>
+              </div>
+            </div>
+          </div>
           <FlTopology />
           <p className="text-xs px-1" style={{ color: "var(--text-secondary)" }}>Round fires automatically on upload</p>
         </div>
