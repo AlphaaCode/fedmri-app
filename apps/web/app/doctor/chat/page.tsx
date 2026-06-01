@@ -2,6 +2,8 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { usePortalTitle } from "@/lib/use-portal-title";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { ChatPanel } from "@/components/ChatPanel";
 import { apiFetch } from "@/lib/api";
 
@@ -13,31 +15,24 @@ const DOCTOR_STARTERS = [
 ];
 
 function DoctorChatInner() {
+  usePortalTitle("AI Assistant");
   const params = useSearchParams();
   const caseId = params.get("caseId") ?? undefined;
   const [ctx, setCtx] = useState<{ subtype: string; confidence: number; modelVersion: number } | null>(null);
 
   useEffect(() => {
     if (!caseId) return;
-    apiFetch<any>(`/cases/${caseId}`).then((c) => {
-      setCtx({ subtype: c.predictedSubtype, confidence: c.confidence, modelVersion: c.modelVersion });
-    }).catch(() => {});
+    apiFetch<any>(`/cases/${caseId}`).then((c) => setCtx({ subtype: c.predictedSubtype, confidence: c.confidence, modelVersion: c.modelVersion })).catch(() => {});
   }, [caseId]);
 
   return (
-    <div className="space-y-3">
-      <div>
-        <h1 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>Clinical AI assistant</h1>
-        <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-          Ask about predictions, the FL training process, or how to interpret results
-        </p>
-      </div>
-      <ChatPanel role="doctor" caseId={caseId} starters={DOCTOR_STARTERS} caseContext={ctx} />
+    <div>
+      <PageHeader title="Clinical AI assistant" description="Ask about predictions, the FL training process, or how to interpret results" />
+      <ChatPanel role="doctor" caseId={caseId} starters={DOCTOR_STARTERS} caseContext={ctx} heightClass="h-[calc(100vh-12rem)]" />
     </div>
   );
 }
 
-// useSearchParams() must be inside a Suspense boundary for Next 16 static prerendering.
 export default function DoctorChatPage() {
   return (
     <Suspense fallback={null}>

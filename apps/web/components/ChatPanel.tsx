@@ -17,9 +17,10 @@ interface Props {
   caseId?: string;
   starters: string[];
   caseContext?: { subtype: string; confidence: number; modelVersion: number } | null;
+  heightClass?: string;
 }
 
-export function ChatPanel({ role, caseId, starters, caseContext }: Props) {
+export function ChatPanel({ role, caseId, starters, caseContext, heightClass = "h-[calc(100vh-180px)]" }: Props) {
   const token = useAuthStore((s) => s.token);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -82,7 +83,7 @@ export function ChatPanel({ role, caseId, starters, caseContext }: Props) {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-180px)] rounded-xl border" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+    <div className={`flex flex-col ${heightClass} rounded-xl border`} style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
       {/* Case context banner (doctor only) */}
       {caseContext && (
         <div className="px-4 py-2 border-b text-xs flex items-center gap-3" style={{ borderColor: "var(--border)" }}>
