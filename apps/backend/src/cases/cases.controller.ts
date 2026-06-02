@@ -57,6 +57,18 @@ export class CasesController {
     return this.casesService.findAll(user, { page, limit });
   }
 
+  // NOTE: declared before @Get(':id') so ':id' does not capture "samples".
+  @Get('samples')
+  listSamples() {
+    return this.casesService.listSamples();
+  }
+
+  @Post('from-sample')
+  @HttpCode(201)
+  createFromSample(@CurrentUser() user: any, @Body() body: { name: string }) {
+    return this.casesService.createFromSample(user, body.name);
+  }
+
   @Get(':id')
   async findOne(@CurrentUser() user: any, @Param('id') id: string) {
     return this.casesService.findOne(user, id);

@@ -8,6 +8,8 @@ import { InferenceService } from '../inference/inference.service';
 import { FlService } from '../fl/fl.service';
 import { AlService } from './al.service';
 import { randomUUID } from 'crypto';
+import { readdirSync, existsSync } from 'fs';
+import { join } from 'path';
 import { CaseScope, CaseStatus, FeedbackType } from '@prisma/client';
 
 @Injectable()
@@ -18,6 +20,28 @@ export class CasesService {
     private flService: FlService,
     private alService: AlService,
   ) {}
+
+  private samplesDir = process.env.SAMPLES_DIR || '';
+
+  /** List bundled sample MRI volumes (for the "Use a sample scan" picker). */
+  listSamples(): { name: string }[] {
+    if (!this.samplesDir || !existsSync(this.samplesDir)) return [];
+    return readdirSync(this.samplesDir)
+      .filter((f) => f.endsWith('.mha') || f.endsWith('.nii') || f.endsWith('.nii.gz'))
+      .slice(0, 12)
+      .map((name) => ({ name }));
+  }
+
+  /** Create a case from a bundled sample volume (runs the same real pipeline). */
+  async createFromSample(user: any, name: string): Promise<any> {
+    if (!/^[\w.-]+\.(mha|nii|nii\.gz)$/.test(name)) {
+      throw new ForbiddenException('bad sample name');
+    }
+    const path = join(this.samplesDir, name);
+    if (!existsSync(path)) throw new ForbiddenException('sample not found');
+    // Reuse create() with a multer-shaped object pointing at the sample on disk.
+    return this.create(user, { path, originalname: name } as any);
+  }
 
   async create(user: any, file: Express.Multer.File): Promise<any> {
     if (!file) {
