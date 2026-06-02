@@ -8,6 +8,20 @@ model without any hospital sharing its raw patient data. Only model weight updat
 
 This app makes that concept tangible through two portals.
 
+## Optimization objective (federated)
+
+The federated training minimizes the global objective
+
+    F(w) = Σ_k (n_k / n) · F_k(w)      (K = 3 hospital clients, n = Σ n_k)
+
+where each local objective F_k(w) = (1/n_k) Σ_i ℓ(f_w(x_i), y_i) and ℓ is
+class-balanced cross-entropy (per-class weight ∝ inverse frequency). Task: binary
+Luminal vs Non-Luminal. Aggregation: FedAvg (weighted by n_k); Momentum (server
+momentum); SCAFFOLD (control variates correct client drift); FedSCRT (freeze
+backbone, federate a retrained head). Metric: macro-F1 (primary), AUC, accuracy.
+Goal: under non-IID data (Dirichlet α=0.5), approach centralized performance
+without sharing raw data — only weight updates move (rawDataTransmitted = 0).
+
 ## Domain vocabulary
 
 | Term | Definition |
@@ -64,3 +78,4 @@ See `docs/adr/` for rationale on:
 - ADR-001: Why FastAPI for ML service (not embedding PyTorch in NestJS)
 - ADR-002: Why FL Coordinator is a separate service (not a NestJS module)
 - ADR-003: Why mock-to-prod uses interface abstraction (not feature flags)
+- ADR-004: Federated optimization objective + live FL test
