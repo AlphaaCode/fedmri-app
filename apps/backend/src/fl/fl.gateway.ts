@@ -45,8 +45,11 @@ export class FlGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (payload.role === 'DOCTOR') {
         socket.join('doctors');
         this.logger.log(`Doctor ${payload.sub} joined room 'doctors'`);
+      } else if (payload.role === 'RESEARCHER') {
+        socket.join('researchers');
+        this.logger.log(`Researcher ${payload.sub} joined room 'researchers'`);
       } else {
-        this.logger.warn(`Non-doctor ${payload.sub} connected (no room)`);
+        this.logger.warn(`Unhandled role ${payload.sub} connected (no room)`);
       }
     } catch (err: any) {
       this.logger.warn(`Socket ${socket.id} rejected: ${err?.message}`);
@@ -82,5 +85,25 @@ export class FlGateway implements OnGatewayConnection, OnGatewayDisconnect {
     modelVersion: number;
   }): void {
     this.server.to('doctors').emit('fl:round:complete', payload);
+  }
+
+  emitTestProgress(payload: {
+    testId: string;
+    strategy: string;
+    round: number;
+    f1: number;
+    auc: number;
+    accuracy: number;
+    clientSizes: number[];
+  }): void {
+    this.server.to('researchers').emit('fl:test:progress', payload);
+  }
+
+  emitTestComplete(payload: {
+    testId: string;
+    strategy: string;
+    finalF1: number;
+  }): void {
+    this.server.to('researchers').emit('fl:test:complete', payload);
   }
 }

@@ -1,4 +1,12 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -34,6 +42,12 @@ export class ResearcherController {
   @Get('fl-experiments')
   flExperiments() {
     return this.svc.getFlExperiments();
+  }
+
+  @Post('fl-test')
+  @HttpCode(202)
+  flTest(@Body() body: { strategy?: string; rounds?: number }) {
+    return this.svc.runFlTest(body?.strategy, body?.rounds ?? 10);
   }
 
   @Get('topology')

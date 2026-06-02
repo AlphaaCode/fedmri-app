@@ -173,6 +173,35 @@ export class FlService {
     });
   }
 
+  async handleTestProgress(body: any): Promise<void> {
+    this.gateway.emitTestProgress({
+      testId: body.test_id,
+      strategy: body.strategy,
+      round: body.round,
+      f1: body.f1,
+      auc: body.auc,
+      accuracy: body.accuracy,
+      clientSizes: body.client_sizes ?? [],
+    });
+    if (body.done) {
+      this.gateway.emitTestComplete({
+        testId: body.test_id,
+        strategy: body.strategy,
+        finalF1: body.f1,
+      });
+    }
+  }
+
+  async runFlTest(strategy: string, rounds: number): Promise<any> {
+    const resp = await firstValueFrom(
+      this.httpService.post(`${this.flCoordinatorUrl}/fl-test/run`, {
+        strategy,
+        rounds,
+      }),
+    );
+    return resp.data; // { test_id, status, ... }
+  }
+
   async findRounds(
     page = 1,
     limit = 10,

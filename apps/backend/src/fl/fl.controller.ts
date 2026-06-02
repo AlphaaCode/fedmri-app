@@ -44,4 +44,15 @@ export class FlController {
     await this.flService.handleRoundComplete(body);
     return { status: 'ok' };
   }
+
+  @Post('test-progress')
+  @HttpCode(202)
+  async testProgress(
+    @Body() body: any,
+    @Headers('x-fl-secret') secret: string,
+  ) {
+    this.verifySecret(secret);
+    await this.flService.handleTestProgress(body);
+    return { ok: true };
+  }
 }

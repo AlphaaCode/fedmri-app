@@ -137,4 +137,21 @@ describe('Researcher (e2e)', () => {
       await request(app.getHttpServer()).get(url).expect(401);
     });
   });
+
+  describe('POST /researcher/fl-test is researcher-only', () => {
+    it('DOCTOR gets 403', async () => {
+      await request(app.getHttpServer())
+        .post('/researcher/fl-test')
+        .set('Authorization', `Bearer ${doctorToken}`)
+        .send({ strategy: 'fedscrt', rounds: 10 })
+        .expect(403);
+    });
+
+    it('no token gets 401', async () => {
+      await request(app.getHttpServer())
+        .post('/researcher/fl-test')
+        .send({ strategy: 'fedscrt', rounds: 10 })
+        .expect(401);
+    });
+  });
 });

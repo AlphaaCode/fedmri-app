@@ -3,10 +3,20 @@ import { createHash } from 'crypto';
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
+import { FlService } from '../fl/fl.service';
 
 @Injectable()
 export class ResearcherService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private flService: FlService,
+  ) {}
+
+  /** Trigger a live federated test run on the coordinator (proxied). */
+  runFlTest(strategy = 'fedscrt', rounds = 10) {
+    const s = strategy === 'fedavg' ? 'fedavg' : 'fedscrt';
+    return this.flService.runFlTest(s, Math.min(Math.max(rounds, 1), 30));
+  }
 
   /** Serve the real FL experiment results (copied into src/fl/experiments). */
   getFlExperiments(): {
