@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiUploadCase, apiVerifyImage } from "@/lib/api";
+import { apiUploadCase, apiVerifyImage, apiListSamples, apiCreateFromSample } from "@/lib/api";
 import type { CaseResult } from "@/lib/types";
 
 interface Props { onUploaded: (result: CaseResult) => void; }
@@ -19,8 +19,40 @@ export function ScanUpload({ onUploaded }: Props) {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [verifyResult, setVerifyResult] = useState<VerifyResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [samples, setSamples] = useState<{ name: string }[]>([]);
+  const [showSamples, setShowSamples] = useState(false);
+  const [sampleName, setSampleName] = useState<string | null>(null);
   const onUploadedRef = useRef(onUploaded);
   onUploadedRef.current = onUploaded;
+
+  useEffect(() => {
+    apiListSamples().then(setSamples).catch(() => setSamples([]));
+  }, []);
+
+  // A bundled sample volume is a known-valid MRI — skip verify, run the real pipeline.
+  async function useSample(name: string) {
+    setError(null);
+    setSampleName(name);
+    setStage("uploading");
+    setProgress(10);
+    const ticker = setInterval(() => setProgress((p) => Math.min(p + Math.random() * 10, 88)), 280);
+    try {
+      const r = (await apiCreateFromSample(name)) as CaseResult;
+      setProgress(100);
+      clearInterval(ticker);
+      setTimeout(() => {
+        setStage("idle");
+        setShowSamples(false);
+        setSampleName(null);
+        onUploadedRef.current(r);
+      }, 500);
+    } catch (e: any) {
+      clearInterval(ticker);
+      setError(e?.message || "Sample failed");
+      setStage("idle");
+      setSampleName(null);
+    }
+  }
 
   async function doUpload(file: File) {
     setStage("uploading");
@@ -80,7 +112,7 @@ export function ScanUpload({ onUploaded }: Props) {
     onDrop,
     multiple: false,
     disabled: stage === "verifying" || stage === "uploading",
-    accept: { "application/octet-stream": [".mha", ".nii", ".gz", ".dcm"], "image/*": [".png", ".jpg", ".jpeg"] },
+    accept: { "application/octet-stream": [".mha", ".nii", ".gz", ".dcm"] },
   });
 
   const isActive = stage === "verifying" || stage === "uploading";
@@ -119,24 +151,22 @@ export function ScanUpload({ onUploaded }: Props) {
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <button onClick={() => { setStage("idle"); setPendingFile(null); setVerifyResult(null); }}
-            className="flex-1 text-xs py-2.5 rounded-xl font-medium transition-all hover:brightness-110"
-            style={{ background: "var(--bg-card2)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
-            ← Choose another file
-          </button>
-          <button onClick={() => doUpload(pendingFile)}
-            className="flex-1 text-xs py-2.5 rounded-xl font-semibold transition-all hover:brightness-110"
-            style={{ background: "rgba(255,159,10,0.12)", color: "#ff9f0a", border: "1px solid rgba(255,159,10,0.4)" }}>
-            Analyse anyway →
-          </button>
-        </div>
+        <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+          This file is not a breast-MRI volume and cannot be analysed.
+        </p>
+
+        <button onClick={() => { setStage("idle"); setPendingFile(null); setVerifyResult(null); }}
+          className="w-full text-xs py-2.5 rounded-xl font-medium transition-all hover:brightness-110"
+          style={{ background: "var(--bg-card2)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+          ← Choose another file
+        </button>
       </motion.div>
     );
   }
 
   /* ── Main dropzone — MRI aperture ───────────────────────────────── */
   return (
+    <div className="space-y-3">
     <div
       {...getRootProps()}
       className="relative rounded-2xl overflow-hidden transition-all duration-500 select-none"
@@ -192,7 +222,7 @@ export function ScanUpload({ onUploaded }: Props) {
                 {isDragActive ? "Release to scan" : "Drop breast MRI scan"}
               </p>
               <p className="text-xs" style={{ fontFamily: "var(--font-mono)", color: "var(--text-secondary)", letterSpacing: "0.06em" }}>
-                .png · .jpg · .nii · .dcm · up to 50 MB
+                .mha · .nii · .dcm · up to 50 MB
               </p>
             </div>
 
@@ -269,7 +299,7 @@ export function ScanUpload({ onUploaded }: Props) {
                 Running inference
               </p>
               <p className="text-xs" style={{ fontFamily: "var(--font-mono)", color: "var(--text-secondary)", letterSpacing: "0.06em" }}>
-                {pendingFile?.name}
+                {pendingFile?.name ?? sampleName}
               </p>
               {/* Progress bar */}
               <div className="h-[2px] w-full rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
@@ -286,6 +316,43 @@ export function ScanUpload({ onUploaded }: Props) {
         )}
 
       </AnimatePresence>
+    </div>
+
+    {stage === "idle" && (
+      <div className="rounded-xl border p-3" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+        <button
+          type="button"
+          onClick={() => setShowSamples((s) => !s)}
+          className="flex w-full items-center justify-between text-xs"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          <span>Use a sample scan</span>
+          <span style={{ color: "var(--teal)" }}>{showSamples ? "▲" : "▼"}</span>
+        </button>
+        {showSamples && (
+          <div className="mt-2 grid grid-cols-2 gap-1.5">
+            {samples.length === 0 ? (
+              <p className="col-span-2 text-[11px]" style={{ color: "var(--text-dim)" }}>
+                No bundled sample volumes available.
+              </p>
+            ) : (
+              samples.map((s) => (
+                <button
+                  key={s.name}
+                  type="button"
+                  onClick={() => useSample(s.name)}
+                  className="truncate rounded-lg px-2 py-1.5 text-left text-[11px] transition-colors hover:brightness-125"
+                  style={{ background: "var(--bg-card2)", color: "var(--text-secondary)", border: "1px solid var(--border)", fontFamily: "var(--font-mono)" }}
+                  title={s.name}
+                >
+                  {s.name}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+    )}
     </div>
   );
 }
