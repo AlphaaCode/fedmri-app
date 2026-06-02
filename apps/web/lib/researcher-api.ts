@@ -158,3 +158,27 @@ export function getModelHistory(): Promise<any> {
 export function getConfusionMatrix(): Promise<any> {
   return apiFetch("/model/confusion-matrix");
 }
+
+// ─── Federated Learning experiments + live test ──────────────────────────────
+
+export interface FlExperiment {
+  strategy: string;
+  alpha: number;
+  rounds: number;
+  history: { round: number; f1: number; auc: number; accuracy: number }[];
+  final: { f1: number; auc: number; accuracy: number };
+}
+
+export function getFlExperiments(): Promise<FlExperiment[]> {
+  return apiFetch<FlExperiment[]>("/researcher/fl-experiments");
+}
+
+export function runFlTest(
+  strategy: "fedscrt" | "fedavg",
+  rounds: number,
+): Promise<{ test_id: string; status: string }> {
+  return apiFetch("/researcher/fl-test", {
+    method: "POST",
+    body: JSON.stringify({ strategy, rounds }),
+  });
+}
