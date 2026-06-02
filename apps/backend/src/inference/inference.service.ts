@@ -12,6 +12,10 @@ interface PredictionResult {
   probs: number[];
   model_version: number;
   strategy: string;
+  // Additive real-mode fields (FedSCRT). Optional so mock mode is unaffected.
+  f1?: number;
+  auc?: number;
+  hormone_therapy?: string;
 }
 
 @Injectable()
@@ -75,6 +79,9 @@ export class InferenceService {
       probs: response.data.probs,
       model_version: response.data.model_version,
       strategy: response.data.strategy,
+      f1: response.data.f1,
+      auc: response.data.auc,
+      hormone_therapy: response.data.hormone_therapy,
     };
   }
 }

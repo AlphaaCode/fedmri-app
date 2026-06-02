@@ -80,6 +80,10 @@ export interface CaseResult {
   hospitalId?: string | null;
   userId: string;
   createdAt: string;
+  // Additive FedSCRT real-mode fields (present on a fresh real-mode prediction).
+  f1?: number;
+  auc?: number;
+  hormoneTherapy?: string;
 }
 
 export interface WsRoundStarted {

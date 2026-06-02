@@ -97,10 +97,14 @@ export class CasesService {
       data: caseData,
     });
 
-    // Return case to client immediately
+    // Return case to client immediately. f1/auc/hormoneTherapy are additive
+    // real-mode fields surfaced transiently (not persisted — no schema change).
     const returnCase = {
       ...savedCase,
       probs: savedCase.probs, // Ensure probs is returned as array
+      f1: predictionResult.f1,
+      auc: predictionResult.auc,
+      hormoneTherapy: predictionResult.hormone_therapy,
     };
 
     // Fire-and-forget: trigger FL round if DOCTOR
