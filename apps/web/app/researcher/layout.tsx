@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Share2, Database, BarChart3, HelpCircle, Settings, ScrollText, LogOut } from "lucide-react";
+import { Share2, Database, BarChart3, HelpCircle, Settings, ScrollText, LogOut, Workflow } from "lucide-react";
 import { PortalShell } from "@/components/shell/PortalShell";
 import { useAuthStore } from "@/lib/auth-store";
 
@@ -17,6 +17,7 @@ export default function ResearcherLayout({ children }: { children: ReactNode }) 
       nav={[
         { href: "/researcher", label: "Models", icon: BarChart3 },
         { href: "/researcher/topology", label: "Network Topology", icon: Share2 },
+        { href: "/researcher/federated", label: "Federated Learning", icon: Workflow },
         { href: "/researcher/datasets", label: "Datasets", icon: Database },
         { href: "/researcher/support", label: "Support", icon: HelpCircle },
         { href: "/researcher/settings", label: "Settings", icon: Settings },
