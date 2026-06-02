@@ -41,6 +41,7 @@ describe('Researcher (e2e)', () => {
     '/researcher/overview',
     '/researcher/training-log',
     '/researcher/model-versions',
+    '/researcher/fl-experiments',
     '/researcher/topology',
     '/researcher/datasets',
     '/researcher/system-logs',
@@ -79,6 +80,18 @@ describe('Researcher (e2e)', () => {
       expect(Array.isArray(res.body.versions)).toBe(true);
       expect(res.body.versions.length).toBeGreaterThan(0);
       expect(typeof res.body.versions[0].hash).toBe('string');
+    });
+
+    it('GET /researcher/fl-experiments returns real FL result records', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/researcher/fl-experiments')
+        .set('Authorization', `Bearer ${researcherToken}`)
+        .expect(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBeGreaterThan(0);
+      expect(res.body[0]).toHaveProperty('strategy');
+      expect(res.body[0]).toHaveProperty('final');
+      expect(JSON.stringify(res.body)).not.toContain('imagePath');
     });
 
     it('GET /researcher/topology returns 3 nodes and correct globalDataVolume', async () => {

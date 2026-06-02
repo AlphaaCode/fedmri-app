@@ -31,6 +31,11 @@ export class ResearcherController {
     return this.svc.getModelVersions();
   }
 
+  @Get('fl-experiments')
+  flExperiments() {
+    return this.svc.getFlExperiments();
+  }
+
   @Get('topology')
   topology() {
     return this.svc.getTopology();

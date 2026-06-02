@@ -1,10 +1,44 @@
 import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
+import { existsSync, readdirSync, readFileSync } from 'fs';
+import { join } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ResearcherService {
   constructor(private prisma: PrismaService) {}
+
+  /** Serve the real FL experiment results (copied into src/fl/experiments). */
+  getFlExperiments(): {
+    strategy: string;
+    alpha: number;
+    rounds: number;
+    history: { round: number; f1: number; auc: number; accuracy: number }[];
+    final: { f1: number; auc: number; accuracy: number };
+  }[] {
+    const candidates = [
+      join(__dirname, '..', 'fl', 'experiments'), // dist/fl/experiments
+      join(process.cwd(), 'src', 'fl', 'experiments'), // ts-node / start:dev cwd
+    ];
+    const base = candidates.find((d) => existsSync(d));
+    if (!base) return [];
+    return readdirSync(base)
+      .filter((f) => f.startsWith('fl_') && f.endsWith('.json'))
+      .map((f) => {
+        const j = JSON.parse(readFileSync(join(base, f), 'utf8'));
+        return {
+          strategy: j.strategy,
+          alpha: j.alpha,
+          rounds: j.rounds,
+          history: j.history ?? [],
+          final: {
+            f1: j.final?.f1 ?? 0,
+            auc: j.final?.auc ?? 0,
+            accuracy: j.final?.accuracy ?? 0,
+          },
+        };
+      });
+  }
 
   async getOverview(): Promise<any> {
     const [latestMetrics, totalRounds, hospitals] = await Promise.all([
