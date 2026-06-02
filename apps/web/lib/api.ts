@@ -72,8 +72,19 @@ export async function apiUploadCase(file: File): Promise<any> {
 
 export async function apiGetAttention(
   caseId: string,
-): Promise<{ attention: number[]; size: number }> {
+): Promise<{ attention: number[]; size: number; slicePng?: string; topSlice?: number }> {
   return apiFetch(`/cases/${caseId}/attention`);
+}
+
+export async function apiListSamples(): Promise<{ name: string }[]> {
+  return apiFetch("/cases/samples");
+}
+
+export async function apiCreateFromSample(name: string): Promise<any> {
+  return apiFetch("/cases/from-sample", {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  });
 }
 
 export async function apiSubmitFeedback(

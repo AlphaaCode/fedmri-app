@@ -6,108 +6,6 @@ import { apiGetAttention } from "@/lib/api";
 
 const SIZE = 224;
 
-function drawBreastMRI(canvas: HTMLCanvasElement) {
-  const ctx = canvas.getContext("2d")!;
-  canvas.width = SIZE;
-  canvas.height = SIZE;
-
-  // Dark background
-  ctx.fillStyle = "#050a0e";
-  ctx.fillRect(0, 0, SIZE, SIZE);
-
-  const cx = SIZE / 2, cy = SIZE * 0.52;
-  const rx = SIZE * 0.38, ry = SIZE * 0.42;
-
-  // Outer breast tissue (ellipse)
-  const outerGrad = ctx.createRadialGradient(cx, cy - 10, SIZE * 0.04, cx, cy, SIZE * 0.47);
-  outerGrad.addColorStop(0, "#5a6a72");
-  outerGrad.addColorStop(0.45, "#3a4a52");
-  outerGrad.addColorStop(0.75, "#1e2d35");
-  outerGrad.addColorStop(1, "#0a1418");
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-  ctx.fillStyle = outerGrad;
-  ctx.fill();
-  ctx.restore();
-
-  // Fatty tissue streaks
-  ctx.save();
-  ctx.globalAlpha = 0.25;
-  for (let i = 0; i < 18; i++) {
-    const angle = (i / 18) * Math.PI * 2;
-    const r = SIZE * 0.14 + Math.sin(i * 2.3) * SIZE * 0.08;
-    const sx = cx + Math.cos(angle) * r;
-    const sy = cy + Math.sin(angle) * r;
-    const ex = cx + Math.cos(angle) * rx * 0.85;
-    const ey = cy + Math.sin(angle) * ry * 0.85;
-    ctx.beginPath();
-    ctx.moveTo(sx, sy);
-    ctx.lineTo(ex, ey);
-    ctx.strokeStyle = `rgba(180,200,210,${0.08 + Math.random() * 0.12})`;
-    ctx.lineWidth = 0.8 + Math.random() * 1.2;
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  // Fibroglandular core (dense tissue)
-  const fgcx = cx + SIZE * 0.03, fgcy = cy - SIZE * 0.02;
-  const fgRad = ctx.createRadialGradient(fgcx, fgcy, SIZE * 0.01, fgcx, fgcy, SIZE * 0.2);
-  fgRad.addColorStop(0, "rgba(180, 200, 220, 0.55)");
-  fgRad.addColorStop(0.4, "rgba(140, 165, 180, 0.35)");
-  fgRad.addColorStop(0.7, "rgba(100, 130, 150, 0.15)");
-  fgRad.addColorStop(1, "rgba(80, 110, 130, 0)");
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.ellipse(fgcx, fgcy, SIZE * 0.19, SIZE * 0.17, -0.2, 0, Math.PI * 2);
-  ctx.fillStyle = fgRad;
-  ctx.fill();
-  ctx.restore();
-
-  // Nipple region
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(cx + SIZE * 0.28, cy - SIZE * 0.04, SIZE * 0.025, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(220, 240, 255, 0.4)";
-  ctx.fill();
-  ctx.restore();
-
-  // Skin boundary arc (bright line at edge)
-  ctx.save();
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(200, 220, 240, 0.3)";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  ctx.restore();
-
-  // Scan artifacts (faint grid lines)
-  ctx.save();
-  ctx.globalAlpha = 0.04;
-  ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = 0.5;
-  for (let y = 0; y < SIZE; y += 14) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(SIZE, y); ctx.stroke();
-  }
-  ctx.restore();
-
-  // Field-of-view corners (scanner marker)
-  ctx.save();
-  ctx.strokeStyle = "rgba(45,212,191,0.35)";
-  ctx.lineWidth = 1;
-  const m = 6;
-  [[0,0],[SIZE,0],[0,SIZE],[SIZE,SIZE]].forEach(([x,y]) => {
-    ctx.beginPath();
-    ctx.moveTo(x === 0 ? x + m : x - m, y);
-    ctx.lineTo(x, y);
-    ctx.lineTo(x, y === 0 ? y + m : y - m);
-    ctx.stroke();
-  });
-  ctx.restore();
-}
-
 function attentionToHeatmap(attn: number[], size: number, alpha: number): ImageData {
   const img = new ImageData(size, size);
   for (let i = 0; i < attn.length; i++) {
@@ -138,20 +36,20 @@ export function AttentionOverlay({ caseId }: { caseId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [attnData, setAttnData] = useState<number[] | null>(null);
-  const bgRef = useRef<HTMLCanvasElement>(null);
+  const [slicePng, setSlicePng] = useState<string | null>(null);
+  const [topSlice, setTopSlice] = useState<number | null>(null);
   const heatRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    if (bgRef.current) drawBreastMRI(bgRef.current);
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
     apiGetAttention(caseId)
-      .then(({ attention }) => {
-        if (!cancelled) setAttnData(attention);
+      .then(({ attention, slicePng, topSlice }) => {
+        if (cancelled) return;
+        setAttnData(attention);
+        setSlicePng(slicePng ?? null);
+        setTopSlice(typeof topSlice === "number" ? topSlice : null);
       })
       .catch((e) => { if (!cancelled) setError(e?.message || "Failed to load"); })
       .finally(() => { if (!cancelled) setLoading(false); });
@@ -182,7 +80,9 @@ export function AttentionOverlay({ caseId }: { caseId: string }) {
             AI focus areas
           </div>
           <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-            Regions that influenced the prediction
+            {topSlice != null
+              ? `Real model attention · slice ${topSlice}`
+              : "Regions that influenced the prediction"}
           </div>
         </div>
         <button
@@ -203,7 +103,17 @@ export function AttentionOverlay({ caseId }: { caseId: string }) {
         className="relative mx-auto overflow-hidden rounded-lg"
         style={{ width: SIZE, height: SIZE, background: "#050a0e" }}
       >
-        <canvas ref={bgRef} className="absolute inset-0" style={{ width: SIZE, height: SIZE }} />
+        {slicePng ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={slicePng}
+            alt="Top-attended MRI slice"
+            className="absolute inset-0"
+            style={{ width: SIZE, height: SIZE, objectFit: "cover" }}
+          />
+        ) : (
+          <div className="absolute inset-0" style={{ width: SIZE, height: SIZE, background: "#050a0e" }} />
+        )}
         <canvas
           ref={heatRef}
           className="absolute inset-0"
