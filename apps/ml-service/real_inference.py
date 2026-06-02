@@ -25,9 +25,28 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 LABELS = ["Luminal", "Non-Luminal"]
 
 
+def _load_repo_main():
+    """Import build_model from the model repo's main.py without colliding with
+    the ml-service's own `main` module. Under `uvicorn main:app`,
+    sys.modules['main'] is the ml-service entrypoint (no build_model), so a bare
+    `from main import build_model` resolves to the wrong file — load by path."""
+    import importlib.util
+    mod = sys.modules.get("main")
+    if mod is not None and hasattr(mod, "build_model"):
+        return mod
+    if not V2:
+        raise RuntimeError("MODEL_V2_PATH not set; cannot locate the model repo main.py")
+    path = os.path.join(V2, "main.py")
+    spec = importlib.util.spec_from_file_location("fedscrt_repo_main", path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["fedscrt_repo_main"] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
 @lru_cache(maxsize=1)
 def _model_and_meta():
-    from main import build_model  # federated-learning-model/main.py:140
+    build_model = _load_repo_main().build_model  # model repo main.py:140
     if not CKPT or not os.path.exists(CKPT):
         raise RuntimeError(
             f"FEDSCRT_CKPT not found: {CKPT!r}. Set it to fedscrt_final.pt "

@@ -6,7 +6,7 @@ import random
 from pathlib import Path
 
 import numpy as np
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
@@ -51,7 +51,18 @@ async def health():
 
 @app.get("/metrics")
 async def metrics():
-    """Return seeded model metrics."""
+    """Return model metrics (real: from the FedSCRT checkpoint; mock: seeded)."""
+    if INFERENCE_MODE == "real":
+        import real_inference
+        _, meta = real_inference._model_and_meta()
+        return {
+            "modelVersion": meta["model_version"],
+            "f1Macro": meta["f1"],
+            "auc": meta["auc"],
+            "accuracy": 0.7027,
+            "mode": "real",
+            "task": "binary",
+        }
     return {
         "modelVersion": 10,
         "f1Macro": 0.41,
@@ -60,21 +71,42 @@ async def metrics():
     }
 
 
+@app.get("/model-info")
+async def model_info():
+    """Static model metadata for the UI (FedSCRT identity + privacy framing)."""
+    return {
+        "model": "FedSCRT",
+        "architecture": "ConvNeXt-Nano + GatedAttentionMIL",
+        "task": "Binary breast MRI subtype (Luminal vs Non-Luminal)",
+        "training": "Federated Classifier Retraining (FedSCRT)",
+        "privacy": "Raw data never transmitted — model weights only",
+        "mode": INFERENCE_MODE,
+    }
+
+
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     """
-    Predict molecular subtype from MRI file.
+    Predict the molecular subtype from an uploaded MRI file.
 
-    Uses deterministic seeding based on filename hash.
-    Adds Gaussian noise to probabilities and returns result.
+    real mode: load the FedSCRT ConvNeXt-MIL model and predict from the actual
+    voxels (binary Luminal / Non-Luminal). mock mode: deterministic seeding from
+    the filename hash.
     """
-    if INFERENCE_MODE != "mock":
-        raise HTTPException(
-            status_code=501,
-            detail="Set checkpoint path and INFERENCE_MODE=real to enable real inference",
-        )
+    if INFERENCE_MODE == "real":
+        import tempfile
+        import real_inference
 
-    # Deterministic seed from filename — same file always returns same result
+        suffix = os.path.splitext(file.filename or "scan.mha")[1] or ".mha"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as t:
+            t.write(await file.read())
+            tmp = t.name
+        try:
+            return real_inference.predict_path(tmp)
+        finally:
+            os.unlink(tmp)
+
+    # ---- mock path: deterministic seed from filename ----
     seed = int(hashlib.md5(file.filename.encode()).hexdigest(), 16) % len(MOCK_RESULTS)
     result = MOCK_RESULTS[seed].copy()
     # Probs are already normalised in mock_results; return as-is for reproducibility
@@ -95,13 +127,20 @@ def _gaussian_blob(grid: np.ndarray, cx: int, cy: int, sigma: float, amplitude: 
 
 
 @app.get("/attention/{case_id}")
-async def attention(case_id: str):
+async def attention(case_id: str, path: str = Query(default=None)):
     """
     Return a 224x224 attention heatmap as a flat list of 50176 floats in [0,1].
 
-    Blob mode: 2-3 Gaussian blobs centered in the upper-left quadrant, seeded by case_id.
-    MIL mode: not implemented (set ATTN_MODE=mil + checkpoint to enable).
+    real mode: real top-attended slice PNG + real within-slice activation map for
+    the volume at `path`. Blob mode (mock): 2-3 Gaussian blobs seeded by case_id.
     """
+    if INFERENCE_MODE == "real":
+        if not path or not os.path.exists(path):
+            raise HTTPException(status_code=404, detail="volume path required for real attention")
+        import real_inference
+
+        return real_inference.attention_for_path(path)
+
     if ATTN_MODE == "mil":
         raise HTTPException(
             status_code=501,
@@ -147,6 +186,13 @@ async def verify_image(file: UploadFile = File(...)):
     from PIL import Image as PILImage
 
     contents = await file.read()
+
+    if INFERENCE_MODE == "real":
+        import real_inference
+
+        return real_inference.verify_volume(contents, file.filename or "scan.mha")
+
+    # ---- mock path: PIL grayscale-photo heuristic on `contents` ----
     try:
         img = PILImage.open(io.BytesIO(contents)).convert("RGB")
         arr = np.array(img, dtype=np.int32)
@@ -239,8 +285,16 @@ async def feedback(body: FeedbackPayload):
 
 @app.on_event("startup")
 async def startup():
-    """Log startup info."""
+    """Log startup info; in real mode, load FedSCRT once (fail loudly if missing)."""
     print(f"FedMRI ML Service started in {INFERENCE_MODE} mode")
+    if INFERENCE_MODE == "real":
+        import real_inference
+
+        _, meta = real_inference._model_and_meta()
+        print(
+            f"FedSCRT loaded | F1={meta['f1']:.4f} AUC={meta['auc']:.4f} "
+            f"on {real_inference.DEVICE}"
+        )
 
 
 @app.on_event("shutdown")
