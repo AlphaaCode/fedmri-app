@@ -123,10 +123,14 @@ export class CasesService {
     };
   }
 
-  async getAttention(user: any, id: string): Promise<{ attention: number[]; size: number }> {
-    // Reuse findOne for silo enforcement (throws ForbiddenException on mismatch)
-    await this.findOne(user, id);
-    return this.inferenceService.getAttention(id);
+  async getAttention(
+    user: any,
+    id: string,
+  ): Promise<{ attention: number[]; size: number; slicePng?: string; topSlice?: number }> {
+    // Reuse findOne for silo enforcement (throws ForbiddenException on mismatch);
+    // it returns the case with imagePath, which real-mode attention needs.
+    const c = await this.findOne(user, id);
+    return this.inferenceService.getAttention(id, c.imagePath);
   }
 
   async findOne(user: any, id: string): Promise<any> {

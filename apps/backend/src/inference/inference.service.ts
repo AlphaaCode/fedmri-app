@@ -28,13 +28,19 @@ export class InferenceService {
     );
   }
 
-  async getAttention(caseId: string): Promise<{ attention: number[]; size: number }> {
-    const response = await firstValueFrom(
-      this.httpService.get<any>(`${this.mlServiceUrl}/attention/${caseId}`),
-    );
+  async getAttention(
+    caseId: string,
+    imagePath?: string,
+  ): Promise<{ attention: number[]; size: number; slicePng?: string; topSlice?: number }> {
+    const url =
+      `${this.mlServiceUrl}/attention/${caseId}` +
+      (imagePath ? `?path=${encodeURIComponent(imagePath)}` : '');
+    const response = await firstValueFrom(this.httpService.get<any>(url));
     return {
       attention: response.data.attention,
       size: response.data.size,
+      slicePng: response.data.slicePng,
+      topSlice: response.data.topSlice,
     };
   }
 
