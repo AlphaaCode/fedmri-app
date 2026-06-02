@@ -17,6 +17,7 @@ BACKEND_URL    = os.getenv("BACKEND_URL", "http://localhost:3001")
 WEBHOOK_SECRET = os.getenv("FL_WEBHOOK_SECRET", "")
 FL_STRATEGY    = os.getenv("FL_STRATEGY", "FEDPROX").upper()
 MAX_RETRIES    = int(os.getenv("WEBHOOK_MAX_RETRIES", "3"))
+FL_CACHE_DIR   = os.getenv("FL_CACHE_DIR", os.path.join(os.path.dirname(__file__), "fl_cache"))
 
 if FL_MODE == "flower":
     from engines.flower import FlowerFLEngine as Engine
@@ -119,6 +120,70 @@ async def _run(rid: str, req: StartRoundReq):
     except Exception as e:
         _rounds[rid]["status"] = "failed"
         logger.error(f"[round {rid}] Round failed: {e}", exc_info=True)
+
+
+class FlTestReq(BaseModel):
+    strategy: str = Field("fedscrt", pattern="^(fedscrt|fedavg)$")
+    rounds: int = Field(10, ge=1, le=30)
+    seed: int = Field(0, ge=0, le=9999)
+
+
+def _load_clients():
+    """Load the per-hospital feature caches (lazy numpy import so mock-mode
+    startup does not require numpy)."""
+    import glob
+    import numpy as np
+    clients = []
+    for p in sorted(glob.glob(os.path.join(FL_CACHE_DIR, "client_*.npz"))):
+        d = np.load(p)
+        clients.append((d["X"], d["y"]))
+    if not clients:
+        raise HTTPException(503, detail=f"no feature caches in {FL_CACHE_DIR}")
+    v = np.load(os.path.join(FL_CACHE_DIR, "val.npz"))
+    return clients, (v["X"], v["y"])
+
+
+@app.post("/fl-test/run")
+@limiter.limit("10/minute")
+async def fl_test_run(request: Request, req: FlTestReq, background_tasks: BackgroundTasks):
+    rid = str(uuid.uuid4())
+    _rounds[rid] = {"status": "running", "history": []}
+    logger.info(f"[fl-test {rid}] starting {req.strategy} for {req.rounds} rounds")
+    background_tasks.add_task(_run_fl_test, rid, req)
+    return {"test_id": rid, "status": "running", "strategy": req.strategy, "rounds": req.rounds}
+
+
+async def _run_fl_test(rid: str, req: FlTestReq):
+    import realfl
+    try:
+        clients, val = _load_clients()
+        sizes = [int(len(y)) for _, y in clients]
+        # numpy compute is sub-second; run it off the event loop, then stream per round
+        hist = await asyncio.to_thread(
+            realfl.run_fl, clients, val,
+            strategy=req.strategy, rounds=req.rounds, seeds=5, on_round=None,
+        )
+        for i, e in enumerate(hist):
+            await _post_fl_test(rid, req.strategy, sizes, e, done=(i == len(hist) - 1))
+        _rounds[rid]["status"] = "complete"
+        _rounds[rid]["history"] = hist
+    except Exception as ex:
+        _rounds[rid]["status"] = "failed"
+        logger.error(f"[fl-test {rid}] failed: {ex}", exc_info=True)
+
+
+async def _post_fl_test(rid, strategy, sizes, entry, done):
+    payload = {
+        "test_id": rid, "strategy": strategy, "client_sizes": sizes,
+        "round": entry["round"], "f1": entry["f1"], "auc": entry["auc"],
+        "accuracy": entry["accuracy"], "done": done,
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10) as c:
+            await c.post(f"{BACKEND_URL}/internal/fl/test-progress", json=payload,
+                         headers={"x-fl-secret": WEBHOOK_SECRET})
+    except Exception as e:
+        logger.warning(f"[fl-test {rid}] webhook failed: {e}")
 
 
 @app.get("/round/{rid}/status")
