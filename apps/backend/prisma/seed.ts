@@ -1,6 +1,58 @@
 import { PrismaClient, Role, FLStrategy, FLTrigger, PrivacyEvent, CaseScope, CaseStatus } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
+import axios from "axios";
+import FormData from "form-data";
+import { createReadStream, existsSync, readdirSync } from "fs";
+import { join } from "path";
 const prisma = new PrismaClient();
+
+// Seed real binary demo cases by running bundled sample volumes through the real
+// ml-service /predict. Returns how many were seeded (0 if the service is
+// unreachable -> caller falls back to the static 4-class demo cases).
+async function seedRealDemoCases(
+  userId: string,
+  hospitalId: string,
+  samplesDir: string,
+  mlUrl: string,
+): Promise<number> {
+  const files = readdirSync(samplesDir)
+    .filter((f) => f.endsWith(".mha") || f.endsWith(".nii") || f.endsWith(".nii.gz"))
+    .slice(0, 6);
+  let n = 0;
+  for (const name of files) {
+    const path = join(samplesDir, name);
+    try {
+      const form = new FormData();
+      form.append("file", createReadStream(path), name);
+      const resp = await axios.post(`${mlUrl}/predict`, form, {
+        headers: form.getHeaders(),
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        timeout: 120000,
+      });
+      const r = resp.data;
+      await prisma.case.create({
+        data: {
+          userId,
+          hospitalId,
+          scope: CaseScope.HOSPITAL,
+          imagePath: path, // absolute sample path so real-mode attention can load it
+          storedLocally: true,
+          predictedSubtype: r.predicted_subtype,
+          confidence: r.confidence,
+          probs: r.probs,
+          modelVersion: r.model_version ?? 1,
+          status: n % 3 === 0 ? CaseStatus.VALIDATED : CaseStatus.PENDING,
+          createdAt: new Date(Date.now() - (n + 1) * 2 * 24 * 60 * 60 * 1000),
+        },
+      });
+      n++;
+    } catch (e: any) {
+      console.warn(`real seed: ${name} failed (${e?.message || e})`);
+    }
+  }
+  return n;
+}
 
 async function main() {
   const hospitals = await Promise.all([
@@ -70,6 +122,19 @@ async function main() {
   if (existingCases === 0) {
     const doctor = await prisma.user.findUnique({ where: { email: "dr.benali@fedmri.local" } });
     if (doctor) {
+      // Prefer REAL binary demo cases from sample volumes when the real ml-service
+      // is up; otherwise fall back to the static 4-class demo cases below.
+      let seededReal = 0;
+      const samplesDir = process.env.SAMPLES_DIR;
+      const mlUrl = process.env.ML_SERVICE_URL || "http://localhost:8001";
+      if (process.env.INFERENCE_MODE === "real" && samplesDir && existsSync(samplesDir)) {
+        seededReal = await seedRealDemoCases(doctor.id, docHospital.id, samplesDir, mlUrl);
+      }
+      if (seededReal > 0) {
+        console.log(`Seeded ${seededReal} real demo cases via FedSCRT`);
+        console.log("Seed complete");
+        return;
+      }
       const SUB = ["Luminal A", "Luminal B", "HER2", "Triple Negative"];
       const probsFor = (i: number, conf: number): number[] => {
         const rem = (1 - conf) / 3;
