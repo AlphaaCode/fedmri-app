@@ -96,3 +96,41 @@ def verify_volume(buffer: bytes, filename: str) -> dict:
         return {"valid": False, "confidence": 0.6, "reason": f"Could not read as MRI volume: {e}"}
     finally:
         os.unlink(tmp)
+
+
+def _spatial_map_for_slice(model, slice_tensor: torch.Tensor) -> np.ndarray:
+    """ConvNeXt last-stage activation magnitude for one (1,3,224,224) slice
+    -> (224,224) in [0,1]. Real activation map (not random).
+
+    The backbone is built with global_pool='avg'/num_classes=0, so calling it
+    directly returns a pooled (1,C) vector. We use forward_features to get the
+    unpooled (1,C,h,w) spatial map and reduce it across channels."""
+    with torch.no_grad():
+        fmap = model.backbone.forward_features(slice_tensor)  # (1, C, h, w)
+    if fmap.dim() != 4:                                       # unexpected -> no map
+        return np.zeros((224, 224), dtype="float32")
+    m = fmap.abs().mean(dim=1, keepdim=True)                  # (1,1,h,w)
+    m = F.interpolate(m, size=(224, 224), mode="bilinear", align_corners=False)[0, 0]
+    m = m.cpu().numpy()
+    mn, mx = float(m.min()), float(m.max())
+    return ((m - mn) / (mx - mn + 1e-8)).astype("float32")
+
+
+def attention_for_path(path: str) -> dict:
+    """Real top-attended slice (PNG b64) + within-slice spatial map (224x224 floats)."""
+    import base64
+    from PIL import Image
+    model, _ = _model_and_meta()
+    x, vol = _slices_from_path(path)                      # x:(1,S,3,224,224) vol:(S,128,128)
+    with torch.no_grad():
+        model(x)
+    attn = model.last_attn[0].cpu().numpy()              # (S,) per-slice gated attention
+    top = int(attn.argmax())
+    # real grayscale slice PNG (from the preprocessed volume, not the normalized tensor)
+    sl = vol[top].numpy()
+    img = Image.fromarray((np.clip(sl, 0, 1) * 255).astype("uint8")).resize((224, 224))
+    buf = io.BytesIO(); img.save(buf, format="PNG")
+    slice_png = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
+    spatial = _spatial_map_for_slice(model, x[0, top:top + 1])  # (1,3,224,224)
+    return {"slicePng": slice_png, "attention": spatial.flatten().tolist(),
+            "size": 224, "topSlice": top}
