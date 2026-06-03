@@ -16,6 +16,7 @@ import {
   DatasetCohort,
 } from "@/lib/researcher-api";
 import { GradientCard } from "@/components/ui/GradientCard";
+import { useToastStore } from "@/components/ToastProvider";
 
 // ─── Node colour palette (teal / blue-accent / amber per hospital) ─────────────
 
@@ -153,6 +154,9 @@ export default function DatasetsPage() {
   const [cohorts, setCohorts] = useState<DatasetCohort[]>([]);
   const [loading, setLoading] = useState(true);
   const [dataErr, setDataErr] = useState<string | null>(null);
+  const [addDatasetOpen, setAddDatasetOpen] = useState(false);
+  const [newDataset, setNewDataset] = useState({ name: "", hospital: "Hospital A", records: "" });
+  const { push } = useToastStore();
 
   useEffect(() => {
     getDatasets()
@@ -173,19 +177,27 @@ export default function DatasetsPage() {
         c.designation === designation ? { ...c, access: "GRANTED" } : c
       )
     );
+    push(`Access granted to ${designation}`, "success");
   }
 
   // ── Action: Add Dataset ──
   function handleAddDataset() {
+    setNewDataset({ name: "", hospital: "Hospital A", records: "" });
+    setAddDatasetOpen(true);
+  }
+
+  function confirmAddDataset() {
+    if (!newDataset.name.trim()) return;
     const newCohort: DatasetCohort = {
-      designation: `BREAST_DCE_NEW_${Date.now().toString().slice(-4)}`,
-      description: "Locally added cohort (demo)",
-      sourceNode: "Local",
+      designation: newDataset.name.toUpperCase().replace(/\s+/g, "_"),
+      description: `Locally added cohort from ${newDataset.hospital}`,
+      sourceNode: newDataset.hospital,
       modality: "DCE-MRI",
-      records: 0,
+      records: parseInt(newDataset.records) || 0,
       access: "GRANTED",
     };
     setCohorts((prev) => [newCohort, ...prev]);
+    setAddDatasetOpen(false);
   }
 
   // ── Table columns ──
@@ -383,6 +395,46 @@ export default function DatasetsPage() {
           </>
         )}
       </Panel>
+
+      {addDatasetOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(5,10,14,0.85)", backdropFilter: "blur(4px)" }}
+          onClick={() => setAddDatasetOpen(false)}>
+          <div className="w-full max-w-sm rounded-2xl border p-6 space-y-4"
+            style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+            onClick={(e) => e.stopPropagation()}>
+            <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Add Dataset</div>
+            {([
+              { label: "Dataset designation", key: "name", placeholder: "BREAST_DCE_2026" },
+              { label: "Records count", key: "records", placeholder: "0" },
+            ] as { label: string; key: string; placeholder: string }[]).map(({ label, key, placeholder }) => (
+              <div key={key}>
+                <label className="text-xs uppercase tracking-widest block mb-1" style={{ color: "var(--text-secondary)" }}>{label}</label>
+                <input className="w-full rounded-lg text-sm px-3 py-2 outline-none"
+                  style={{ background: "var(--bg-base)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
+                  placeholder={placeholder}
+                  value={newDataset[key as keyof typeof newDataset]}
+                  onChange={(e) => setNewDataset((d) => ({ ...d, [key]: e.target.value }))} />
+              </div>
+            ))}
+            <div>
+              <label className="text-xs uppercase tracking-widest block mb-1" style={{ color: "var(--text-secondary)" }}>Source hospital</label>
+              <select className="w-full rounded-lg text-sm px-3 py-2"
+                style={{ background: "var(--bg-base)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
+                value={newDataset.hospital}
+                onChange={(e) => setNewDataset((d) => ({ ...d, hospital: e.target.value }))}>
+                {["Hospital A", "Hospital B", "Hospital C"].map((h) => <option key={h}>{h}</option>)}
+              </select>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => setAddDatasetOpen(false)} className="flex-1 rounded-lg py-2 text-sm"
+                style={{ background: "var(--bg-card2)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>Cancel</button>
+              <button onClick={confirmAddDataset} className="flex-1 rounded-lg py-2 text-sm font-semibold"
+                style={{ background: "var(--teal-dim)", color: "#0d1117" }}>Add Dataset</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,21 +6,25 @@ import { apiGetAttention } from "@/lib/api";
 
 const SIZE = 224;
 
+function turboColor(t: number): [number, number, number] {
+  const r = Math.max(0, Math.min(1,
+    0.1357 + t * (4.5974 + t * (-42.3277 + t * (130.5887 + t * (-185.4973 + t * 98.7325))))
+  ));
+  const g = Math.max(0, Math.min(1,
+    0.0914 + t * (2.1856 + t * (4.8052 + t * (-14.0741 + t * (4.2070 + t * 2.9656))))
+  ));
+  const b = Math.max(0, Math.min(1,
+    0.1067 + t * (11.4617 + t * (-67.5383 + t * (175.6867 + t * (-216.9909 + t * 99.3232))))
+  ));
+  return [r, g, b];
+}
+
 function attentionToHeatmap(attn: number[], size: number, alpha: number): ImageData {
   const img = new ImageData(size, size);
+  const max = Math.max(...attn) || 1;
   for (let i = 0; i < attn.length; i++) {
-    const v = Math.max(0, Math.min(1, attn[i]));
-    // jet colormap: blue → cyan → green → yellow → red
-    let r = 0, g = 0, b = 0;
-    if (v < 0.25) {
-      b = 1; g = v / 0.25;
-    } else if (v < 0.5) {
-      b = 1 - (v - 0.25) / 0.25; g = 1;
-    } else if (v < 0.75) {
-      g = 1; r = (v - 0.5) / 0.25;
-    } else {
-      r = 1; g = 1 - (v - 0.75) / 0.25;
-    }
+    const v = Math.max(0, Math.min(1, attn[i] / max));
+    const [r, g, b] = turboColor(v);
     const o = i * 4;
     img.data[o]     = Math.round(r * 255);
     img.data[o + 1] = Math.round(g * 255);
@@ -134,7 +138,7 @@ export function AttentionOverlay({ caseId }: { caseId: string }) {
         {/* Scale bar */}
         <div className="absolute bottom-2 right-2 flex items-center gap-1">
           <div className="w-12 h-1 rounded" style={{
-            background: "linear-gradient(to right, #00f, #0ff, #0f0, #ff0, #f00)"
+            background: "linear-gradient(to right, #30123b, #4040a0, #28bbec, #14d480, #f9dc3e, #fe7520, #7a0403)"
           }} />
           <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.5)" }}>activation</span>
         </div>

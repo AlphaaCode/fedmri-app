@@ -8,7 +8,7 @@ export function Card({ children, className, style }: {
 }) {
   return (
     <div
-      className={cn("rounded-xl border p-4", className)}
+      className={cn("card-hover rounded-xl border p-4", className)}
       style={{ background: "var(--bg-card)", borderColor: "var(--border)", ...style }}
     >
       {children}
