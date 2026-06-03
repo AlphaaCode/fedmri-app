@@ -39,7 +39,7 @@ export function BrainModel({ refs }: Props) {
     const size = box.getSize(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z);
     if (maxDim > 0) {
-      fbx.scale.setScalar(2.2 / maxDim);
+      fbx.scale.setScalar(1.6 / maxDim);
     }
 
     return () => { mat.dispose(); };
