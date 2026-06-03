@@ -1,23 +1,19 @@
 "use client";
 
-import { useRef, Suspense } from "react";
+import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import * as THREE from "three";
+import { OrbitControls } from "@react-three/drei";
 import { SceneLights } from "./SceneLights";
 import { BrainModel } from "./BrainModel";
-import { MriModel } from "./MriModel";
-import { SceneController } from "./SceneController";
-import type { SceneRefs, Phase } from "./types";
 
 function ShimmerFallback() {
   return (
     <div className="absolute inset-0 flex items-center justify-center">
       <div
-        className="w-32 h-32 rounded-full animate-pulse"
+        className="w-36 h-36 rounded-full animate-pulse"
         style={{
-          background:
-            "radial-gradient(circle, rgba(45,212,191,0.15) 0%, transparent 70%)",
-          border: "1px solid rgba(45,212,191,0.2)",
+          background: "radial-gradient(circle, rgba(45,212,191,0.12) 0%, transparent 70%)",
+          border: "1px solid rgba(45,212,191,0.15)",
         }}
       />
     </div>
@@ -25,35 +21,28 @@ function ShimmerFallback() {
 }
 
 export function LoginScene3D() {
-  const phaseRef    = useRef<Phase>("BRAIN_SPIN");
-  const elapsedRef  = useRef(0);
-  const brainOpacRef = useRef(1);
-  const mriOpacRef  = useRef(0);
-  const mriReadyRef = useRef(false);
-
-  const sceneRefs: SceneRefs = {
-    phaseRef,
-    elapsedRef,
-    brainOpacRef,
-    mriOpacRef,
-    mriReadyRef,
-  };
-
   return (
     <div className="relative w-full h-full">
       <Suspense fallback={<ShimmerFallback />}>
         <Canvas
           camera={{ fov: 35, position: [0, 0, 6] }}
-          gl={{ antialias: true, alpha: true } as THREE.WebGLRendererParameters}
+          gl={{ antialias: true, alpha: true }}
           style={{ background: "transparent" }}
         >
           <SceneLights />
-          <SceneController refs={sceneRefs} />
+
+          {/* OrbitControls: auto-spins endlessly; user can drag to explore 360° */}
+          <OrbitControls
+            enableZoom={false}
+            enablePan={false}
+            autoRotate
+            autoRotateSpeed={1.8}
+            minPolarAngle={Math.PI * 0.25}
+            maxPolarAngle={Math.PI * 0.75}
+          />
+
           <Suspense fallback={null}>
-            <BrainModel refs={sceneRefs} />
-          </Suspense>
-          <Suspense fallback={null}>
-            <MriModel refs={sceneRefs} />
+            <BrainModel />
           </Suspense>
         </Canvas>
       </Suspense>
