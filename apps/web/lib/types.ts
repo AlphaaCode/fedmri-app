@@ -1,10 +1,19 @@
-export type Subtype = "Luminal A" | "Luminal B" | "HER2" | "Triple Negative";
+// 4-class (mock / legacy) + 2-class (real FedSCRT binary) subtypes.
+export type Subtype =
+  | "Luminal A"
+  | "Luminal B"
+  | "HER2"
+  | "Triple Negative"
+  | "Luminal"
+  | "Non-Luminal";
 
 export const SUBTYPES: Subtype[] = [
   "Luminal A",
   "Luminal B",
   "HER2",
   "Triple Negative",
+  "Luminal",
+  "Non-Luminal",
 ];
 
 export const SUBTYPE_PLAIN: Record<Subtype, string> = {
@@ -12,6 +21,8 @@ export const SUBTYPE_PLAIN: Record<Subtype, string> = {
   "Luminal B": "Hormone-sensitive but tends to grow faster than Luminal A",
   "HER2": "Tests positive for HER2 protein — targeted therapies available",
   "Triple Negative": "Negative for three receptors — typically treated with chemotherapy",
+  "Luminal": "Hormone-sensitive type — often responds well to hormone-blocking treatments",
+  "Non-Luminal": "Less hormone-sensitive — your oncologist will advise on the best treatment path",
 };
 
 export const SUBTYPE_COLOR: Record<Subtype, string> = {
@@ -19,6 +30,18 @@ export const SUBTYPE_COLOR: Record<Subtype, string> = {
   "Luminal B": "#60a5fa",
   "HER2": "#f59e0b",
   "Triple Negative": "#fb7185",
+  "Luminal": "#2dd4bf",
+  "Non-Luminal": "#f59e0b",
+};
+
+// Patient-facing hormone advisory (shown on scan result, no jargon).
+export const SUBTYPE_HORMONE_ADVISORY: Partial<Record<Subtype, string>> = {
+  "Luminal":
+    "This result suggests the tumour may be hormone-sensitive. Hormone therapy is often an option — discuss this with your oncologist.",
+  "Luminal A":
+    "This type is typically hormone-sensitive. Hormone therapy is often an option — discuss with your oncologist.",
+  "Luminal B":
+    "This type is usually hormone-sensitive. Your oncologist will advise on the role of hormone therapy.",
 };
 
 export interface MedProtocol {
@@ -27,7 +50,7 @@ export interface MedProtocol {
   note: string;
 }
 
-export const SUBTYPE_MEDS: Record<Subtype, { profile: string; protocols: MedProtocol[] }> = {
+export const SUBTYPE_MEDS: Partial<Record<Subtype, { profile: string; protocols: MedProtocol[] }>> = {
   "Luminal A": {
     profile: "ER+/PR+, HER2−, low Ki-67",
     protocols: [

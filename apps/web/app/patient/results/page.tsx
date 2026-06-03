@@ -6,6 +6,13 @@ import { apiFetch } from "@/lib/api";
 import { downloadCasePdf } from "@/lib/download-pdf";
 import { SUBTYPE_COLOR, SUBTYPE_PLAIN, type Subtype } from "@/lib/types";
 
+function subtypeColor(s: string): string {
+  return (SUBTYPE_COLOR as Record<string, string>)[s] ?? "var(--text-secondary)";
+}
+function subtypePlain(s: string): string {
+  return (SUBTYPE_PLAIN as Record<string, string>)[s] ?? s;
+}
+
 export default function PatientResultsPage() {
   const [cases, setCases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +42,9 @@ export default function PatientResultsPage() {
       ) : (
         <div className="space-y-2">
           {cases.map((c, i) => {
-            const color = SUBTYPE_COLOR[c.predictedSubtype as Subtype] ?? "var(--text-secondary)";
+            const color = subtypeColor(c.predictedSubtype);
+            const plain = subtypePlain(c.predictedSubtype);
+            const confidence = typeof c.confidence === "number" ? Math.round(c.confidence * 100) : null;
             const date = new Date(c.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
             return (
               <motion.div
@@ -46,11 +55,16 @@ export default function PatientResultsPage() {
                 className="rounded-xl border p-4 flex items-center justify-between"
                 style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
               >
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold" style={{ color }}>{c.predictedSubtype}</div>
-                  <div className="text-xs mt-0.5 max-w-xs" style={{ color: "var(--text-secondary)" }}>
-                    {SUBTYPE_PLAIN[c.predictedSubtype as Subtype]}
+                  <div className="text-xs mt-0.5 max-w-xs truncate" style={{ color: "var(--text-secondary)" }}>
+                    {plain}
                   </div>
+                  {confidence !== null && (
+                    <div className="text-[11px] mt-1" style={{ color: "var(--text-secondary)" }}>
+                      Confidence {confidence}%
+                    </div>
+                  )}
                 </div>
                 <div className="text-right shrink-0 ml-4">
                   <div className="text-xs" style={{ color: "var(--text-secondary)" }}>{date}</div>

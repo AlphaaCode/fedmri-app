@@ -11,7 +11,9 @@ const LINE_BADGE: Record<string, string> = {
 
 export function MedicationCard({ subtype }: { subtype: Subtype }) {
   const data = SUBTYPE_MEDS[subtype];
-  const color = SUBTYPE_COLOR[subtype];
+  const color = SUBTYPE_COLOR[subtype] ?? "var(--teal)";
+
+  if (!data) return null;
 
   return (
     <motion.div
