@@ -98,16 +98,31 @@ async def predict(file: UploadFile = File(...)):
         import real_inference
 
         suffix = os.path.splitext(file.filename or "scan.mha")[1] or ".mha"
+        content = await file.read()
         with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as t:
-            t.write(await file.read())
+            t.write(content)
             tmp = t.name
         try:
             return real_inference.predict_path(tmp)
+        except RuntimeError as e:
+            raise HTTPException(status_code=422, detail=f"Inference failed: {e}")
+        except Exception as e:
+            err_str = str(e)
+            if "identify image" in err_str or "PIL" in err_str or "BytesIO" in err_str:
+                raise HTTPException(
+                    status_code=422,
+                    detail="Could not read the uploaded volume. Ensure it is a valid .mha or .dcm file (not a JPEG/PNG)."
+                )
+            raise HTTPException(status_code=500, detail=f"Inference error: {err_str[:200]}")
         finally:
-            os.unlink(tmp)
+            try:
+                os.unlink(tmp)
+            except Exception:
+                pass
 
-    # ---- mock path: deterministic seed from filename ----
-    seed = int(hashlib.md5(file.filename.encode()).hexdigest(), 16) % len(MOCK_RESULTS)
+    # mock path: deterministic seed from filename hash; never reads file bytes.
+    # This makes the service fully functional without a GPU or model checkpoint.
+    seed = int(hashlib.md5((file.filename or "scan").encode()).hexdigest(), 16) % len(MOCK_RESULTS)
     result = MOCK_RESULTS[seed].copy()
     # Probs are already normalised in mock_results; return as-is for reproducibility
     result["probs"] = [float(p) for p in result["probs"]]
