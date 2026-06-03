@@ -77,7 +77,7 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-sm"
+          className="w-full max-w-md"
         >
           {/* Mobile logo */}
           <div className="lg:hidden mb-8 flex items-center gap-2">
@@ -102,7 +102,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="doctor@hospital.edu"
-                className="w-full rounded-lg text-sm px-3 py-2.5 outline-none transition-colors"
+                className="w-full rounded-lg text-sm px-4 py-3 outline-none transition-colors"
                 style={{ background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
                 required
                 autoFocus
@@ -120,7 +120,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full rounded-lg text-sm px-3 py-2.5 outline-none"
+                className="w-full rounded-lg text-sm px-4 py-3 outline-none"
                 style={{ background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
                 required
               />
@@ -137,7 +137,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg text-sm font-semibold py-2.5 flex items-center justify-center gap-2 transition-opacity disabled:opacity-50"
+              className="w-full rounded-lg text-base font-semibold py-3 flex items-center justify-center gap-2 transition-opacity disabled:opacity-50"
               style={{ background: "var(--teal-dim)", color: "#0d1117" }}
             >
               {loading ? "Signing in…" : (<>Sign In <span>→</span></>)}

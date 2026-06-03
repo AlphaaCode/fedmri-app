@@ -258,7 +258,7 @@ export default function DatasetsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-6xl">
+      <div className="w-full">
         <PageHeader title="Federated Dataset Registry" />
         <div className="text-sm mt-8 text-center" style={{ color: "var(--text-secondary)" }}>
           Loading…
@@ -270,7 +270,7 @@ export default function DatasetsPage() {
   const nodes: DatasetNode[] = data?.nodes ?? [];
 
   return (
-    <div className="max-w-6xl space-y-5">
+    <div className="w-full space-y-5">
       <PageHeader
         title="Federated Dataset Registry"
         description="Harmonized breast DCE-MRI cohorts across the federated network."

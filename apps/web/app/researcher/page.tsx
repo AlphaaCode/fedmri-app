@@ -152,7 +152,7 @@ export default function ResearcherHome() {
 
   if (loading) {
     return (
-      <div className="max-w-6xl">
+      <div>
         <PageHeader title="Global Model Performance" />
         <div
           className="text-sm mt-8 text-center"
@@ -165,7 +165,7 @@ export default function ResearcherHome() {
   }
 
   return (
-    <div className="max-w-6xl space-y-5">
+    <div className="space-y-5">
       <PageHeader
         title="Global Model Performance"
         description={

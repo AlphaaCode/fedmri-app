@@ -67,7 +67,7 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
         <div className="px-4 py-4 flex items-center gap-3 border-b" style={{ borderColor: "var(--border)" }}>
           <div className="flex flex-col gap-1 min-w-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/main_logo.svg" alt="FedMRI" className="h-8 w-auto object-contain object-left" />
+            <img src="/main_logo.svg" alt="FedMRI" style={{ width: "180px", height: "auto" }} className="object-contain object-left" />
             {identity.subtitle && (
               <div className="text-[11px] flex items-center gap-1.5 truncate" style={{ color: "var(--text-secondary)" }}>
                 {identity.status && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: statusColor }} />}
@@ -140,7 +140,7 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
           </div>
         </header>
 
-        <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="flex-1 p-5 md:p-6 overflow-y-auto">
+        <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="flex-1 w-full p-5 md:p-6 overflow-y-auto">
           {children}
         </motion.main>
       </div>
