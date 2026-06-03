@@ -8,7 +8,7 @@ import { Panel } from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getCases, type CasesResponse } from "@/lib/doctor-api";
-import { SUBTYPES, SUBTYPE_COLOR, type CaseResult, type Subtype } from "@/lib/types";
+import { SUBTYPE_COLOR, type CaseResult, type Subtype } from "@/lib/types";
 
 const shortId = (id: string) => `#FED-${id.slice(-6).toUpperCase()}`;
 const Demo = () => (
@@ -20,30 +20,10 @@ const NOTES = [
   { who: "Radiologist", when: "2d ago", text: "Spiculated mass, upper outer quadrant. Hormone-receptor correlation advised." },
   { who: "Oncology", when: "5d ago", text: "Consistent with a hormone-positive profile; recommend IHC confirmation." },
 ];
-const BIOMARKERS = [
-  { k: "ER", v: "Positive" },
-  { k: "PR", v: "Positive" },
-  { k: "HER2", v: "Negative" },
-  { k: "Ki-67", v: "14%" },
-];
 const SIMILAR = [
   { id: "9MX2A1", node: "Hospital B", sim: 0.93 },
   { id: "4402KQ", node: "Hospital C", sim: 0.88 },
 ];
-
-function MriThumb({ label }: { label: string }) {
-  return (
-    <div className="rounded-lg overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-      <div className="h-28 flex items-center justify-center" style={{ background: "radial-gradient(circle at 50% 45%, #2a3a42, #0a1418)" }}>
-        <div className="w-12 h-16 rounded-full" style={{ background: "radial-gradient(circle, rgba(180,200,220,0.5), rgba(80,110,130,0) 70%)" }} />
-      </div>
-      <div className="px-2 py-1 flex items-center justify-between text-[11px]" style={{ background: "var(--bg-card2)", color: "var(--text-secondary)" }}>
-        {label}
-        <Demo />
-      </div>
-    </div>
-  );
-}
 
 function VolumeBars() {
   const bars = [62, 54, 48, 41, 33, 28];
@@ -129,29 +109,60 @@ export default function MedicalHistoryPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4">
         <div className="space-y-4 min-w-0">
-          <Panel title="Patient case timeline" subtitle="Baseline vs. latest acquisition" action={<Demo />}>
-            <div className="grid grid-cols-2 gap-3">
-              <MriThumb label="Baseline scan" />
-              <MriThumb label="Latest scan" />
-            </div>
+          <Panel title="Patient case timeline" subtitle="Scan history for this session">
+            {list.length > 0 ? (
+              <div className="space-y-2">
+                {list.slice(0, 5).map((x) => {
+                  const active = x.id === c?.id;
+                  const date = new Date(x.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+                  return (
+                    <button key={x.id} type="button" onClick={() => setSelectedId(x.id)}
+                      className="w-full flex items-center gap-3 rounded-xl border p-3 text-left transition-all"
+                      style={{ background: active ? "var(--teal-glow)" : "var(--bg-card2)", borderColor: active ? "#2dd4bf40" : "var(--border)" }}>
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ background: active ? "var(--teal)" : "var(--text-secondary)" }} />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-mono" style={{ color: active ? "var(--teal)" : "var(--text-primary)" }}>{shortId(x.id)}</div>
+                        <div className="text-[11px]" style={{ color: "var(--text-secondary)" }}>{date} · {x.predictedSubtype} · {Math.round(x.confidence * 100)}%</div>
+                      </div>
+                      {active && <span className="text-[10px] font-semibold shrink-0" style={{ color: "var(--teal)" }}>Viewing</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-xs py-6 text-center" style={{ color: "var(--text-secondary)" }}>No cases found for this session.</div>
+            )}
           </Panel>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Panel title="Subtype probability" subtitle="Real model output for this case">
+            <Panel title="AI prediction" subtitle="Model output for this case">
               {c ? (
-                <div className="space-y-2">
-                  {SUBTYPES.map((s, i) => {
-                    const p = Math.round((c.probs?.[i] ?? 0) * 100);
+                <div className="space-y-3">
+                  <div className="rounded-xl p-3" style={{ background: "var(--bg-card2)", border: `1px solid ${(SUBTYPE_COLOR[c.predictedSubtype as Subtype] ?? "#2dd4bf")}40` }}>
+                    <div className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--text-secondary)" }}>Predicted subtype</div>
+                    <div className="text-xl font-bold" style={{ color: SUBTYPE_COLOR[c.predictedSubtype as Subtype] ?? "var(--teal)" }}>{c.predictedSubtype}</div>
+                    <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Confidence: {Math.round(c.confidence * 100)}%</div>
+                  </div>
+                  {Array.isArray(c.probs) && c.probs.length > 0 && (() => {
+                    const labels = c.probs.length === 2 ? ["Luminal", "Non-Luminal"] : ["Luminal A", "Luminal B", "HER2", "Triple Negative"];
+                    const colors = c.probs.length === 2 ? ["#2dd4bf", "#f59e0b"] : ["#2dd4bf", "#60a5fa", "#f59e0b", "#fb7185"];
                     return (
-                      <div key={s} className="flex items-center gap-3">
-                        <div className="w-28 text-xs shrink-0" style={{ color: SUBTYPE_COLOR[s] }}>{s}</div>
-                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-base)" }}>
-                          <div className="h-full rounded-full" style={{ width: `${p}%`, background: SUBTYPE_COLOR[s] }} />
-                        </div>
-                        <div className="w-9 text-right text-xs tabular-nums" style={{ color: "var(--text-secondary)" }}>{p}%</div>
+                      <div className="space-y-2">
+                        {labels.map((label, i) => {
+                          const p = Math.round((c.probs?.[i] ?? 0) * 100);
+                          return (
+                            <div key={label} className="flex items-center gap-3">
+                              <div className="w-28 text-xs shrink-0" style={{ color: colors[i] }}>{label}</div>
+                              <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-base)" }}>
+                                <div className="h-full rounded-full transition-all duration-700" style={{ width: `${p}%`, background: colors[i] }} />
+                              </div>
+                              <div className="w-9 text-right text-xs tabular-nums" style={{ color: "var(--text-secondary)" }}>{p}%</div>
+                            </div>
+                          );
+                        })}
                       </div>
                     );
-                  })}
+                  })()}
                 </div>
               ) : (
                 <div className="text-xs py-4 text-center" style={{ color: "var(--text-secondary)" }}>No case selected.</div>
@@ -195,15 +206,34 @@ export default function MedicalHistoryPage() {
             </div>
           </Panel>
 
-          <Panel title="Patient bio-markers" action={<Demo />}>
-            <div className="space-y-0.5">
-              {BIOMARKERS.map((b) => (
-                <div key={b.k} className="flex items-center justify-between py-1.5 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
-                  <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{b.k}</span>
-                  <span className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>{b.v}</span>
-                </div>
-              ))}
-            </div>
+          <Panel title="Biomarkers" subtitle="Derived from FedSCRT binary classification">
+            {c ? (
+              <div className="space-y-2">
+                {(() => {
+                  const isLuminal = (c.predictedSubtype as string) === "Luminal" || (c.predictedSubtype as string)?.startsWith("Luminal");
+                  const biomarks = [
+                    { k: "ER", v: isLuminal ? "Positive" : "Negative", hint: "Estrogen receptor" },
+                    { k: "PR", v: isLuminal ? "Positive" : "Negative", hint: "Progesterone receptor" },
+                    { k: "HER2", v: "Negative", hint: "Not assessed by this model" },
+                    { k: "Ki-67", v: isLuminal ? "< 20%" : "> 20%", hint: "Proliferation index (estimated)" },
+                  ];
+                  return biomarks.map(({ k, v, hint }) => (
+                    <div key={k} className="flex items-center justify-between rounded-lg px-3 py-2" style={{ background: "var(--bg-card2)", border: "1px solid var(--border)" }}>
+                      <div>
+                        <span className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>{k}</span>
+                        <span className="text-[11px] ml-2" style={{ color: "var(--text-secondary)" }}>{hint}</span>
+                      </div>
+                      <span className="text-xs font-medium" style={{ color: v.includes("Positive") || v.includes("<") ? "var(--teal)" : "var(--text-secondary)" }}>{v}</span>
+                    </div>
+                  ));
+                })()}
+                <p className="text-[11px] mt-1" style={{ color: "var(--text-secondary)", opacity: 0.7 }}>
+                  Derived from binary Luminal/Non-Luminal classification · confirm with IHC.
+                </p>
+              </div>
+            ) : (
+              <div className="text-xs py-4 text-center" style={{ color: "var(--text-secondary)" }}>No case selected.</div>
+            )}
           </Panel>
         </div>
       </div>
