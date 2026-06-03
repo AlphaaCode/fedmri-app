@@ -19,8 +19,8 @@ const FAQ_ITEMS = [
     a: "A DINOv2-based multiple-instance learning (MIL) classifier that predicts breast-cancer molecular subtypes: Luminal A, Luminal B, HER2-enriched, and Triple Negative. The model is trained collaboratively across the three hospital nodes without centralizing any scan data.",
   },
   {
-    q: "What do FedAvg and FedProx mean?",
-    a: "Both are aggregation strategies that combine each hospital's local model updates into a single global model. FedAvg takes a weighted average of the local gradients. FedProx adds a proximal regularisation term that penalises large deviation from the global model — this improves stability when hospital datasets have different (non-IID) distributions.",
+    q: "Which aggregation strategies does FedMRI use?",
+    a: "FedMRI uses FedAvg (weighted average of local weight updates) and FedSCRT (Federated Classifier Retraining). FedSCRT freezes the ConvNeXt-Nano backbone and only federates the retrained MIL head — achieving macro-F1 0.629 vs FedAvg 0.429 on non-IID breast MRI data (Dirichlet α=0.5).",
   },
   {
     q: "Can the researcher view patient images?",

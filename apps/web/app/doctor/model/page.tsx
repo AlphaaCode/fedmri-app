@@ -13,7 +13,7 @@ import { ConfusionMatrix } from "@/components/ConfusionMatrix";
 interface History { curves: any; baseline: any; }
 interface PerClass { subtypes: string[]; strategies: string[]; values: any; }
 interface Confusion { subtypes: string[]; matrix: any; }
-interface Compare { centralized: { f1Macro: number }; fedprox: { f1Macro: number }; gap: number; privacyCost: { patientsProtected: number }; totalCases: number; }
+interface Compare { centralized: { f1Macro: number }; fedscrt: { f1Macro: number }; gap: number; privacyCost: { patientsProtected: number }; totalCases: number; }
 
 export default function ModelMetricsPage() {
   usePortalTitle("Model Performance");
@@ -45,12 +45,12 @@ export default function ModelMetricsPage() {
       {compare && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <StatCard label="Centralized F1" value={compare.centralized.f1Macro.toFixed(2)} accent="#f59e0b" />
-          <StatCard label="FedProx F1" value={compare.fedprox.f1Macro.toFixed(2)} accent="#2dd4bf" />
+          <StatCard label="FedSCRT F1" value={(compare.fedscrt ?? (compare as any).fedprox ?? { f1Macro: 0 }).f1Macro.toFixed(2)} accent="#2dd4bf" />
           <StatCard
             label="Privacy gap"
             value={`${compare.gap >= 0 ? "+" : ""}${compare.gap.toFixed(2)}`}
             accent={compare.gap < 0 ? "#fb7185" : "#2dd4bf"}
-            hint={`Centralized − FedProx: ${Math.abs(compare.gap).toFixed(2)} F1 lower`}
+            hint={`Centralized − FedSCRT: ${Math.abs(compare.gap).toFixed(2)} F1 lower`}
           />
           <StatCard
             label="Patients protected"

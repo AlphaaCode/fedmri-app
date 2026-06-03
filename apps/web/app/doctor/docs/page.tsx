@@ -14,7 +14,7 @@ const BLURB: Record<string, string> = {
   "Quick Start": "Open Scan Analysis, drop a breast MRI (PNG / JPG / NIfTI / DICOM), and the model returns a molecular-subtype prediction with a confidence score in under 4 seconds.",
   "Node Provisioning": "Each hospital runs a federated client (Node Alpha-7 for your site). Provisioning registers the node with the central aggregator and exchanges the initial global weights.",
   "API Reference": "All clinical endpoints sit behind JWT auth and a hospital-silo guard. /cases is scoped to your hospital; /model/* exposes aggregate metrics only.",
-  "Model Lifecycle": "The global model advances one integer version per completed round. Current: DINOv2-MIL v10 (F1 macro 0.41), reached after 10 rounds — FedAvg r1–5, then FedProx r6–10.",
+  "Model Lifecycle": "The global model advances one integer version per completed round. Current: FedSCRT v10 (macro-F1 0.629), reached after 10 rounds — FedAvg r1–5 to build the base, then FedSCRT r6–10 (backbone frozen, MIL head retrained).",
   Webhooks: "When a round completes, the coordinator posts a signed round-complete event back to the backend, which records the new metrics and broadcasts a WebSocket update to connected clinicians.",
   "HIPAA Guidelines": "No raw patient data ever leaves a hospital silo. Only model weight updates are exchanged — every privacy-audit record logs 0 bytes of raw data transmitted.",
   "Data Sovereignty": "Scans are stored under uploads/hospitals/{id}/ and are never cross-shared. A doctor at one hospital cannot read another hospital's cases (enforced by the silo guard).",
@@ -64,7 +64,7 @@ function NodeSyncArticle() {
       <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--text-secondary)" }}>
         When the central aggregator opens a round, every node downloads the current global weights, verifies integrity
         via SHA-256, trains locally for a few epochs, and reports its delta. The aggregator combines them with
-        FedAvg (rounds 1–5) or FedProx (rounds 6–10) and publishes the next global model version.
+        FedAvg (rounds 1–5) or FedSCRT (rounds 6–10) and publishes the next global model version.
       </p>
 
       <SyncDiagram />

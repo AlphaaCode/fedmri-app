@@ -78,9 +78,9 @@ export class FlService {
   async handleRoundComplete(body: any): Promise<void> {
     const roundId: string = body.round_id || randomUUID();
     const roundNumber: number = body.round_number ?? 1;
-    const strategyRaw = (body.strategy || 'FEDPROX').toUpperCase();
+    const strategyRaw = (body.strategy || 'FEDSCRT').toUpperCase();
     const strategy: FLStrategy =
-      strategyRaw === 'FEDAVG' ? FLStrategy.FEDAVG : FLStrategy.FEDPROX;
+      strategyRaw === 'FEDAVG' ? FLStrategy.FEDAVG : FLStrategy.FEDSCRT;
     const contributionsIn: any[] = body.contributions || [];
     const triggeredCase: string | undefined = body.triggered_case;
 

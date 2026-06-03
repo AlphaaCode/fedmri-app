@@ -32,7 +32,7 @@ enum FeedbackType {
 
 enum FLStrategy {
   FEDAVG
-  FEDPROX
+  FEDSCRT
 }
 
 enum FLTrigger {
