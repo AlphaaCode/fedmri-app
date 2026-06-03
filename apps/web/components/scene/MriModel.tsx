@@ -28,16 +28,21 @@ export function MriModel({ refs }: Props) {
     ringMeshes.current = [];
     bedMeshes.current = [];
 
-    // Scale to fit: target 3.2 world units
-    const box = new THREE.Box3().setFromObject(fbx);
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    if (maxDim > 0) fbx.scale.setScalar(1.6 / maxDim);
+    // Guard: same cached-object + Strict Mode double-invocation fix
+    if (!fbx.userData.fedmriScaled) {
+      fbx.userData.fedmriScaled = true;
 
-    // Centre model
-    box.setFromObject(fbx);
-    const centre = box.getCenter(new THREE.Vector3());
-    fbx.position.set(-centre.x, -centre.y, -centre.z);
+      // Measure BEFORE scaling (native bbox)
+      const box = new THREE.Box3().setFromObject(fbx);
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      if (maxDim > 0) fbx.scale.setScalar(1.6 / maxDim);
+
+      // Centre after scaling
+      box.setFromObject(fbx);
+      const centre = box.getCenter(new THREE.Vector3());
+      fbx.position.set(-centre.x, -centre.y, -centre.z);
+    }
 
     fbx.traverse((child: THREE.Object3D) => {
       if (!(child instanceof THREE.Mesh)) return;
