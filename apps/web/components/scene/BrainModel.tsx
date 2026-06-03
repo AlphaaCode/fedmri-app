@@ -7,7 +7,8 @@ import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import * as THREE from "three";
 import { SceneRefs } from "./types";
 
-const TARGET_SIZE = 0.75; // world units — brain fits in a 0.75-unit cube
+// 2× the reference 0.75 unit size that fit the canvas nicely
+const TARGET_SIZE = 1.5;
 
 interface Props { refs: SceneRefs; }
 
@@ -18,16 +19,16 @@ export function BrainModel({ refs }: Props) {
   const clonedMats = useRef<THREE.Material[]>([]);
 
   useEffect(() => {
-    // Guard: useLoader returns the SAME cached object on every mount.
-    // React Strict Mode calls useEffect twice — without this guard the
-    // second invocation measures the already-scaled bbox and resets scale to 1.
+    // CRITICAL: useLoader returns the SAME cached object on every mount.
+    // React Strict Mode (dev) calls useEffect twice. Without this guard the
+    // second invocation re-measures the already-scaled bbox → scale resets to 1
+    // → model renders at full native size (fills entire canvas).
     if (fbx.userData.fedmriScaled) {
-      // Re-collect cloned mats (they were set on first mount)
       clonedMats.current = [];
       fbx.traverse((child: THREE.Object3D) => {
         if (!(child instanceof THREE.Mesh)) return;
         const mats = Array.isArray(child.material) ? child.material : [child.material];
-        mats.forEach((m: THREE.Material) => clonedMats.current.push(m));
+        (mats as THREE.Material[]).forEach((m) => clonedMats.current.push(m));
       });
       return;
     }
