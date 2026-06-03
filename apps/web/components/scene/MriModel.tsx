@@ -32,7 +32,7 @@ export function MriModel({ refs }: Props) {
     const box = new THREE.Box3().setFromObject(fbx);
     const size = box.getSize(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z);
-    if (maxDim > 0) fbx.scale.setScalar(3.2 / maxDim);
+    if (maxDim > 0) fbx.scale.setScalar(1.6 / maxDim);
 
     // Centre model
     box.setFromObject(fbx);

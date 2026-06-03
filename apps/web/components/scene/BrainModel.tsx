@@ -54,7 +54,7 @@ export function BrainModel({ refs }: Props) {
     const box = new THREE.Box3().setFromObject(fbx);
     const size = box.getSize(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z);
-    if (maxDim > 0) fbx.scale.setScalar(1.4 / maxDim);
+    if (maxDim > 0) fbx.scale.setScalar(0.75 / maxDim);
 
     // Centre the model on the origin
     box.setFromObject(fbx);
