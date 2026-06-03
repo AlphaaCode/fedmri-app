@@ -1,6 +1,23 @@
-import { apiFetch } from "@/lib/api";
+import { apiFetch } from "./api";
 
-// ─── Overview ────────────────────────────────────────────────────────────────
+// ─── FL experiment types ──────────────────────────────────────────────────────
+
+export interface FlRoundStat {
+  round: number;
+  f1: number;
+  auc: number;
+  accuracy: number;
+}
+
+export interface FlExperiment {
+  strategy: string;
+  alpha: number;
+  rounds: number;
+  history: FlRoundStat[];
+  final: { f1: number; auc: number; accuracy: number };
+}
+
+// ─── Overview ─────────────────────────────────────────────────────────────────
 
 export interface ResearcherOverview {
   modelVersion: number;
@@ -11,14 +28,10 @@ export interface ResearcherOverview {
   hospitals: number;
   patientsProtected: number;
   rawBytesSent: number;
-  phase: string;
+  phase: "idle" | "local_training" | "aggregating" | "complete";
 }
 
-export function getOverview(): Promise<ResearcherOverview> {
-  return apiFetch<ResearcherOverview>("/researcher/overview");
-}
-
-// ─── Training Log ─────────────────────────────────────────────────────────────
+// ─── Training log ─────────────────────────────────────────────────────────────
 
 export interface TrainingRound {
   roundNumber: number;
@@ -30,20 +43,7 @@ export interface TrainingRound {
   status: "active" | "completed";
 }
 
-export interface TrainingLogResponse {
-  total: number;
-  rounds: TrainingRound[];
-}
-
-export function getTrainingLog(page?: number, limit?: number): Promise<TrainingLogResponse> {
-  const params = new URLSearchParams();
-  if (page !== undefined) params.set("page", String(page));
-  if (limit !== undefined) params.set("limit", String(limit));
-  const qs = params.toString() ? `?${params.toString()}` : "";
-  return apiFetch<TrainingLogResponse>(`/researcher/training-log${qs}`);
-}
-
-// ─── Model Versions ───────────────────────────────────────────────────────────
+// ─── Model versions ───────────────────────────────────────────────────────────
 
 export interface ModelVersion {
   modelVersion: number;
@@ -55,12 +55,49 @@ export interface ModelVersion {
   hash: string;
 }
 
-export interface ModelVersionsResponse {
-  versions: ModelVersion[];
+// ─── Datasets ─────────────────────────────────────────────────────────────────
+
+export interface DatasetNode {
+  displayName: string;
+  flClientId: string;
+  totalCases: number;
+  specialty: string;
 }
 
-export function getModelVersions(): Promise<ModelVersionsResponse> {
-  return apiFetch<ModelVersionsResponse>("/researcher/model-versions");
+export interface DatasetCohort {
+  designation: string;
+  description: string;
+  sourceNode: string;
+  modality: string;
+  records: number;
+  access: string;
+}
+
+export interface DatasetsResponse {
+  totalRecords: number;
+  dataQuality: { annotationCompleteness: number; dicomIntegrity: number };
+  nodes: DatasetNode[];
+  cohorts: DatasetCohort[];
+}
+
+// ─── System logs ──────────────────────────────────────────────────────────────
+
+export interface SystemLogEvent {
+  id: string;
+  ts: string;
+  severity: string;
+  nodeId: string;
+  eventType: string;
+  payload: string;
+  latencyMs: number;
+  bytes: number;
+}
+
+export interface SystemLogsResponse {
+  total: number;
+  connectedNodes: number;
+  totalNodes: number;
+  events: SystemLogEvent[];
 }
 
 // ─── Topology ─────────────────────────────────────────────────────────────────
@@ -83,94 +120,25 @@ export interface TopologyResponse {
   nodes: TopologyNode[];
 }
 
-export function getTopology(): Promise<TopologyResponse> {
-  return apiFetch<TopologyResponse>("/researcher/topology");
+// ─── API functions ────────────────────────────────────────────────────────────
+
+export function getOverview(): Promise<ResearcherOverview> {
+  return apiFetch("/researcher/overview");
 }
 
-// ─── Datasets ─────────────────────────────────────────────────────────────────
-
-export interface DatasetNode {
-  displayName: string;
-  flClientId: string;
-  totalCases: number;
-  specialty: string;
+export function getTrainingLog(
+  page = 1,
+  limit = 20,
+): Promise<{ total: number; rounds: TrainingRound[] }> {
+  return apiFetch(`/researcher/training-log?page=${page}&limit=${limit}`);
 }
 
-export interface DatasetCohort {
-  designation: string;
-  description: string;
-  sourceNode: string;
-  modality: string;
-  records: number;
-  access: "GRANTED" | "PENDING" | "RESTRICTED";
-}
-
-export interface DatasetsResponse {
-  totalRecords: number;
-  dataQuality: { annotationCompleteness: number; dicomIntegrity: number };
-  nodes: DatasetNode[];
-  cohorts: DatasetCohort[];
-}
-
-export function getDatasets(): Promise<DatasetsResponse> {
-  return apiFetch<DatasetsResponse>("/researcher/datasets");
-}
-
-// ─── System Logs ──────────────────────────────────────────────────────────────
-
-export interface SystemLogEvent {
-  id: string;
-  ts: string;
-  severity: string;
-  nodeId: string;
-  eventType: string;
-  payload: string;
-  latencyMs: number | null;
-  bytes: number | null;
-}
-
-export interface SystemLogsResponse {
-  total: number;
-  connectedNodes: number;
-  totalNodes: number;
-  events: SystemLogEvent[];
-}
-
-export function getSystemLogs(params?: {
-  page?: number;
-  limit?: number;
-  severity?: string;
-}): Promise<SystemLogsResponse> {
-  const p = new URLSearchParams();
-  if (params?.page !== undefined) p.set("page", String(params.page));
-  if (params?.limit !== undefined) p.set("limit", String(params.limit));
-  if (params?.severity) p.set("severity", params.severity);
-  const qs = p.toString() ? `?${p.toString()}` : "";
-  return apiFetch<SystemLogsResponse>(`/researcher/system-logs${qs}`);
-}
-
-// ─── Model History & Confusion Matrix (for chart components) ─────────────────
-
-export function getModelHistory(): Promise<any> {
-  return apiFetch("/model/history");
-}
-
-export function getConfusionMatrix(): Promise<any> {
-  return apiFetch("/model/confusion-matrix");
-}
-
-// ─── Federated Learning experiments + live test ──────────────────────────────
-
-export interface FlExperiment {
-  strategy: string;
-  alpha: number;
-  rounds: number;
-  history: { round: number; f1: number; auc: number; accuracy: number }[];
-  final: { f1: number; auc: number; accuracy: number };
+export function getModelVersions(): Promise<{ versions: ModelVersion[] }> {
+  return apiFetch("/researcher/model-versions");
 }
 
 export function getFlExperiments(): Promise<FlExperiment[]> {
-  return apiFetch<FlExperiment[]>("/researcher/fl-experiments");
+  return apiFetch("/researcher/fl-experiments");
 }
 
 export function runFlTest(
@@ -181,4 +149,33 @@ export function runFlTest(
     method: "POST",
     body: JSON.stringify({ strategy, rounds }),
   });
+}
+
+export function getTopology(): Promise<TopologyResponse> {
+  return apiFetch("/researcher/topology");
+}
+
+export function getDatasets(): Promise<DatasetsResponse> {
+  return apiFetch("/researcher/datasets");
+}
+
+export function getSystemLogs(
+  opts: { page?: number; limit?: number; severity?: string } = {},
+): Promise<SystemLogsResponse> {
+  const { page = 1, limit = 50, severity } = opts;
+  const q = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    ...(severity ? { severity } : {}),
+  });
+  return apiFetch(`/researcher/system-logs?${q}`);
+}
+
+// Not yet implemented in backend — callers use Promise.allSettled and handle failures gracefully.
+export function getModelHistory(): Promise<unknown> {
+  return apiFetch("/researcher/model-history");
+}
+
+export function getConfusionMatrix(): Promise<unknown> {
+  return apiFetch("/researcher/confusion-matrix");
 }
