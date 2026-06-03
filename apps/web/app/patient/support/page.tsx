@@ -2,7 +2,7 @@
 
 export default function PatientSupportPage() {
   return (
-    <div className="p-6 max-w-xl mx-auto space-y-4">
+    <div className="w-full space-y-4 p-1">
       <div>
         <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Support</h1>
         <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Get help with your FedMRI patient account</p>

@@ -25,7 +25,7 @@ export default function PatientResultsPage() {
   }, []);
 
   return (
-    <div className="max-w-xl mx-auto p-5 space-y-4">
+    <div className="w-full space-y-4 p-1">
       <div>
         <h1 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>Your scan history</h1>
         <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Past analyses — always confirm results with your oncologist</p>

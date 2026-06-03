@@ -5,7 +5,7 @@ import { useAuthStore } from "@/lib/auth-store";
 export default function PatientSettingsPage() {
   const user = useAuthStore((s) => s.user);
   return (
-    <div className="p-6 max-w-xl mx-auto space-y-4">
+    <div className="w-full space-y-4 p-1">
       <div>
         <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Settings</h1>
         <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Manage your account and privacy preferences</p>
