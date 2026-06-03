@@ -83,13 +83,14 @@ export default function SupportPage() {
   usePortalTitle("Support");
 
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [docsOpen, setDocsOpen] = useState(false);
 
   function toggle(i: number) {
     setOpenIndex((prev) => (prev === i ? null : i));
   }
 
   return (
-    <div className="max-w-4xl space-y-5">
+    <div className="max-w-4xl space-y-5 min-h-full">
       <PageHeader
         title="Support"
         description="Help and documentation for the federated research network."
@@ -113,11 +114,11 @@ export default function SupportPage() {
               </p>
             </div>
             <div>
-              <a href="#" tabIndex={-1}>
+              <button onClick={() => setDocsOpen(true)}>
                 <Button variant="teal" className="text-xs px-3 py-1.5">
                   Open documentation
                 </Button>
-              </a>
+              </button>
             </div>
           </div>
         </Card>
@@ -173,6 +174,46 @@ export default function SupportPage() {
       >
         Network operations team · 24h response window · support@fedmri.local
       </p>
+
+      {docsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(5,10,14,0.85)", backdropFilter: "blur(4px)" }}
+          onClick={() => setDocsOpen(false)}>
+          <div className="w-full max-w-2xl rounded-2xl border overflow-hidden"
+            style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "var(--border)" }}>
+              <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>FedMRI Documentation</div>
+              <button onClick={() => setDocsOpen(false)} className="text-sm px-2 py-1 rounded" style={{ color: "var(--text-secondary)" }}>✕</button>
+            </div>
+            <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto text-sm" style={{ color: "var(--text-primary)" }}>
+              <section>
+                <h3 className="font-semibold mb-1">Overview</h3>
+                <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>FedMRI trains a ConvNeXt-Nano + GatedAttentionMIL classifier (FedSCRT) across 3 hospital nodes. Raw scans never leave their silo — only model head weights are exchanged.</p>
+              </section>
+              <section>
+                <h3 className="font-semibold mb-1">FL Round Lifecycle</h3>
+                <pre className="text-[11px] rounded-lg p-3 font-mono overflow-x-auto" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>{`Doctor uploads scan
+  → POST /cases → InferenceService.predict() [sync ~2s]
+  → case saved → response returned to doctor
+  → (async) FLRoundService.triggerRound()
+      → POST /round/start (fl-coordinator)
+      → coordinator runs mock/Flower round (~30s)
+      → POST /internal/fl/round-complete (signed webhook)
+  → NestJS saves fl_round + broadcasts WS 'fl:round:complete'`}</pre>
+              </section>
+              <section>
+                <h3 className="font-semibold mb-1">FedSCRT Strategy</h3>
+                <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>Freezes the ConvNeXt-Nano backbone. Each hospital retrains only the GatedAttentionMIL head on its local data. The server FedAvg-averages only the head weights. Achieves macro-F1 0.629 vs FedAvg 0.429 on non-IID data (Dirichlet α=0.5).</p>
+              </section>
+              <section>
+                <h3 className="font-semibold mb-1">Privacy Guarantee</h3>
+                <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>Every PrivacyAuditLog entry records rawDataTransmitted=0. The HospitalSiloGuard blocks cross-hospital case reads. Scans are stored under uploads/hospitals/&#123;id&#125;/ and are never cross-shared.</p>
+              </section>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
