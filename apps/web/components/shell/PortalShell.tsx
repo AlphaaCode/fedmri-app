@@ -17,11 +17,6 @@ function BrandMark() {
   return <img src="/logo-mark.png" alt="FedMRI" className="w-full h-full object-contain" />;
 }
 
-const ROLE_HOME: Record<string, string> = {
-  DOCTOR: "/doctor",
-  PATIENT: "/patient/chat",
-  RESEARCHER: "/researcher",
-};
 
 export function PortalShell({ identity, nav, footerNav, primaryAction, headerStatus, requiredRole, children }: {
   identity: ShellIdentity;
@@ -54,9 +49,11 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
     const t = setTimeout(() => {
       const { token: tok, user: u } = useAuthStore.getState();
       if (!tok) { router.replace("/login"); return; }
-      // Enforce the portal's role: send mismatched users to their own portal.
+      // Wrong role: send to login so user can authenticate with the right account.
+      // (Redirecting to the current user's portal home is confusing when navigating
+      // directly to a different portal's URL.)
       if (requiredRole && u && u.role !== requiredRole) {
-        router.replace(ROLE_HOME[u.role] ?? "/login");
+        router.replace("/login");
       }
     }, 120);
     return () => clearTimeout(t);
