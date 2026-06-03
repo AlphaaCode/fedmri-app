@@ -85,7 +85,7 @@ export default function PatientRegisterPage() {
         }} />
         <div className="relative z-10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-full.png" alt="FedMRI" className="h-9 w-auto object-contain" />
+          <img src="/main_logo.svg" alt="FedMRI" className="h-14 w-auto object-contain" />
         </div>
         <div className="relative z-10 space-y-6">
           <div>
@@ -122,7 +122,7 @@ export default function PatientRegisterPage() {
           className="w-full max-w-sm">
           <div className="lg:hidden mb-8">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-full.png" alt="FedMRI" className="h-8 w-auto object-contain" />
+            <img src="/main_logo.svg" alt="FedMRI" className="h-12 w-auto object-contain" />
           </div>
 
           <div className="mb-6">

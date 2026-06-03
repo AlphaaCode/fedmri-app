@@ -12,10 +12,6 @@ export interface NavItem { href: string; label: string; icon: LucideIcon; }
 export interface FooterItem { label: string; icon: LucideIcon; href?: string; onClick?: () => void; }
 export interface ShellIdentity { title: string; subtitle?: string; status?: "ok" | "active" | "idle"; icon?: ReactNode; }
 
-function BrandMark() {
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src="/logo-mark.png" alt="FedMRI" className="w-full h-full object-contain" />;
-}
 
 
 export function PortalShell({ identity, nav, footerNav, primaryAction, headerStatus, requiredRole, children }: {
@@ -69,11 +65,9 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
     <div className="min-h-screen flex">
       <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
         <div className="px-4 py-4 flex items-center gap-3 border-b" style={{ borderColor: "var(--border)" }}>
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 overflow-hidden" style={{ background: "var(--bg-card2)", border: "1px solid var(--border)" }}>
-            {identity.icon ?? <BrandMark />}
-          </div>
-          <div className="min-w-0">
-            <div className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>{identity.title}</div>
+          <div className="flex flex-col gap-1 min-w-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/main_logo.svg" alt="FedMRI" className="h-8 w-auto object-contain object-left" />
             {identity.subtitle && (
               <div className="text-[11px] flex items-center gap-1.5 truncate" style={{ color: "var(--text-secondary)" }}>
                 {identity.status && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: statusColor }} />}

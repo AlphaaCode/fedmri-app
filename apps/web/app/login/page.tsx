@@ -90,7 +90,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="relative z-10 flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-full.png" alt="FedMRI" className="h-9 w-auto object-contain" />
+          <img src="/main_logo.svg" alt="FedMRI" className="h-14 w-auto object-contain" />
         </div>
         {/* Brain illustration */}
         <div className="relative z-10 flex-1 flex items-center justify-center py-8">
@@ -120,7 +120,7 @@ export default function LoginPage() {
           {/* Mobile logo */}
           <div className="lg:hidden mb-8 flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-full.png" alt="FedMRI" className="h-8 w-auto object-contain" />
+            <img src="/main_logo.svg" alt="FedMRI" className="h-12 w-auto object-contain" />
           </div>
 
           <div className="mb-7">
