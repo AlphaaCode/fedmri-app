@@ -1,18 +1,17 @@
 {
   "strategy": "fedscrt",
   "alpha": 0.5,
-  "rounds": 20,
+  "rounds": 1,
   "epochs": 2,
   "history": [
     {
-      "round": "fedscrt",
+      "round": 1,
       "f1": 0.6289035787554137,
       "auc": 0.6873630387143902,
       "accuracy": 0.7027027027027027
     }
   ],
   "final": {
-    "round": "fedscrt",
     "f1": 0.6289035787554137,
     "auc": 0.6873630387143902,
     "accuracy": 0.7027027027027027
