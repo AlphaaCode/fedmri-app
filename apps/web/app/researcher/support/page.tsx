@@ -114,11 +114,9 @@ export default function SupportPage() {
               </p>
             </div>
             <div>
-              <button onClick={() => setDocsOpen(true)}>
-                <Button variant="teal" className="text-xs px-3 py-1.5">
-                  Open documentation
-                </Button>
-              </button>
+              <Button variant="teal" className="text-xs px-3 py-1.5" onClick={() => setDocsOpen(true)}>
+                Open documentation
+              </Button>
             </div>
           </div>
         </Card>
