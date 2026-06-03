@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { usePortalTitle } from "@/lib/use-portal-title";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatCard } from "@/components/ui/StatCard";
@@ -103,12 +104,12 @@ function QualityBar({ label, pct }: { label: string; pct: string }) {
           height: "6px",
         }}
       >
-        <div
+        <motion.div
           className="rounded-full h-full"
-          style={{
-            width: `${pct}%`,
-            background: "var(--teal-dim)",
-          }}
+          style={{ background: "var(--teal-dim)" }}
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
         />
       </div>
     </div>
