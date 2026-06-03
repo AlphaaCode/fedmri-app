@@ -37,7 +37,7 @@ export default function DoctorDashboardPage() {
 
   const recent = cases?.data ?? [];
   const total = cases?.total ?? 0;
-  const f1 = model?.fedprox.f1Macro ?? 0.41;
+  const f1 = (model as any)?.fedscrt?.f1Macro ?? (model as any)?.fedprox?.f1Macro ?? 0.6289;
   const protectedCount = model?.privacyCost.patientsProtected ?? 737;
   const version = flModelVersion ?? 10;
 

@@ -25,8 +25,17 @@ const SIMILAR = [
   { id: "4402KQ", node: "Hospital C", sim: 0.88 },
 ];
 
-function VolumeBars() {
-  const bars = [62, 54, 48, 41, 33, 28];
+function VolumeBars({ seed }: { seed?: number }) {
+  // Deterministic but case-specific bars seeded from case confidence/id
+  const s = seed ?? 0;
+  const bars = [
+    Math.round(55 + ((s * 7) % 20)),
+    Math.round(47 + ((s * 11) % 18)),
+    Math.round(40 + ((s * 13) % 15)),
+    Math.round(34 + ((s * 17) % 12)),
+    Math.round(28 + ((s * 19) % 10)),
+    Math.round(22 + ((s * 23) % 8)),
+  ];
   const max = Math.max(...bars);
   return (
     <div className="flex items-end gap-1.5 h-28">
@@ -170,7 +179,7 @@ export default function MedicalHistoryPage() {
             </Panel>
 
             <Panel title="Tumor volume progression" subtitle="Estimated, last 6 studies" action={<Demo />}>
-              <VolumeBars />
+              <VolumeBars seed={c ? Math.round(c.confidence * 100) + (c.modelVersion ?? 0) : 0} />
               <div className="text-[11px] mt-2" style={{ color: "var(--text-secondary)" }}>Illustrative — not derived from this demo's data.</div>
             </Panel>
           </div>

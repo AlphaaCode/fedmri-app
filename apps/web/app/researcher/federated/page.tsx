@@ -59,7 +59,12 @@ export default function FederatedPage() {
       const row: Record<string, number> = { round: r };
       byAlpha.forEach((e) => {
         const pt = e.history.find((h) => h.round === r);
-        if (pt) row[e.strategy] = Number(pt.f1.toFixed(4));
+        if (pt) {
+          row[e.strategy] = Number(pt.f1.toFixed(4));
+        } else if (e.history.length === 1) {
+          // One-shot strategy (FedSCRT): extend the single value as a horizontal baseline
+          row[e.strategy] = Number(e.history[0].f1.toFixed(4));
+        }
       });
       rows.push(row);
     }

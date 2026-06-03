@@ -85,7 +85,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl space-y-5">
+    <div className="w-full space-y-5">
       <PageHeader
         title="Settings"
         description="Node and account configuration."

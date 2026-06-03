@@ -2,18 +2,19 @@ import { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
 
-export function StatCard({ label, value, hint, accent = "var(--text-primary)", className }: {
+export function StatCard({ label, value, hint, accent = "var(--text-primary)", className, delay = 0 }: {
   label: string;
   value: ReactNode;
   hint?: string;
   accent?: string;
   className?: string;
+  delay?: number;
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
+      transition={{ duration: 0.28, ease: "easeOut", delay }}
       className={cn("rounded-xl border p-4", className)}
       style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
     >

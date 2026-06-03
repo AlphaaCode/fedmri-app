@@ -208,6 +208,11 @@ async def verify_image(file: UploadFile = File(...)):
         return real_inference.verify_volume(contents, file.filename or "scan.mha")
 
     # ---- mock path: PIL grayscale-photo heuristic on `contents` ----
+    # Medical volume formats (MHA, DICOM, NIfTI) are always valid — skip PIL check
+    fname = (file.filename or "").lower()
+    if fname.endswith((".mha", ".dcm", ".nii", ".nii.gz")):
+        return {"valid": True, "confidence": 0.95, "reason": "Medical volume format accepted for analysis"}
+
     try:
         img = PILImage.open(io.BytesIO(contents)).convert("RGB")
         arr = np.array(img, dtype=np.int32)

@@ -186,13 +186,13 @@ export default function ResearcherHome() {
 
       {/* Stat cards — degrade gracefully if overview failed */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
+        <StatCard delay={0}
           label="Model Version"
           value={overview ? `v${overview.modelVersion}` : overviewErr ? "—" : "—"}
           accent="var(--teal)"
           hint={overview?.strategy ?? (overviewErr ? "Unavailable" : undefined)}
         />
-        <StatCard
+        <StatCard delay={0.07}
           label="F1 Macro"
           value={
             overview
@@ -203,12 +203,12 @@ export default function ResearcherHome() {
           }
           accent="var(--teal)"
         />
-        <StatCard
+        <StatCard delay={0.14}
           label="Accuracy"
           value={overview ? `${(overview.accuracy * 100).toFixed(0)}%` : "—"}
           accent="var(--blue-accent)"
         />
-        <StatCard
+        <StatCard delay={0.21}
           label="Raw Data Sent"
           value="0 B"
           accent="var(--teal)"

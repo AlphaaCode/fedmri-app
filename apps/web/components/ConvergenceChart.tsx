@@ -47,7 +47,7 @@ export function ConvergenceChart({ data }: Props) {
         <Tooltip
           contentStyle={{ background: "#161b22", border: "1px solid #30363d", borderRadius: 6, fontSize: 12, color: "#e6edf3" }}
           labelStyle={{ color: "#8b949e" }}
-          formatter={(v: number, name: string) => [v.toFixed(4), name]}
+          formatter={(v: any) => [typeof v === "number" ? v.toFixed(4) : v]}
         />
         <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
         <Line type="monotone" dataKey="Centralized" stroke={COLOR.Centralized} strokeWidth={2} strokeDasharray="6 4" dot={false} isAnimationActive animationDuration={600} />

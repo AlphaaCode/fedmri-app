@@ -250,7 +250,7 @@ export default function TopologyPage() {
 
   if (loading) {
     return (
-      <div className="max-w-6xl">
+      <div className="w-full">
         <PageHeader title="Network Topology" />
         <div
           className="text-sm mt-8 text-center"
@@ -263,7 +263,7 @@ export default function TopologyPage() {
   }
 
   return (
-    <div className="max-w-6xl space-y-5">
+    <div className="w-full space-y-5">
       <PageHeader
         title="Network Topology"
         description={

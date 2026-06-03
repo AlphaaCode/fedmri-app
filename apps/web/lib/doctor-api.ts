@@ -16,7 +16,8 @@ export function getCases(params?: { page?: number; limit?: number }): Promise<Ca
 
 export interface ModelComparison {
   centralized: { f1Macro: number };
-  fedprox: { f1Macro: number };
+  fedscrt?: { f1Macro: number };
+  fedprox?: { f1Macro: number };
   gap: number;
   privacyCost: { patientsProtected: number };
   totalCases: number;
