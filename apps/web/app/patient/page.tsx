@@ -8,6 +8,7 @@ import { apiFetch } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { SUBTYPE_COLOR, SUBTYPE_PLAIN } from "@/lib/types";
 import { downloadCasePdf } from "@/lib/download-pdf";
+import { GradientCard } from "@/components/ui/GradientCard";
 
 function subtypeColor(s: string) { return (SUBTYPE_COLOR as Record<string, string>)[s] ?? "var(--teal)"; }
 function subtypePlain(s: string) { return (SUBTYPE_PLAIN as Record<string, string>)[s] ?? s; }
@@ -51,7 +52,7 @@ export default function PatientDashboardPage() {
       {/* Top row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Latest MRI Analysis */}
-        <div className="md:col-span-2 rounded-2xl border p-5 space-y-4" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+        <GradientCard accent="teal" className="md:col-span-2 p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div className="text-xs uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Latest MRI Analysis</div>
             {latest && (
@@ -112,10 +113,10 @@ export default function PatientDashboardPage() {
               </div>
             </div>
           )}
-        </div>
+        </GradientCard>
 
         {/* Network Status */}
-        <div className="rounded-2xl border p-5 flex flex-col justify-between" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+        <GradientCard accent="indigo" className="p-5 flex flex-col justify-between">
           <div className="text-xs uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Network Status</div>
           <div className="space-y-3 my-4">
             <motion.div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto"
@@ -137,30 +138,33 @@ export default function PatientDashboardPage() {
           <div className="text-[11px] text-center leading-relaxed" style={{ color: "var(--text-secondary)", opacity: 0.7 }}>
             The global AI is up-to-date. No raw data was shared in the last training cycle.
           </div>
-        </div>
+        </GradientCard>
       </div>
 
       {/* Quick Actions */}
       <div>
         <div className="text-xs uppercase tracking-widest mb-3" style={{ color: "var(--text-secondary)" }}>Quick Actions</div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {QUICK_ACTIONS.map((a, i) => (
-            <motion.div key={a.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
-              <Link href={a.href}
-                className="flex items-center gap-3 rounded-xl border p-4 transition-colors group"
-                style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ background: "var(--teal-glow)", border: "1px solid rgba(45,212,191,0.2)" }}>
-                  <a.icon size={16} style={{ color: "var(--teal)" }} />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{a.label}</div>
-                  <div className="text-[11px] truncate" style={{ color: "var(--text-secondary)" }}>{a.desc}</div>
-                </div>
-                <span className="ml-auto shrink-0 text-xs" style={{ color: "var(--text-secondary)" }}>→</span>
-              </Link>
-            </motion.div>
-          ))}
+          {QUICK_ACTIONS.map((a, i) => {
+            const accents = ["teal", "indigo", "amber"] as const;
+            return (
+              <motion.div key={a.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
+                <GradientCard accent={accents[i % accents.length]} className="p-0">
+                  <Link href={a.href} className="flex items-center gap-3 p-4 transition-colors group w-full block">
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: "var(--teal-glow)", border: "1px solid rgba(45,212,191,0.2)" }}>
+                      <a.icon size={16} style={{ color: "var(--teal)" }} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{a.label}</div>
+                      <div className="text-[11px] truncate" style={{ color: "var(--text-secondary)" }}>{a.desc}</div>
+                    </div>
+                    <span className="ml-auto shrink-0 text-xs" style={{ color: "var(--text-secondary)" }}>→</span>
+                  </Link>
+                </GradientCard>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 

@@ -14,6 +14,7 @@ import {
   DatasetNode,
   DatasetCohort,
 } from "@/lib/researcher-api";
+import { GradientCard } from "@/components/ui/GradientCard";
 
 // ─── Node colour palette (teal / blue-accent / amber per hospital) ─────────────
 
@@ -23,34 +24,16 @@ const NODE_COLORS = [
   "#f59e0b",
 ] as const;
 
-// Raw hex/hsl values used for the gradient blob (CSS vars can't be used inside
-// radial-gradient alpha strings, so we fall back to approximate hex).
-const NODE_GRADIENT_COLORS = [
-  "#2dd4bf", // teal
-  "#6366f1", // blue-accent (indigo-ish)
-  "#f59e0b", // amber
-] as const;
+const ACCENT_MAP = ["teal", "indigo", "amber"] as const;
 
 // ─── Figma-matched node card ──────────────────────────────────────────────────
 
 function NodeCard({ node, colorIdx }: { node: DatasetNode; colorIdx: number }) {
   const dotColor = NODE_COLORS[colorIdx % NODE_COLORS.length];
-  const blobColor = NODE_GRADIENT_COLORS[colorIdx % NODE_GRADIENT_COLORS.length];
+  const accent = ACCENT_MAP[colorIdx % ACCENT_MAP.length];
 
   return (
-    <div
-      className="relative rounded-xl border p-4 flex flex-col gap-1 overflow-hidden"
-      style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
-      {/* Decorative corner gradient blob */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-xl"
-        style={{
-          background: `radial-gradient(circle at top right, ${blobColor}22, transparent 70%)`,
-        }}
-      />
-
+    <GradientCard accent={accent} className="p-4 flex flex-col gap-1">
       {/* Top row: dot + node name */}
       <div className="flex items-center gap-2 relative">
         <span
@@ -80,7 +63,7 @@ function NodeCard({ node, colorIdx }: { node: DatasetNode; colorIdx: number }) {
       >
         {node.specialty}
       </div>
-    </div>
+    </GradientCard>
   );
 }
 
@@ -312,7 +295,7 @@ export default function DatasetsPage() {
       )}
 
       {/* ── Stat + Node cards row ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Total records StatCard with subtle teal accent */}
         <StatCard
           label="Total Accessible Records"
