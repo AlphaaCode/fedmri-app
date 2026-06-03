@@ -12,11 +12,36 @@ interface ToastStore {
   dismiss: (id: string) => void;
 }
 
+function playNotificationSound(type: "success" | "info" | "warning" = "success") {
+  if (typeof window === "undefined") return;
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    const freqs = type === "success" ? [523, 659] : type === "info" ? [440] : [330];
+    let time = ctx.currentTime;
+    freqs.forEach((f) => {
+      osc.frequency.setValueAtTime(f, time);
+      gain.gain.setValueAtTime(0.12, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+      time += 0.2;
+    });
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.5);
+  } catch {
+    // AudioContext blocked — silent fail
+  }
+}
+
 export const useToastStore = create<ToastStore>((set) => ({
   toasts: [],
   push: (message, type = "info") => {
     const id = crypto.randomUUID();
     set((s) => ({ toasts: [...s.toasts, { id, message, type }] }));
+    playNotificationSound(type);
     setTimeout(() => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })), 4500);
   },
   dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
@@ -41,7 +66,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     if (lastUpdateSource === "al" && modelVersion) {
       push(`AI model updated to v${modelVersion} from your feedback`, "success");
     }
-  }, [phase, modelVersion, lastUpdateSource]);
+  }, [phase, modelVersion, lastUpdateSource, push]);
 
   return (
     <>

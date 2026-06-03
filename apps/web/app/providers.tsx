@@ -18,7 +18,7 @@ export function Providers({ children }: { children: ReactNode }) {
   }, [hydrate]);
 
   useEffect(() => {
-    if (token && user?.role === "DOCTOR") {
+    if (token && (user?.role === "DOCTOR" || user?.role === "RESEARCHER")) {
       getSocket(token);
     }
     return () => {
