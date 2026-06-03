@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "FedMRI",
-    "slug": "fedmri-mobile",
+    "slug": "fedmri",
     "version": "1.0.0",
     "scheme": "fedmri",
     "platforms": ["ios", "android", "web"],
