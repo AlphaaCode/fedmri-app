@@ -119,20 +119,46 @@ export default function FederatedPage() {
             ))}
           </div>
         </div>
-        <div style={{ width: "100%", height: 260 }}>
-          <ResponsiveContainer>
-            <LineChart data={curves.rows}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="round" stroke="var(--text-secondary)" fontSize={11} />
-              <YAxis domain={[0, 1]} stroke="var(--text-secondary)" fontSize={11} />
-              <Tooltip contentStyle={{ background: "var(--bg-card2)", border: "1px solid var(--border)" }} />
-              <Legend />
-              {curves.strategies.map((s) => (
-                <Line key={s} type="monotone" dataKey={s} stroke={STRAT_COLOR[s] ?? "#888"} dot={false} strokeWidth={2} />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        {(() => {
+          const allF1 = curves.rows.flatMap((r) =>
+            curves.strategies.map((s) => r[s]).filter((v): v is number => v !== undefined)
+          );
+          const yMin = allF1.length ? Math.max(0, Math.floor(Math.min(...allF1) * 10) / 10 - 0.05) : 0;
+          return (
+            <div style={{ width: "100%", height: 260 }}>
+              <ResponsiveContainer>
+                <LineChart data={curves.rows}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <XAxis dataKey="round" stroke="var(--text-secondary)" fontSize={11} />
+                  <YAxis domain={[yMin, 1]} stroke="var(--text-secondary)" fontSize={11} tickFormatter={(v: number) => v.toFixed(2)} />
+                  <Tooltip
+                    contentStyle={{ background: "var(--bg-card2)", border: "1px solid var(--border)" }}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    formatter={(v: any, name: any) => [typeof v === "number" ? v.toFixed(4) : String(v ?? ""), name ?? ""]}
+                  />
+                  <Legend />
+                  {curves.strategies.map((s) => {
+                    const pts = curves.rows.filter((r) => r[s] !== undefined).length;
+                    return (
+                      <Line
+                        key={s}
+                        type="monotone"
+                        dataKey={s}
+                        stroke={STRAT_COLOR[s] ?? "#888"}
+                        strokeWidth={s === "fedscrt" ? 2.5 : 2}
+                        strokeDasharray={s === "fedscrt" ? "6 3" : undefined}
+                        dot={pts <= 1 ? { r: 5, fill: STRAT_COLOR[s] ?? "#888" } : false}
+                        isAnimationActive
+                        animationDuration={800}
+                        animationEasing="ease-out"
+                      />
+                    );
+                  })}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          );
+        })()}
         <table className="w-full text-xs mt-3">
           <thead>
             <tr style={{ color: "var(--text-secondary)" }}>
@@ -181,11 +207,18 @@ export default function FederatedPage() {
             </button>
           </div>
         </div>
-        <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
-          Each of the 3 hospitals trains a classifier head on its own local features; the server
-          aggregates the heads. Only head weights move —{" "}
-          <span style={{ color: "var(--teal)" }}>0 bytes of raw data</span>.
-        </p>
+        <div className="text-xs mb-3 space-y-1" style={{ color: "var(--text-secondary)" }}>
+          <p>
+            Each hospital trains a classifier head on its own <strong style={{ color: "var(--teal)" }}>frozen</strong> backbone
+            features; the server aggregates using the selected strategy. Only head weights move —{" "}
+            <span style={{ color: "var(--teal)" }}>0 bytes of raw data</span>.
+          </p>
+          <p style={{ opacity: 0.75 }}>
+            Results use pre-extracted synthetic features and are reproducible per strategy.{" "}
+            <strong>FedSCRT</strong> freezes the backbone entirely; <strong>FedAvg</strong> averages the full head.
+            FedSCRT typically achieves higher F1 on non-IID data.
+          </p>
+        </div>
         <div style={{ width: "100%", height: 220 }}>
           <ResponsiveContainer>
             <LineChart data={live}>
@@ -193,7 +226,16 @@ export default function FederatedPage() {
               <XAxis dataKey="round" stroke="var(--text-secondary)" fontSize={11} />
               <YAxis domain={[0, 1]} stroke="var(--text-secondary)" fontSize={11} />
               <Tooltip contentStyle={{ background: "var(--bg-card2)", border: "1px solid var(--border)" }} />
-              <Line type="monotone" dataKey="f1" stroke="var(--teal)" dot strokeWidth={2} isAnimationActive={false} />
+              <Line
+                type="monotone"
+                dataKey="f1"
+                stroke="var(--teal)"
+                dot={{ r: 3, fill: "var(--teal)" }}
+                strokeWidth={2.5}
+                isAnimationActive
+                animationDuration={400}
+                name="macro-F1"
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
