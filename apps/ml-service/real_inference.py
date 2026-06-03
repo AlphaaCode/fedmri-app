@@ -143,9 +143,19 @@ def attention_for_path(path: str) -> dict:
     x, vol = _slices_from_path(path)                      # x:(1,S,3,224,224) vol:(S,128,128)
     with torch.no_grad():
         model(x)
-    attn = model.last_attn[0].cpu().numpy()              # (S,) per-slice gated attention
-    top = int(attn.argmax())
-    # real grayscale slice PNG (from the preprocessed volume, not the normalized tensor)
+
+    # GatedAttentionMIL stores per-slice weights in last_attn after forward.
+    # Fall back to mid-volume slice if the attribute is absent.
+    try:
+        raw = model.last_attn
+        if raw is None:
+            raise AttributeError
+        attn = (raw[0] if hasattr(raw[0], "cpu") else torch.tensor(raw[0])).cpu().numpy()
+        top = int(attn.argmax())
+    except (AttributeError, IndexError, TypeError):
+        top = x.shape[1] // 2
+
+    # Real grayscale slice PNG from the preprocessed volume (not the normalised tensor).
     sl = vol[top].numpy()
     img = Image.fromarray((np.clip(sl, 0, 1) * 255).astype("uint8")).resize((224, 224))
     buf = io.BytesIO(); img.save(buf, format="PNG")

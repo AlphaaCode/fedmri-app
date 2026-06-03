@@ -35,11 +35,11 @@ AL_MODE = os.getenv("AL_MODE", "mock")
 ATTN_GRID = 224
 
 # Active-learning state — in-memory model metrics, mutated by /feedback
-SUBTYPE_KEYS = ["Luminal A", "Luminal B", "HER2", "Triple Negative"]
+SUBTYPE_KEYS = ["Luminal", "Non-Luminal"]
 AL_STATE = {
-    "model_version": 10,
-    "f1_per_class": {"Luminal A": 0.71, "Luminal B": 0.27, "HER2": 0.11, "Triple Negative": 0.21},
-    "accuracy": 0.55,
+    "model_version": 1,
+    "f1_per_class": {"Luminal": 0.71, "Non-Luminal": 0.58},
+    "accuracy": 0.72,
 }
 
 
