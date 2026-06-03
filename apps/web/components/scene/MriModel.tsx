@@ -12,45 +12,54 @@ interface Props {
 }
 
 export function MriModel({ refs }: Props) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore – FBXLoader type signature diverges from LoaderProto<unknown>
-  const fbx = useLoader(FBXLoader, "/3d/mri/IRM.fbx");
+  // Load with resource path so FBXLoader finds textures at /3d/mri/textures/
+  // @ts-ignore
+  const fbx = useLoader(FBXLoader, "/3d/mri/IRM.fbx", (loader: any) => {
+    loader.setResourcePath("/3d/mri/textures/");
+  });
   const groupRef = useRef<THREE.Group>(null);
   const ringMeshes = useRef<THREE.Mesh[]>([]);
   const bedMeshes = useRef<THREE.Mesh[]>([]);
-  const opacMats = useRef<THREE.MeshStandardMaterial[]>([]);
+  const opacMats = useRef<THREE.Material[]>([]);
   const bedOriginZ = useRef<number>(0);
 
   useEffect(() => {
+    opacMats.current = [];
+    ringMeshes.current = [];
+    bedMeshes.current = [];
+
+    // Scale to fit: target 3.2 world units
     const box = new THREE.Box3().setFromObject(fbx);
     const size = box.getSize(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z);
-    if (maxDim > 0) {
-      fbx.scale.setScalar(3.5 / maxDim);
-    }
+    if (maxDim > 0) fbx.scale.setScalar(3.2 / maxDim);
+
+    // Centre model
+    box.setFromObject(fbx);
+    const centre = box.getCenter(new THREE.Vector3());
+    fbx.position.set(-centre.x, -centre.y, -centre.z);
 
     fbx.traverse((child: THREE.Object3D) => {
       if (!(child instanceof THREE.Mesh)) return;
       const name = child.name.toLowerCase();
 
+      // Clone materials to own opacity — keep all original PBR textures/metals
+      const cloneWithTransparency = (m: THREE.Material) => {
+        const c = m.clone();
+        (c as any).transparent = true;
+        (c as any).opacity = 0;
+        return c;
+      };
+
       if (Array.isArray(child.material)) {
-        child.material = child.material.map((m) => m.clone());
+        child.material = child.material.map(cloneWithTransparency);
+        child.material.forEach((m: THREE.Material) => opacMats.current.push(m));
       } else {
-        child.material = child.material.clone();
+        child.material = cloneWithTransparency(child.material);
+        opacMats.current.push(child.material);
       }
 
-      const mats: THREE.MeshStandardMaterial[] = (
-        Array.isArray(child.material) ? child.material : [child.material]
-      ) as THREE.MeshStandardMaterial[];
-
-      mats.forEach((m) => {
-        m.transparent = true;
-        opacMats.current.push(m);
-      });
-
-      if (name.includes("ring")) {
-        ringMeshes.current.push(child);
-      }
+      if (name.includes("ring")) ringMeshes.current.push(child);
       if (name.includes("bed") || name.includes("matelas")) {
         bedMeshes.current.push(child);
         if (bedOriginZ.current === 0) bedOriginZ.current = child.position.z;
@@ -67,18 +76,18 @@ export function MriModel({ refs }: Props) {
     const t = Math.min(elapsedRef.current / PHASE_DURATION[phase], 1);
 
     const opac = mriOpacRef.current;
-    opacMats.current.forEach((m) => { m.opacity = opac; });
+    opacMats.current.forEach((m) => { (m as any).opacity = opac; });
 
     if (phase === "MRI_SCAN") {
-      const slideRange = 3;
+      const slideRange = 2.5;
       const bedZ = bedOriginZ.current + THREE.MathUtils.lerp(-slideRange, slideRange, t);
       bedMeshes.current.forEach((m) => { m.position.z = bedZ; });
 
-      const emitIntensity = Math.sin(t * Math.PI) * 2.5;
+      const emitIntensity = Math.sin(t * Math.PI) * 2.0;
       ringMeshes.current.forEach((m) => {
         const mats = Array.isArray(m.material) ? m.material : [m.material];
         (mats as THREE.MeshStandardMaterial[]).forEach((mat) => {
-          mat.emissiveIntensity = emitIntensity;
+          if (mat.emissiveIntensity !== undefined) mat.emissiveIntensity = emitIntensity;
         });
       });
     } else {
@@ -87,9 +96,8 @@ export function MriModel({ refs }: Props) {
   });
 
   return (
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore – duplicate @types/three versions cause Group ref mismatch
-    <group ref={groupRef} position={[0, -0.5, 0]} rotation={[0, Math.PI * 0.25, 0]}>
+    // @ts-ignore
+    <group ref={groupRef} rotation={[0, Math.PI * 0.15, 0]}>
       <primitive object={fbx} />
     </group>
   );

@@ -5,71 +5,87 @@ import { useEffect, useRef } from "react";
 import { useLoader, useFrame } from "@react-three/fiber";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import * as THREE from "three";
-import { SceneRefs, PHASE_DURATION } from "./types";
+import { SceneRefs } from "./types";
 
 interface Props {
   refs: SceneRefs;
 }
 
 export function BrainModel({ refs }: Props) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore – FBXLoader type signature diverges from LoaderProto<unknown>
+  // @ts-ignore
   const fbx = useLoader(FBXLoader, "/3d/brain/stylizedhumanbrain.fbx");
   const groupRef = useRef<THREE.Group>(null);
-  const matRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  // Collect cloned materials for opacity control
+  const clonedMats = useRef<THREE.Material[]>([]);
 
   useEffect(() => {
-    const mat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color("#1a3a38"),
-      emissive: new THREE.Color("#2dd4bf"),
-      emissiveIntensity: 0.3,
-      roughness: 0.55,
-      metalness: 0.25,
-    });
-    matRef.current = mat;
+    clonedMats.current = [];
 
     fbx.traverse((child: THREE.Object3D) => {
-      if (child instanceof THREE.Mesh) {
-        child.material = mat;
-        child.castShadow = false;
+      if (!(child instanceof THREE.Mesh)) return;
+      child.castShadow = false;
+
+      // Clone material(s) so we own opacity without touching shared instances
+      const clone = (m: THREE.Material) => {
+        const c = m.clone();
+        (c as any).transparent = true;
+        (c as any).opacity = 1;
+        // Keep all original maps/colors — just add a subtle teal emissive boost
+        if ((c as THREE.MeshStandardMaterial).emissive !== undefined) {
+          const std = c as THREE.MeshStandardMaterial;
+          // Blend original emissive with teal
+          std.emissive = new THREE.Color("#2dd4bf");
+          std.emissiveIntensity = 0.18;
+          std.roughness = Math.min((std.roughness ?? 0.5), 0.6);
+          std.metalness = Math.max((std.metalness ?? 0), 0.2);
+        }
+        clonedMats.current.push(c);
+        return c;
+      };
+
+      if (Array.isArray(child.material)) {
+        child.material = child.material.map(clone);
+      } else {
+        child.material = clone(child.material);
       }
     });
 
+    // Scale to fit: target 1.4 world units across longest axis
     const box = new THREE.Box3().setFromObject(fbx);
     const size = box.getSize(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z);
-    if (maxDim > 0) {
-      fbx.scale.setScalar(1.6 / maxDim);
-    }
+    if (maxDim > 0) fbx.scale.setScalar(1.4 / maxDim);
 
-    return () => { mat.dispose(); };
+    // Centre the model on the origin
+    box.setFromObject(fbx);
+    const centre = box.getCenter(new THREE.Vector3());
+    fbx.position.sub(centre);
   }, [fbx]);
 
   useFrame(() => {
-    if (!groupRef.current || !matRef.current) return;
-
-    const { phaseRef, elapsedRef, brainOpacRef } = refs;
+    if (!groupRef.current) return;
+    const { phaseRef, brainOpacRef } = refs;
     const phase = phaseRef.current;
 
     if (phase === "BRAIN_SPIN") {
-      groupRef.current.rotation.y += 0.006;
-      groupRef.current.position.y = Math.sin(Date.now() * 0.0006) * 0.08;
+      groupRef.current.rotation.y += 0.005;
+      groupRef.current.position.y = Math.sin(Date.now() * 0.0005) * 0.06;
     }
 
     const opac = brainOpacRef.current;
-    const mat = matRef.current;
-    mat.transparent = opac < 1;
-    mat.opacity = opac;
-
-    if (phase === "BRAIN_SPIN") {
-      mat.emissiveIntensity = 0.25 + Math.sin(Date.now() * 0.002) * 0.12;
-    }
+    const t = Date.now() * 0.002;
+    clonedMats.current.forEach((m) => {
+      (m as any).opacity = opac;
+      // Pulse emissive on spin phase
+      if ((m as THREE.MeshStandardMaterial).emissiveIntensity !== undefined && phase === "BRAIN_SPIN") {
+        (m as THREE.MeshStandardMaterial).emissiveIntensity = 0.14 + Math.sin(t) * 0.08;
+      }
+    });
   });
 
   return (
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore – duplicate @types/three versions cause Group ref mismatch
-    <group ref={groupRef} position={[0, 0, 0]}>
+    // @ts-ignore
+    <group ref={groupRef}>
       <primitive object={fbx} />
     </group>
   );

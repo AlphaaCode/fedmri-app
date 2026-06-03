@@ -85,7 +85,7 @@ export default function PatientRegisterPage() {
         }} />
         <div className="relative z-10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/main_logo.svg" alt="FedMRI" className="h-14 w-auto object-contain" />
+          <img src="/main_logo.svg" alt="FedMRI" style={{ width: "300px", height: "auto" }} />
         </div>
         <div className="relative z-10 space-y-6">
           <div>

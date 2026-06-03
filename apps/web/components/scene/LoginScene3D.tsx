@@ -43,7 +43,7 @@ export function LoginScene3D() {
     <div className="relative w-full h-full">
       <Suspense fallback={<ShimmerFallback />}>
         <Canvas
-          camera={{ fov: 38, position: [0, 0, 8] }}
+          camera={{ fov: 42, position: [0, 0.3, 5] }}
           gl={{ antialias: true, alpha: true } as THREE.WebGLRendererParameters}
           style={{ background: "transparent" }}
         >

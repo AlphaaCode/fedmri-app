@@ -52,10 +52,10 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="relative z-10 flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/main_logo.svg" alt="FedMRI" className="h-14 w-auto object-contain" />
+          <img src="/main_logo.svg" alt="FedMRI" style={{ width: "320px", height: "auto" }} />
         </div>
         {/* 3D scene */}
-        <div className="relative z-10 flex-1 w-full min-h-[300px]">
+        <div className="relative z-10 flex-1 w-full min-h-[320px]">
           <LoginScene3D />
         </div>
         {/* Bottom copy */}
