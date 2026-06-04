@@ -159,9 +159,11 @@ async def _run_fl_test(rid: str, req: FlTestReq):
         clients, val = _load_clients()
         sizes = [int(len(y)) for _, y in clients]
         # numpy compute is sub-second; run it off the event loop, then stream per round
+        # Few local epochs/round so the live curve climbs visibly over rounds
+        # (warm-started each round) instead of saturating at round 1.
         hist = await asyncio.to_thread(
             realfl.run_fl, clients, val,
-            strategy=req.strategy, rounds=req.rounds, seeds=5, on_round=None,
+            strategy=req.strategy, rounds=req.rounds, local_epochs=10, seeds=5, on_round=None,
         )
         for i, e in enumerate(hist):
             await _post_fl_test(rid, req.strategy, sizes, e, done=(i == len(hist) - 1))

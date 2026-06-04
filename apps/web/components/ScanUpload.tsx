@@ -7,13 +7,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { apiUploadCase, apiVerifyImage, apiListSamples, apiCreateFromSample } from "@/lib/api";
 import type { CaseResult } from "@/lib/types";
 
-interface Props { onUploaded: (result: CaseResult) => void; }
+interface Props { onUploaded: (result: CaseResult) => void; showSamples?: boolean; }
 type Stage = "idle" | "verifying" | "warn" | "uploading";
 interface VerifyResult { valid: boolean; confidence: number; reason: string; }
 
 const MIN_VERIFY_MS = 700;
 
-export function ScanUpload({ onUploaded }: Props) {
+export function ScanUpload({ onUploaded, showSamples: enableSamples = true }: Props) {
   const [stage, setStage] = useState<Stage>("idle");
   const [progress, setProgress] = useState(0);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -26,8 +26,9 @@ export function ScanUpload({ onUploaded }: Props) {
   onUploadedRef.current = onUploaded;
 
   useEffect(() => {
+    if (!enableSamples) return;
     apiListSamples().then(setSamples).catch(() => setSamples([]));
-  }, []);
+  }, [enableSamples]);
 
   // A bundled sample volume is a known-valid MRI — skip verify, run the real pipeline.
   async function useSample(name: string) {
@@ -222,7 +223,7 @@ export function ScanUpload({ onUploaded }: Props) {
                 {isDragActive ? "Release to scan" : "Drop breast MRI scan"}
               </p>
               <p className="text-xs" style={{ fontFamily: "var(--font-mono)", color: "var(--text-secondary)", letterSpacing: "0.06em" }}>
-                .mha · .nii · .dcm · up to 50 MB
+                .mha · .nii · .dcm · up to 100 MB
               </p>
             </div>
 
@@ -318,7 +319,7 @@ export function ScanUpload({ onUploaded }: Props) {
       </AnimatePresence>
     </div>
 
-    {stage === "idle" && (
+    {enableSamples && stage === "idle" && (
       <div className="rounded-xl border p-3" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
         <button
           type="button"

@@ -13,6 +13,7 @@ import { FlTopology } from "@/components/FlTopology";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { DoctorSiloBanner } from "@/components/doctor/DoctorSiloBanner";
+import { apiSubmitFeedback } from "@/lib/api";
 import type { CaseResult } from "@/lib/types";
 
 // The real FedSCRT model is binary (Luminal vs Non-Luminal); mock mode still
@@ -102,6 +103,94 @@ function BinaryPredictionCard({ result }: { result: CaseResult }) {
   );
 }
 
+// Doctor validates or corrects the prediction. VALIDATE confirms it; a correction
+// (DISPUTE with the right subtype) triggers an active-learning fine-tune so the
+// model improves. The new model version arrives over WS ('model:updated').
+function FeedbackBar({ result }: { result: CaseResult }) {
+  const push = useToastStore((s) => s.push);
+  const [state, setState] = useState<"idle" | "picking" | "sent">("idle");
+  const [busy, setBusy] = useState(false);
+
+  const ALL: string[] = isBinaryResult(result)
+    ? ["Luminal", "Non-Luminal"]
+    : ["Luminal A", "Luminal B", "HER2", "Triple Negative"];
+  const alternatives = ALL.filter((s) => s !== (result.predictedSubtype as string));
+
+  async function validate() {
+    setBusy(true);
+    try {
+      await apiSubmitFeedback(result.id, "VALIDATE");
+      setState("sent");
+      push("Confirmed — recorded for the global model", "success");
+    } catch (e: any) {
+      push(e?.message || "Could not record feedback", "warning");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function dispute(correct: string) {
+    setBusy(true);
+    try {
+      await apiSubmitFeedback(result.id, "DISPUTE", correct);
+      setState("sent");
+      push(`Correction sent — model retraining on ${correct}`, "success");
+    } catch (e: any) {
+      push(e?.message || "Could not record feedback", "warning");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (state === "sent") {
+    return (
+      <div className="rounded-xl border p-3 text-xs flex items-center gap-2" style={{ background: "var(--bg-card)", borderColor: "var(--teal)", color: "var(--teal)" }}>
+        <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--teal)" }} />
+        Feedback recorded — the federated model is incorporating your input.
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border p-3" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+      {state === "idle" ? (
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Was this prediction correct?</span>
+          <div className="flex gap-2">
+            <button onClick={validate} disabled={busy}
+              className="text-xs px-3 py-1.5 rounded-lg font-medium disabled:opacity-50"
+              style={{ background: "var(--teal-glow)", color: "var(--teal)", border: "1px solid #2dd4bf40" }}>
+              ✓ Correct
+            </button>
+            <button onClick={() => setState("picking")} disabled={busy}
+              className="text-xs px-3 py-1.5 rounded-lg font-medium disabled:opacity-50"
+              style={{ background: "#fb718515", color: "#fb7185", border: "1px solid #fb718540" }}>
+              ✗ Wrong
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Correct subtype is:</span>
+          <div className="flex gap-2 flex-wrap">
+            {alternatives.map((s) => (
+              <button key={s} onClick={() => dispute(s)} disabled={busy}
+                className="text-xs px-3 py-1.5 rounded-lg font-medium disabled:opacity-50"
+                style={{ background: "var(--bg-card2)", color: "var(--text-primary)", border: "1px solid var(--border)" }}>
+                {s}
+              </button>
+            ))}
+            <button onClick={() => setState("idle")} disabled={busy}
+              className="text-xs px-2.5 py-1.5 rounded-lg" style={{ color: "var(--text-secondary)" }}>
+              cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ScanPage() {
   usePortalTitle("Scan Analysis");
   const [result, setResult] = useState<CaseResult | null>(null);
@@ -142,6 +231,7 @@ export default function ScanPage() {
                     </div>
                   </>
                 )}
+                <FeedbackBar result={result} />
                 <div className="flex justify-end gap-2">
                   <Link href={`/doctor/chat?caseId=${result.id}`} className="rounded-lg text-sm font-semibold px-4 py-2" style={{ background: "var(--teal-glow)", color: "var(--teal)", border: "1px solid #2dd4bf40" }}>Discuss with AI assistant →</Link>
                   <Button variant="ghost" onClick={() => setResult(null)}>Analyse another scan</Button>

@@ -176,7 +176,7 @@ export default function PatientScanPage() {
       <AnimatePresence mode="wait">
         {!result ? (
           <motion.div key="upload" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ScanUpload onUploaded={setResult} />
+            <ScanUpload onUploaded={setResult} showSamples={false} />
           </motion.div>
         ) : isBinary(result) ? (
           <BinaryResultCard key={result.id + "-b"} result={result} onReset={() => setResult(null)} />

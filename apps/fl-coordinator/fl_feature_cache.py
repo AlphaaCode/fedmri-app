@@ -21,13 +21,16 @@ def _save(name, X, y):
 
 def build_synthetic(d=256):
     rng = np.random.default_rng(0)
+    # Signal along one direction, moderately buried in noise: the head learns it
+    # over a handful of rounds (live test rises ~0.7 -> ~0.9) without overfitting.
+    w = rng.normal(0, 1, d); w /= np.linalg.norm(w)
+    MU = 1.6  # ± class-mean separation along w
 
     def blob(n, c):
-        X = rng.normal(c * 0.6, 1.0, (n, d))
-        y = np.full(n, c)
-        return X, y
+        X = rng.normal(0, 1.0, (n, d)) + (c - 0.5) * 2 * MU * w
+        return X, np.full(n, c)
 
-    for k, n in enumerate([60, 120, 90]):           # 3 clients, non-IID-ish sizes
+    for k, n in enumerate([60, 120, 90]):           # 3 clients, non-IID sizes
         n0 = int(n * (0.7 if k == 0 else 0.4))       # skewed class balance per client
         X = np.vstack([blob(n0, 0)[0], blob(n - n0, 1)[0]])
         y = np.concatenate([np.zeros(n0), np.ones(n - n0)]).astype(int)
