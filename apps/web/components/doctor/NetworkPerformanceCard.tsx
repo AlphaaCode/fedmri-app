@@ -54,7 +54,7 @@ export function NetworkPerformanceCard() {
               formatter={((v: number) => [v.toFixed(2), "F1 macro"]) as any}
               labelFormatter={(r) => `Round ${r}`}
             />
-            <Bar dataKey="f1" radius={[3, 3, 0, 0]}>
+            <Bar dataKey="f1" radius={[3, 3, 0, 0]} isAnimationActive animationDuration={800} animationEasing="ease-out">
               {bars.map((b, i) => (
                 <Cell key={i} fill={b.strategy === "FedProx" ? "var(--teal)" : "var(--teal-dim)"} />
               ))}

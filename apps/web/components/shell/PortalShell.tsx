@@ -140,7 +140,13 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
           </div>
         </header>
 
-        <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="flex-1 w-full p-5 md:p-6 overflow-y-auto">
+        <motion.main
+          key={pathname}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="flex-1 w-full p-5 md:p-6 overflow-y-auto"
+        >
           {children}
         </motion.main>
       </div>

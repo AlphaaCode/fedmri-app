@@ -1,5 +1,8 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { EASE_OUT } from "@/lib/anim";
+
 interface Props {
   data: {
     subtypes: string[];
@@ -36,15 +39,19 @@ export function ConfusionMatrix({ data }: Props) {
           </tr>
         </thead>
         <tbody>
-          {subtypes.map((row) => (
+          {subtypes.map((row, ri) => (
             <tr key={row}>
               <td className="p-1.5 font-medium" style={{ color: "var(--text-secondary)" }}>{row}</td>
-              {subtypes.map((col) => {
+              {subtypes.map((col, ci) => {
                 const v = matrix[row][col];
                 const onDiag = row === col;
                 return (
-                  <td
+                  <motion.td
                     key={col}
+                    initial={{ opacity: 0, scale: 0.6 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.35, ease: EASE_OUT, delay: (ri + ci) * 0.05 }}
                     className="p-2 text-center tabular-nums font-medium"
                     style={{
                       background: colorFor(v, max),
@@ -54,7 +61,7 @@ export function ConfusionMatrix({ data }: Props) {
                     }}
                   >
                     {v}
-                  </td>
+                  </motion.td>
                 );
               })}
             </tr>

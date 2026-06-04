@@ -171,11 +171,13 @@ export function getSystemLogs(
   return apiFetch(`/researcher/system-logs?${q}`);
 }
 
-// Not yet implemented in backend — callers use Promise.allSettled and handle failures gracefully.
-export function getModelHistory(): Promise<unknown> {
-  return apiFetch("/researcher/model-history");
+// Convergence curves + confusion matrix come from the shared /model/* endpoints
+// (RESEARCHER role is allowed). ConvergenceChart wants { curves }, ConfusionMatrix
+// wants { subtypes, matrix } — both returned directly by these endpoints.
+export function getModelHistory(): Promise<{ curves: Record<string, { round: number; f1: number }[]> }> {
+  return apiFetch("/model/history");
 }
 
-export function getConfusionMatrix(): Promise<unknown> {
-  return apiFetch("/researcher/confusion-matrix");
+export function getConfusionMatrix(): Promise<{ subtypes: string[]; matrix: Record<string, Record<string, number>> }> {
+  return apiFetch("/model/confusion-matrix");
 }
