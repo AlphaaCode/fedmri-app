@@ -1,140 +1,112 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
+  KeyboardAvoidingView, Platform, ScrollView,
 } from "react-native";
+import { Send, Sparkles } from "lucide-react-native";
 import { colors } from "../lib/theme";
 import { useAuthStore } from "../lib/auth-store";
 import { getChatSocket, disconnectChatSocket } from "../lib/chat-socket";
+import { AppHeader, SectionLabel } from "../components/ui";
 
 interface Msg { id: string; role: "user" | "assistant"; content: string; }
 
-const STARTERS = [
-  "What does Luminal A mean?",
-  "Questions to ask my oncologist?",
-  "Is breast cancer hereditary?",
-  "What lifestyle changes help?",
-];
+const STARTERS = ["What are next steps?", "How accurate is this?", "What does my result mean?"];
 
-export function ChatScreen() {
+export function ChatScreen({ navigation }: any) {
   const token = useAuthStore((s) => s.token);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     if (!token) return;
     const socket = getChatSocket(token);
-
     const onToken = (chunk: { token: string; done: boolean }) => {
       if (chunk.done) { setStreaming(false); return; }
       setMessages((prev) => {
         const last = prev[prev.length - 1];
-        if (last && last.role === "assistant") {
-          return [...prev.slice(0, -1), { ...last, content: last.content + chunk.token }];
-        }
+        if (last && last.role === "assistant") return [...prev.slice(0, -1), { ...last, content: last.content + chunk.token }];
         return [...prev, { id: String(Math.random()), role: "assistant", content: chunk.token }];
       });
     };
-    const onErr = (e: { code: string; message?: string }) => {
-      setStreaming(false);
-      setError(e.code === "RATE_LIMIT" ? "Slow down — too many messages" : e.message || "Chat error");
-    };
-
+    const onErr = () => setStreaming(false);
     socket.on("chat:token", onToken);
     socket.on("chat:error", onErr);
-    return () => {
-      socket.off("chat:token", onToken);
-      socket.off("chat:error", onErr);
-    };
+    return () => { socket.off("chat:token", onToken); socket.off("chat:error", onErr); };
   }, [token]);
 
-  useEffect(() => {
-    return () => { disconnectChatSocket(); };
-  }, []);
-
-  useEffect(() => {
-    scrollRef.current?.scrollToEnd({ animated: true });
-  }, [messages]);
+  useEffect(() => () => { disconnectChatSocket(); }, []);
+  useEffect(() => { scrollRef.current?.scrollToEnd({ animated: true }); }, [messages]);
 
   function send(content: string) {
     if (!content.trim() || streaming || !token) return;
-    setError(null);
     setStreaming(true);
     setMessages((prev) => [...prev, { id: String(Math.random()), role: "user", content }]);
-    const socket = getChatSocket(token);
-    socket.emit("chat:message", { content, role: "patient" });
+    getChatSocket(token).emit("chat:message", { content, role: "patient" });
     setInput("");
   }
 
   return (
-    <KeyboardAvoidingView style={s.root} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={88}>
-      <View style={s.header}>
-        <Text style={s.h1}>Ask AI</Text>
-        <Text style={s.sub}>General information only — confirm with your oncologist</Text>
-      </View>
+    <KeyboardAvoidingView style={s.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <AppHeader onSettings={() => navigation.navigate("Settings")} />
 
-      <ScrollView ref={scrollRef} style={s.scroll} contentContainerStyle={{ padding: 16, paddingBottom: 8 }}>
-        {messages.length === 0 ? (
-          <View style={s.empty}>
-            <Text style={s.emptyText}>What would you like to know?</Text>
-            <View style={s.startersWrap}>
-              {STARTERS.map((q) => (
-                <TouchableOpacity key={q} style={s.starter} onPress={() => send(q)}>
-                  <Text style={s.starterText}>{q}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+      <ScrollView ref={scrollRef} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+        {/* AI context card */}
+        <View style={s.ctx}>
+          <View style={s.ctxIcon}><Sparkles size={14} color={colors.teal} /></View>
+          <View style={{ flex: 1 }}>
+            <SectionLabel>FedMRI AI · Clinical assistant</SectionLabel>
+            <Text style={s.ctxText}>
+              Ask about your scan result, what a subtype means, or questions for your oncologist.
+            </Text>
           </View>
-        ) : (
-          messages.map((m) => (
-            <View key={m.id} style={[s.bubbleRow, { justifyContent: m.role === "user" ? "flex-end" : "flex-start" }]}>
-              <View style={[
-                s.bubble,
-                m.role === "user" ? s.bubbleUser : s.bubbleAssistant,
-              ]}>
-                <Text style={[s.bubbleText, m.role === "user" && { color: colors.teal }]}>
-                  {m.content}
-                  {streaming && m === messages[messages.length - 1] && (
-                    <Text style={{ color: colors.teal }}>▌</Text>
-                  )}
-                </Text>
-              </View>
+        </View>
+
+        {messages.length === 0 && (
+          <Text style={s.hint}>Trained across 3 hospitals — your data never leaves your hospital.</Text>
+        )}
+
+        {messages.map((m) =>
+          m.role === "user" ? (
+            <View key={m.id} style={s.userWrap}>
+              <View style={s.userBubble}><Text style={s.userText}>{m.content}</Text></View>
             </View>
-          ))
+          ) : (
+            <View key={m.id} style={s.aiWrap}>
+              <View style={s.aiAvatar}><Sparkles size={12} color={colors.teal} /></View>
+              <View style={s.aiBubble}><Text style={s.aiText}>{m.content || "…"}</Text></View>
+            </View>
+          )
         )}
       </ScrollView>
 
-      {error && (
-        <View style={{ paddingHorizontal: 16, paddingBottom: 6 }}>
-          <Text style={{ color: colors.coral, fontSize: 11 }}>{error}</Text>
+      {/* Suggestion chips */}
+      {messages.length === 0 && (
+        <View style={s.chips}>
+          {STARTERS.map((q) => (
+            <TouchableOpacity key={q} style={s.chip} onPress={() => send(q)}>
+              <Text style={s.chipText}>{q}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       )}
 
+      {/* Input */}
       <View style={s.inputBar}>
         <TextInput
           style={s.input}
           value={input}
           onChangeText={setInput}
-          placeholder={streaming ? "Generating…" : "Ask a question"}
+          placeholder="Type a question…"
           placeholderTextColor={colors.textSecondary}
-          editable={!streaming}
-          returnKeyType="send"
           onSubmitEditing={() => send(input)}
+          returnKeyType="send"
         />
-        <TouchableOpacity
-          style={[s.sendBtn, (streaming || !input.trim()) && { opacity: 0.4 }]}
-          onPress={() => send(input)}
-          disabled={streaming || !input.trim()}
-        >
-          {streaming ? <ActivityIndicator color={colors.bgBase} size="small" /> : <Text style={s.sendBtnText}>Send</Text>}
+        <TouchableOpacity style={[s.sendBtn, (!input.trim() || streaming) && { opacity: 0.5 }]} onPress={() => send(input)} disabled={!input.trim() || streaming}>
+          <Send size={18} color="#06201d" />
         </TouchableOpacity>
-      </View>
-
-      <View style={s.disclaimerBar}>
-        <Text style={s.disclaimerText}>⚠ Always consult a certified oncologist for medical decisions</Text>
       </View>
     </KeyboardAvoidingView>
   );
@@ -142,24 +114,26 @@ export function ChatScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bgBase },
-  header: { padding: 16, paddingBottom: 8 },
-  h1: { color: colors.textPrimary, fontSize: 18, fontWeight: "700" },
-  sub: { color: colors.textSecondary, fontSize: 11, marginTop: 3 },
-  scroll: { flex: 1 },
-  empty: { paddingTop: 30, alignItems: "center", gap: 14 },
-  emptyText: { color: colors.textSecondary, fontSize: 13 },
-  startersWrap: { gap: 8, width: "100%" },
-  starter: { backgroundColor: colors.bgCard, borderColor: colors.border, borderWidth: 1, borderRadius: 10, padding: 12 },
-  starterText: { color: colors.textPrimary, fontSize: 12 },
-  bubbleRow: { flexDirection: "row", marginBottom: 8 },
-  bubble: { maxWidth: "85%", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1 },
-  bubbleUser: { backgroundColor: colors.tealGlow, borderColor: colors.teal + "60" },
-  bubbleAssistant: { backgroundColor: colors.bgCard, borderColor: colors.border },
-  bubbleText: { color: colors.textPrimary, fontSize: 13, lineHeight: 18 },
-  inputBar: { flexDirection: "row", padding: 10, gap: 8, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.bgCard },
-  input: { flex: 1, backgroundColor: colors.bgBase, borderColor: colors.border, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, color: colors.textPrimary, fontSize: 13 },
-  sendBtn: { backgroundColor: colors.tealDim, borderRadius: 10, paddingHorizontal: 16, justifyContent: "center" },
-  sendBtnText: { color: colors.bgBase, fontWeight: "600", fontSize: 13 },
-  disclaimerBar: { backgroundColor: "#f59e0b15", borderTopWidth: 1, borderTopColor: colors.amber + "40", paddingHorizontal: 14, paddingVertical: 8 },
-  disclaimerText: { color: colors.amber, fontSize: 10, textAlign: "center" },
+  content: { padding: 16, paddingBottom: 8, gap: 12 },
+  ctx: { flexDirection: "row", gap: 10, backgroundColor: colors.bgCard, borderColor: colors.border, borderWidth: 1, borderRadius: 14, padding: 12 },
+  ctxIcon: { width: 30, height: 30, borderRadius: 9, backgroundColor: colors.tealGlow, borderWidth: 1, borderColor: colors.teal + "40", alignItems: "center", justifyContent: "center" },
+  ctxText: { color: colors.textSecondary, fontSize: 11, lineHeight: 16, marginTop: 4 },
+  hint: { color: colors.textSecondary, fontSize: 11, textAlign: "center", opacity: 0.7, marginVertical: 8 },
+
+  userWrap: { alignItems: "flex-end" },
+  userBubble: { maxWidth: "82%", backgroundColor: colors.teal, borderRadius: 16, borderBottomRightRadius: 4, paddingHorizontal: 14, paddingVertical: 10 },
+  userText: { color: "#06201d", fontSize: 13, lineHeight: 19, fontWeight: "500" },
+
+  aiWrap: { flexDirection: "row", gap: 8, alignItems: "flex-start" },
+  aiAvatar: { width: 26, height: 26, borderRadius: 8, backgroundColor: colors.tealGlow, borderWidth: 1, borderColor: colors.teal + "40", alignItems: "center", justifyContent: "center", marginTop: 2 },
+  aiBubble: { flex: 1, maxWidth: "85%", backgroundColor: colors.bgCard, borderColor: colors.border, borderWidth: 1, borderRadius: 16, borderTopLeftRadius: 4, paddingHorizontal: 14, paddingVertical: 11 },
+  aiText: { color: colors.textPrimary, fontSize: 13, lineHeight: 20 },
+
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
+  chip: { backgroundColor: colors.bgCard, borderColor: colors.border, borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  chipText: { color: colors.textSecondary, fontSize: 12 },
+
+  inputBar: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.bgCard },
+  input: { flex: 1, backgroundColor: colors.bgBase, color: colors.textPrimary, borderWidth: 1, borderColor: colors.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14 },
+  sendBtn: { width: 44, height: 44, borderRadius: 12, backgroundColor: colors.teal, alignItems: "center", justifyContent: "center" },
 });
