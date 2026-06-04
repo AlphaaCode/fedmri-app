@@ -29,8 +29,8 @@
     "expo-splash-screen": "~56.0.10",
     "expo-status-bar": "~56.0.4",
     "lucide-react-native": "^1.17.0",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-native": "0.85.3",
     "react-native-gesture-handler": "~2.31.1",
     "react-native-safe-area-context": "~5.7.0",
@@ -45,7 +45,7 @@
   },
   "expo": {
     "install": {
-      "//": "Pin react/react-dom to 19.2.4 to share a single copy with the monorepo root (avoids a duplicate-react bundle). Expo SDK 56 prefers 19.2.3; the patch diff is compatible.",
+      "//": "react/react-dom MUST be exactly 19.2.3 to match react-native 0.85.3's bundled react-native-renderer (19.2.3) — a mismatch crashes at launch with 'Incompatible React versions'. The web app uses 19.2.4 at the monorepo root; metro.config forces mobile to resolve its OWN local 19.2.3, so the duplicate-react doctor warning is expected and correct to ignore.",
       "exclude": [
         "react",
         "react-dom"

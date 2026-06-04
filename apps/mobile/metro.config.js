@@ -27,4 +27,24 @@ config.resolver.extraNodeModules = {
   "react-native": path.resolve(monorepoRoot, "node_modules/react-native"),
 };
 
+// 4. CRITICAL: react-native lives at the monorepo ROOT, where the web app pins
+//    react 19.2.4. When react-native requires "react" it would resolve root's
+//    19.2.4, but react-native 0.85.3 bundles react-native-renderer 19.2.3 and
+//    crashes at launch unless `react` is EXACTLY 19.2.3 ("Incompatible React
+//    versions"). extraNodeModules is only a fallback, so it doesn't override
+//    react-native's own resolution. This resolver redirects EVERY react /
+//    react-dom request — from app code AND from react-native — to the app's
+//    local 19.2.3 copy, guaranteeing a single matching react.
+const reactDir = path.resolve(projectRoot, "node_modules/react");
+const reactDomDir = path.resolve(projectRoot, "node_modules/react-dom");
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName === "react" || moduleName.startsWith("react/")) {
+    return context.resolveRequest(context, reactDir + moduleName.slice("react".length), platform);
+  }
+  if (moduleName === "react-dom" || moduleName.startsWith("react-dom/")) {
+    return context.resolveRequest(context, reactDomDir + moduleName.slice("react-dom".length), platform);
+  }
+  return context.resolveRequest(context, moduleName, platform);
+};
+
 module.exports = config;
