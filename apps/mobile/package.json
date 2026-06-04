@@ -4,48 +4,56 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
-    "@expo/metro-runtime": "^55.0.11",
-    "@react-native-async-storage/async-storage": "^3.1.1",
+    "@expo/metro-runtime": "~56.0.13",
+    "@expo/webpack-config": "^19.0.1",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "^12.0.1",
     "@react-navigation/bottom-tabs": "^7.16.1",
     "@react-navigation/native": "^7.2.4",
     "@react-navigation/native-stack": "^7.15.1",
     "@tanstack/react-query": "^5.101.0",
     "axios": "^1.17.0",
-    "expo": "^55.0.25",
-    "expo-camera": "~55.0.18",
-    "expo-constants": "^55.0.16",
-    "expo-file-system": "^55.0.21",
-    "expo-image-picker": "~55.0.20",
+    "expo": "^56.0.8",
+    "expo-build-properties": "~56.0.16",
+    "expo-camera": "~56.0.7",
+    "expo-constants": "~56.0.16",
+    "expo-file-system": "~56.0.7",
+    "expo-image-picker": "~56.0.15",
     "expo-notifications": "^56.0.15",
-    "expo-router": "^56.2.8",
-    "expo-secure-store": "~55.0.14",
-    "expo-status-bar": "~55.0.6",
+    "expo-secure-store": "~56.0.4",
+    "expo-splash-screen": "~56.0.10",
+    "expo-status-bar": "~56.0.4",
     "lucide-react-native": "^1.17.0",
     "nativewind": "^4.2.4",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "react-native": "0.83.6",
-    "react-native-gesture-handler": "^3.0.0",
-    "react-native-safe-area-context": "~5.6.0",
-    "react-native-screens": "~4.23.0",
-    "react-native-web": "^0.21.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-native": "0.85.3",
+    "react-native-gesture-handler": "~2.31.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "4.25.2",
+    "react-native-web": "^0.21.2",
+    "react-native-worklets": "0.8.3",
     "socket.io-client": "^4.8.3",
     "tailwindcss": "^4.3.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@types/react": "~19.2.10",
-    "typescript": "~5.9.2"
+    "typescript": "~6.0.3"
   },
-  "overrides": {
-    "react": "19.2.0",
-    "react-dom": "19.2.0"
+  "expo": {
+    "install": {
+      "//": "Pin react/react-dom to 19.2.4 to share a single copy with the monorepo root (avoids a duplicate-react bundle). Expo SDK 56 prefers 19.2.3; the patch diff is compatible.",
+      "exclude": [
+        "react",
+        "react-dom"
+      ]
+    }
   },
   "private": true
 }
