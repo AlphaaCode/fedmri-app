@@ -40,7 +40,7 @@ export default function PatientDashboardPage() {
   const latest = cases[0];
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Patient Dashboard</h1>
@@ -168,41 +168,72 @@ export default function PatientDashboardPage() {
         </div>
       </div>
 
-      {/* Recent Activity */}
-      {cases.length > 0 && (
+      {/* Bottom row: recent activity + privacy explainer (fills the width) */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4 items-start">
+        {/* Recent Activity */}
         <div>
           <div className="text-xs uppercase tracking-widest mb-3" style={{ color: "var(--text-secondary)" }}>Recent Activity</div>
-          <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
-            {cases.slice(0, 4).map((c, i) => {
-              const date = new Date(c.createdAt);
-              const timeStr = date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-              const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-              return (
-                <div key={c.id} className="flex items-center gap-3 px-4 py-3"
-                  style={{ borderBottom: i < cases.length - 1 ? "1px solid var(--border)" : "none" }}>
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: "var(--bg-card2)" }}>
-                    <ActivityIcon type={i === 0 ? "review" : "upload"} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
-                      {i === 0 ? "AI Analysis Complete" : "New Scan Uploaded"}
+          {cases.length > 0 ? (
+            <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+              {cases.slice(0, 5).map((c, i) => {
+                const date = new Date(c.createdAt);
+                const timeStr = date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+                const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+                return (
+                  <div key={c.id} className="flex items-center gap-3 px-4 py-3"
+                    style={{ borderBottom: i < Math.min(cases.length, 5) - 1 ? "1px solid var(--border)" : "none" }}>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ background: "var(--bg-card2)" }}>
+                      <ActivityIcon type={i === 0 ? "review" : "upload"} />
                     </div>
-                    <div className="text-[11px] truncate" style={{ color: "var(--text-secondary)" }}>
-                      Result: <span style={{ color: subtypeColor(c.predictedSubtype) }}>{c.predictedSubtype}</span>
-                      {" "}· Confidence {Math.round(c.confidence * 100)}%
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
+                        {i === 0 ? "AI Analysis Complete" : "New Scan Uploaded"}
+                      </div>
+                      <div className="text-[11px] truncate" style={{ color: "var(--text-secondary)" }}>
+                        Result: <span style={{ color: subtypeColor(c.predictedSubtype) }}>{c.predictedSubtype}</span>
+                        {" "}· Confidence {Math.round(c.confidence * 100)}%
+                      </div>
+                    </div>
+                    <div className="text-[11px] shrink-0 text-right" style={{ color: "var(--text-secondary)" }}>
+                      <div>{dateStr}</div>
+                      <div style={{ opacity: 0.6 }}>{timeStr}</div>
                     </div>
                   </div>
-                  <div className="text-[11px] shrink-0 text-right" style={{ color: "var(--text-secondary)" }}>
-                    <div>{dateStr}</div>
-                    <div style={{ opacity: 0.6 }}>{timeStr}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl border p-6 text-center text-xs" style={{ background: "var(--bg-card)", borderColor: "var(--border)", color: "var(--text-secondary)" }}>
+              No activity yet — your scans and AI results will appear here.
+            </div>
+          )}
         </div>
-      )}
+
+        {/* How your data stays private */}
+        <GradientCard accent="teal" className="p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth="1.5">
+              <rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" />
+            </svg>
+            <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Your data stays private</div>
+          </div>
+          <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            Your scan is analysed by an AI trained across 3 hospitals. The intelligence comes to your
+            data — your images never leave this hospital, and nothing about you is shared to build the
+            model.
+          </p>
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            <div>
+              <div className="text-lg font-bold" style={{ color: "var(--teal)" }}>0</div>
+              <div className="text-[11px]" style={{ color: "var(--text-secondary)" }}>bytes of your data shared</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold" style={{ color: "var(--teal)" }}>3</div>
+              <div className="text-[11px]" style={{ color: "var(--text-secondary)" }}>hospitals improving the AI</div>
+            </div>
+          </div>
+        </GradientCard>
+      </div>
     </div>
   );
 }

@@ -240,7 +240,7 @@ export default function SystemLogsPage() {
 
   if (loading && !logsData) {
     return (
-      <div className="max-w-6xl">
+      <div className="w-full">
         <PageHeader title="Live Telemetry" />
         <div
           className="text-sm mt-8 text-center"
@@ -253,7 +253,7 @@ export default function SystemLogsPage() {
   }
 
   return (
-    <div className="max-w-6xl space-y-5">
+    <div className="w-full space-y-5">
       {/* ── Page header ── */}
       <PageHeader
         title="Live Telemetry"

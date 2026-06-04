@@ -90,88 +90,86 @@ export default function SupportPage() {
   }
 
   return (
-    <div className="max-w-4xl space-y-5 min-h-full">
+    <div className="w-full space-y-5 min-h-full">
       <PageHeader
         title="Support"
         description="Help and documentation for the federated research network."
       />
 
-      {/* ── Quick-action cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Documentation card */}
-        <Card>
-          <div className="flex flex-col gap-3">
-            <div>
-              <div
-                className="text-sm font-semibold mb-1"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Documentation
-              </div>
-              <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                Architecture overview, FL round lifecycle, API reference, and
-                researcher workflow guides for the FedMRI network.
-              </p>
-            </div>
-            <div>
-              <Button variant="teal" className="text-xs px-3 py-1.5" onClick={() => setDocsOpen(true)}>
-                Open documentation
-              </Button>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-5 items-start">
+        {/* ── FAQ (main) ── */}
+        <Panel
+          title="Frequently asked questions"
+          subtitle="Technical and privacy questions about the federated network."
+        >
+          <div className="mt-1">
+            {FAQ_ITEMS.map((item, i) => (
+              <FaqItem
+                key={i}
+                q={item.q}
+                a={item.a}
+                open={openIndex === i}
+                onToggle={() => toggle(i)}
+              />
+            ))}
           </div>
-        </Card>
+        </Panel>
 
-        {/* Contact card */}
-        <Card>
-          <div className="flex flex-col gap-3">
-            <div>
-              <div
-                className="text-sm font-semibold mb-1"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Contact
+        {/* ── Sidebar: docs + contact + status ── */}
+        <div className="space-y-4">
+          <Card>
+            <div className="flex flex-col gap-3">
+              <div>
+                <div className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Documentation</div>
+                <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  Architecture overview, FL round lifecycle, API reference, and
+                  researcher workflow guides for the FedMRI network.
+                </p>
               </div>
-              <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                Reach the FL network operations team for technical issues,
-                access requests, or coordination queries.
-              </p>
-            </div>
-            <div>
-              <a href="mailto:support@fedmri.local" tabIndex={-1}>
-                <Button variant="ghost" className="text-xs px-3 py-1.5">
-                  Email operations team
+              <div>
+                <Button variant="teal" className="text-xs px-3 py-1.5" onClick={() => setDocsOpen(true)}>
+                  Open documentation
                 </Button>
-              </a>
+              </div>
             </div>
-          </div>
-        </Card>
-      </div>
+          </Card>
 
-      {/* ── FAQ ── */}
-      <Panel
-        title="Frequently asked questions"
-        subtitle="Technical and privacy questions about the federated network."
-      >
-        <div className="mt-1">
-          {FAQ_ITEMS.map((item, i) => (
-            <FaqItem
-              key={i}
-              q={item.q}
-              a={item.a}
-              open={openIndex === i}
-              onToggle={() => toggle(i)}
-            />
-          ))}
+          <Card>
+            <div className="flex flex-col gap-3">
+              <div>
+                <div className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Contact</div>
+                <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  Reach the FL network operations team for technical issues,
+                  access requests, or coordination queries.
+                </p>
+              </div>
+              <div>
+                <a href="mailto:support@fedmri.local" tabIndex={-1}>
+                  <Button variant="ghost" className="text-xs px-3 py-1.5">Email operations team</Button>
+                </a>
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-secondary)" }}>Network operations</div>
+            <div className="space-y-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+              <div className="flex items-center justify-between">
+                <span>Response window</span><span style={{ color: "var(--text-primary)" }}>24 hours</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Email</span><span style={{ color: "var(--teal)" }}>support@fedmri.local</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Network status</span>
+                <span className="inline-flex items-center gap-1.5" style={{ color: "var(--teal)" }}>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--teal)" }} />Operational
+                </span>
+              </div>
+            </div>
+          </Card>
         </div>
-      </Panel>
-
-      {/* ── Status note ── */}
-      <p
-        className="text-[11px]"
-        style={{ color: "var(--text-secondary)" }}
-      >
-        Network operations team · 24h response window · support@fedmri.local
-      </p>
+      </div>
 
       {docsOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
