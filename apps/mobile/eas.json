@@ -8,12 +8,12 @@
       "developmentClient": true,
       "distribution": "internal",
       "android": { "buildType": "apk", "image": "latest" },
-      "node": "20.18.0"
+      "node": "20.19.4"
     },
     "preview": {
       "distribution": "internal",
       "android": { "buildType": "apk", "image": "latest" },
-      "node": "20.18.0",
+      "node": "20.19.4",
       "env": {
         "EAS_SKIP_AUTO_FINGERPRINT": "1"
       }
@@ -21,7 +21,7 @@
     "production": {
       "autoIncrement": true,
       "android": { "buildType": "app-bundle", "image": "latest" },
-      "node": "20.18.0"
+      "node": "20.19.4"
     }
   },
   "submit": {
