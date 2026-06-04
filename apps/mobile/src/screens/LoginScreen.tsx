@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView,
+  KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView, Image,
 } from "react-native";
 import { colors } from "../lib/theme";
 import { apiLogin, getApiUrl, setApiUrl } from "../lib/api";
@@ -42,14 +42,9 @@ export function LoginScreen({ navigation }: any) {
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", padding: 20 }} keyboardShouldPersistTaps="handled">
       <View style={s.card}>
         <View style={s.logoRow}>
-          <View style={s.logoBox}>
-            <Text style={{ color: colors.teal, fontSize: 18, fontWeight: "700" }}>+</Text>
-          </View>
-          <View>
-            <Text style={s.brand}>FedMRI</Text>
-            <Text style={s.brandSub}>Patient portal</Text>
-          </View>
+          <Image source={require("../../assets/fedmri-logo.png")} style={s.logo} resizeMode="contain" />
         </View>
+        <Text style={s.brandSub}>Patient portal</Text>
 
         <Text style={s.h1}>Sign in</Text>
         <Text style={s.sub}>Access AI-powered breast MRI analysis</Text>
@@ -133,10 +128,9 @@ export function LoginScreen({ navigation }: any) {
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bgBase, justifyContent: "center", padding: 20 },
   card: { backgroundColor: colors.bgCard, borderColor: colors.border, borderWidth: 1, borderRadius: 16, padding: 24, gap: 16 },
-  logoRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  logoBox: { width: 36, height: 36, backgroundColor: colors.tealGlow, borderRadius: 10, borderWidth: 1, borderColor: colors.teal + "60", alignItems: "center", justifyContent: "center" },
-  brand: { color: colors.textPrimary, fontSize: 14, fontWeight: "700" },
-  brandSub: { color: colors.textSecondary, fontSize: 11 },
+  logoRow: { alignItems: "center", marginBottom: -4 },
+  logo: { width: 200, height: 84 },
+  brandSub: { color: colors.textSecondary, fontSize: 11, textAlign: "center", letterSpacing: 1, textTransform: "uppercase", marginTop: -8 },
   h1: { color: colors.textPrimary, fontSize: 20, fontWeight: "700" },
   sub: { color: colors.textSecondary, fontSize: 12, marginTop: -8 },
   label: { color: colors.textSecondary, fontSize: 10, letterSpacing: 1.5, marginBottom: 6 },
