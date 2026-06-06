@@ -13,6 +13,7 @@ export declare class AuthController {
             name: string;
             role: import(".prisma/client").$Enums.Role;
             hospitalId: string | null;
+            onboardingDone: boolean;
         };
     }>;
     login(dto: LoginDto): Promise<{
@@ -24,6 +25,7 @@ export declare class AuthController {
             name: string;
             role: import(".prisma/client").$Enums.Role;
             hospitalId: string | null;
+            onboardingDone: boolean;
         };
     }>;
     refresh(req: any): Promise<{

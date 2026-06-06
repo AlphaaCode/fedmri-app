@@ -1,0 +1,32 @@
+sequenceDiagram
+    actor PB as Patient Browser
+    participant NX as Next.js (Patient Portal)
+    participant NE as NestJS API
+    participant ML as FastAPI ML Service
+    participant DB as PostgreSQL
+    participant WS as Patient Browser (WS)
+
+    PB->>NX: Drop image in upload zone
+    NX->>NE: POST /cases (multipart, Patient JWT)\nscope=PATIENT
+    activate NE
+    NE->>NE: Validate JWT → role=PATIENT\nExtract userId, scope=PATIENT
+    NE->>NE: Store file to\nuploads/patients/{userId}/{caseId}/
+    NE->>ML: POST /predict {imagePath}
+    activate ML
+    ML->>ML: Hash filename → select mock_results.json entry\nAdd Gaussian noise (σ=0.02)\nSleep 1.5–3s (mock latency)
+    ML-->>NE: PredictionResult {predictedSubtype, confidence,\nprobs[4], attentionMap, modelVersion}
+    deactivate ML
+    NE->>DB: INSERT Case {scope=PATIENT, userId,\nstoredLocally=true, predictedSubtype, confidence}
+    DB-->>NE: Case saved
+    NE-->>NX: 201 CaseSummary {id, predictedSubtype, confidence, status=PENDING}
+    deactivate NE
+    NX-->>PB: Render plain-language result\n+ confidence badge (High/Medium/Low)\n+ non-dismissable disclaimer
+
+    Note over PB,DB: NO FL round triggered — Patient uploads stay in Patient Space
+
+    alt confidence = Low
+        PB->>PB: Show ⚠ "Please consult a specialist" warning
+    end
+
+    PB->>WS: Click "Ask AI about this"
+    WS-->>PB: Navigate to chat with caseId query param

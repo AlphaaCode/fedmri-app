@@ -1,0 +1,124 @@
+erDiagram
+    Hospital {
+        string id PK
+        string flClientId UK
+        string displayName
+        int totalCases
+        datetime createdAt
+    }
+
+    User {
+        string id PK
+        string email UK
+        string passwordHash
+        string name
+        Role role
+        string hospitalId FK
+        boolean onboardingDone
+        int casesContributed
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Case {
+        string id PK
+        string userId FK
+        string hospitalId FK
+        CaseScope scope "HOSPITAL | PATIENT — isolation boundary"
+        string imagePath
+        boolean storedLocally "always true — silo invariant"
+        string predictedSubtype
+        float confidence
+        json probs
+        json attentionMap
+        int modelVersion
+        CaseStatus status
+        string flRoundId FK
+        datetime createdAt
+    }
+
+    FlRound {
+        string id PK
+        int roundNumber
+        FLStrategy strategy
+        json participants
+        float globalF1Before
+        float globalF1After
+        json f1PerClassAfter
+        int durationSeconds
+        int modelVersion
+        FLTrigger triggeredBy
+        datetime createdAt
+    }
+
+    FlContribution {
+        string id PK
+        string flRoundId FK
+        string hospitalId FK
+        int localEpochs
+        int samplesUsed
+        float localF1Before
+        float localF1After
+        float weightDeltaNorm
+        float privacyBudgetUsed
+        datetime createdAt
+    }
+
+    PrivacyAuditLog {
+        string id PK
+        string hospitalId FK
+        string flRoundId FK
+        PrivacyEvent eventType
+        int bytesTransmitted
+        int rawDataTransmitted "always 0 — FL privacy invariant"
+        datetime createdAt
+    }
+
+    Feedback {
+        string id PK
+        string caseId FK
+        string doctorId FK
+        FeedbackType feedbackType
+        string correctedSubtype
+        json evidenceTypes
+        string justification
+        boolean alTriggered
+        int newModelVersion
+        datetime createdAt
+    }
+
+    ChatMessage {
+        string id PK
+        string userId FK
+        string caseId FK
+        ChatRole role
+        string content
+        datetime createdAt
+    }
+
+    ModelMetrics {
+        string id PK
+        int modelVersion UK
+        int flRound
+        float accuracy
+        float f1Macro
+        json f1PerClass
+        string strategy
+        datetime createdAt
+    }
+
+    Hospital ||--o{ User : "employs"
+    Hospital ||--o{ Case : "owns (scope=HOSPITAL)"
+    Hospital ||--o{ FlContribution : "contributes"
+    Hospital ||--o{ PrivacyAuditLog : "audited by"
+
+    User ||--o{ Case : "submits"
+    User ||--o{ Feedback : "provides"
+    User ||--o{ ChatMessage : "sends"
+
+    Case ||--o{ Feedback : "receives"
+    Case ||--o{ ChatMessage : "contextualises"
+    Case }o--o| FlRound : "linked to"
+
+    FlRound ||--o{ FlContribution : "aggregates"
+    FlRound ||--o{ PrivacyAuditLog : "generates"

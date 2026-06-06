@@ -1,0 +1,34 @@
+graph LR
+    %% Actors
+    Patient(["👤 Patient\n(FL Consumer)\nUses predictions;\nno training involvement"])
+    Doctor(["👨‍⚕️ Doctor\n(FL Participant)\nContributes to training\nvia hospital silo"])
+    Researcher(["🔬 Researcher\n(FL Platform Analyst)\nAnalyses model without\naccessing raw data"])
+
+    %% Central system
+    FedMRI["🏥 FedMRI Platform\n---\nFederated learning\nbreast MRI subtype\nclassification system"]
+
+    %% External systems
+    AnthropicAPI(["☁️ Anthropic API\n(Claude)\nPowers chatbot\nfor both portals"])
+    Flower(["🌸 Flower FL Server\n(Production)\nReal federated\nlearning server"])
+    DICOM(["📷 DICOM Viewer\n(External)\nRadiology image\nviewing integration"])
+
+    %% Relationships
+    Patient -->|"Uploads MRI scan;\nviews AI prediction\nin plain language"| FedMRI
+    Doctor -->|"Uploads patient scan;\nreceives prediction +\nattention map;\ntriggers FL round"| FedMRI
+    Researcher -->|"Views aggregated metrics,\nmodel performance,\nnetwork topology\n(no raw data)"| FedMRI
+
+    FedMRI -->|"JWT auth\nfor all roles"| Patient
+    FedMRI -->|"JWT auth\nfor all roles"| Doctor
+    FedMRI -->|"JWT auth\n(institution required)"| Researcher
+
+    FedMRI -->|"Streams chat responses\nvia SSE"| AnthropicAPI
+    FedMRI -->|"Mock in dev;\nReal FL rounds\nin production"| Flower
+    FedMRI -->|"Renders MRI slices\nwith attention overlay"| DICOM
+
+    style FedMRI fill:#1a73e8,color:#fff,stroke:#1557b0
+    style Patient fill:#34a853,color:#fff,stroke:#1e7e34
+    style Doctor fill:#ea4335,color:#fff,stroke:#c5221f
+    style Researcher fill:#fbbc04,color:#000,stroke:#f09300
+    style AnthropicAPI fill:#6c757d,color:#fff,stroke:#495057
+    style Flower fill:#6c757d,color:#fff,stroke:#495057
+    style DICOM fill:#6c757d,color:#fff,stroke:#495057

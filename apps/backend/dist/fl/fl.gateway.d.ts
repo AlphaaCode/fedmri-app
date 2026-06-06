@@ -25,5 +25,19 @@ export declare class FlGateway implements OnGatewayConnection, OnGatewayDisconne
         f1Delta: number;
         modelVersion: number;
     }): void;
+    emitTestProgress(payload: {
+        testId: string;
+        strategy: string;
+        round: number;
+        f1: number;
+        auc: number;
+        accuracy: number;
+        clientSizes: number[];
+    }): void;
+    emitTestComplete(payload: {
+        testId: string;
+        strategy: string;
+        finalF1: number;
+    }): void;
 }
 //# sourceMappingURL=fl.gateway.d.ts.map

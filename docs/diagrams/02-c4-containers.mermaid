@@ -1,0 +1,69 @@
+graph LR
+    %% Actors
+    Patient(["👤 Patient"])
+    Doctor(["👨‍⚕️ Doctor"])
+    Researcher(["🔬 Researcher"])
+
+    subgraph FedMRI ["FedMRI Platform"]
+        direction TB
+
+        subgraph Frontend ["Frontend Layer"]
+            WebApp["📱 Next.js Web App\n---\nApp Router + Tailwind\n+ shadcn/ui\n---\nPatient portal /patient/*\nDoctor portal /doctor/*\nResearcher portal /researcher/*"]
+            MobileApp["📲 Expo Mobile App\n---\nReact Native\nPatient portal only\niOS & Android"]
+        end
+
+        subgraph Backend ["Backend Layer"]
+            NestJS["⚙️ NestJS API\n---\nREST + WebSocket\nJWT + RBAC\nPrisma ORM\n:3001"]
+        end
+
+        subgraph MLLayer ["ML Layer"]
+            MLService["🧠 FastAPI ML Service\n---\nInference + Attention maps\nActive Learning simulation\nINFERENCE_MODE=mock|real\n:8001"]
+            FLCoordinator["🔄 FastAPI FL Coordinator\n---\nFL round lifecycle\nFedAvg / FedProx\nFL_MODE=mock|flower\n:8002"]
+        end
+
+        subgraph DataLayer ["Data Layer"]
+            PostgreSQL[("🗄️ PostgreSQL\nPrimary store\nPrisma migrations")]
+            Redis[("⚡ Redis\nSessions + WS pub/sub\nRate limiting\nfl:active:{hospitalId}")]
+            Storage[("💾 Storage\nlocal disk / MinIO / S3\nSee STORAGE_MODE")]
+        end
+    end
+
+    %% External
+    AnthropicAPI(["☁️ Anthropic API"])
+    Flower(["🌸 Flower FL Server"])
+
+    %% User → Frontend
+    Patient -->|"HTTPS"| WebApp
+    Patient -->|"HTTPS"| MobileApp
+    Doctor -->|"HTTPS"| WebApp
+    Researcher -->|"HTTPS"| WebApp
+
+    %% Frontend → Backend
+    WebApp -->|"REST + WS\nJWT in every request"| NestJS
+    MobileApp -->|"REST + WS\nJWT in every request"| NestJS
+
+    %% Backend → ML
+    NestJS -->|"HTTP POST /predict\nHTTP POST /feedback\n(sync)"| MLService
+    NestJS -->|"HTTP POST /round/start\n(async, after response)\nweight deltas only — no raw data"| FLCoordinator
+
+    %% Backend → Data
+    NestJS -->|"Prisma queries"| PostgreSQL
+    NestJS -->|"Cache + pub/sub"| Redis
+    NestJS -->|"Image upload/read"| Storage
+    MLService -->|"Read scans"| Storage
+
+    %% External
+    NestJS -->|"SSE stream\nAI responses"| AnthropicAPI
+    FLCoordinator -->|"Flower protocol\n(production only)"| Flower
+
+    %% Webhook back
+    FLCoordinator -->|"POST /internal/fl/round-complete\nwebhook (shared secret)"| NestJS
+
+    style WebApp fill:#1a73e8,color:#fff
+    style MobileApp fill:#1a73e8,color:#fff
+    style NestJS fill:#ea4335,color:#fff
+    style MLService fill:#34a853,color:#fff
+    style FLCoordinator fill:#34a853,color:#fff
+    style PostgreSQL fill:#673ab7,color:#fff
+    style Redis fill:#ff5722,color:#fff
+    style Storage fill:#607d8b,color:#fff

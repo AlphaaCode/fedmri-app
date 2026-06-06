@@ -8,6 +8,13 @@ export declare class CasesService {
     private flService;
     private alService;
     constructor(prisma: PrismaService, inferenceService: InferenceService, flService: FlService, alService: AlService);
+    private samplesDir;
+    /** List bundled sample MRI volumes (for the "Use a sample scan" picker). */
+    listSamples(): {
+        name: string;
+    }[];
+    /** Create a case from a bundled sample volume (runs the same real pipeline). */
+    createFromSample(user: any, name: string): Promise<any>;
     create(user: any, file: Express.Multer.File): Promise<any>;
     findAll(user: any, query?: {
         page?: number;
@@ -19,6 +26,8 @@ export declare class CasesService {
     getAttention(user: any, id: string): Promise<{
         attention: number[];
         size: number;
+        slicePng?: string;
+        topSlice?: number;
     }>;
     findOne(user: any, id: string): Promise<any>;
     verifyImage(file: Express.Multer.File): Promise<{

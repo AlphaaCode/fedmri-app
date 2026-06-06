@@ -16,6 +16,7 @@ export declare class AuthService {
             name: string;
             role: import(".prisma/client").$Enums.Role;
             hospitalId: string | null;
+            onboardingDone: boolean;
         };
     }>;
     login(dto: LoginDto): Promise<{
@@ -27,6 +28,7 @@ export declare class AuthService {
             name: string;
             role: import(".prisma/client").$Enums.Role;
             hospitalId: string | null;
+            onboardingDone: boolean;
         };
     }>;
     refresh(userId: string, refreshToken: string): Promise<{

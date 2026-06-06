@@ -37,6 +37,11 @@ let FlController = class FlController {
         await this.flService.handleRoundComplete(body);
         return { status: 'ok' };
     }
+    async testProgress(body, secret) {
+        this.verifySecret(secret);
+        await this.flService.handleTestProgress(body);
+        return { ok: true };
+    }
 };
 exports.FlController = FlController;
 __decorate([
@@ -57,6 +62,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], FlController.prototype, "roundComplete", null);
+__decorate([
+    (0, common_1.Post)('test-progress'),
+    (0, common_1.HttpCode)(202),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Headers)('x-fl-secret')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], FlController.prototype, "testProgress", null);
 exports.FlController = FlController = __decorate([
     (0, common_1.Controller)('internal/fl'),
     __metadata("design:paramtypes", [fl_service_1.FlService,

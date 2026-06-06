@@ -17,7 +17,7 @@ export declare class ModelService {
      */
     getConfusionMatrix(): Promise<any>;
     /**
-     * Comparison card: centralized vs FedProx gap + privacy framing.
+     * Comparison card: centralized vs FedSCRT gap + privacy framing.
      */
     getComparison(): Promise<any>;
 }

@@ -49,7 +49,6 @@ export class AuthService {
         name: dto.name,
         role: dto.role as any,
         hospitalId: dto.hospitalId || null,
-        onboardingDone: true,
       },
     });
 
@@ -64,6 +63,7 @@ export class AuthService {
         name: user.name,
         role: user.role,
         hospitalId: user.hospitalId,
+        onboardingDone: user.onboardingDone ?? false,
       },
     };
   }
@@ -94,6 +94,7 @@ export class AuthService {
         name: user.name,
         role: user.role,
         hospitalId: user.hospitalId,
+        onboardingDone: user.onboardingDone ?? false,
       },
     };
   }

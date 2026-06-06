@@ -11,5 +11,8 @@ export declare class FlController {
     roundComplete(body: any, secret: string): Promise<{
         status: string;
     }>;
+    testProgress(body: any, secret: string): Promise<{
+        ok: boolean;
+    }>;
 }
 //# sourceMappingURL=fl.controller.d.ts.map

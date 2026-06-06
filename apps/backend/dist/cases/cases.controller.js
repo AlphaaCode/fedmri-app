@@ -18,6 +18,8 @@ const pdf_service_1 = require("./pdf.service");
 const platform_express_1 = require("@nestjs/platform-express");
 const multer_1 = require("multer");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const roles_guard_1 = require("../common/guards/roles.guard");
+const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const cases_service_1 = require("./cases.service");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const multer_config_1 = require("../common/config/multer.config");
@@ -34,6 +36,13 @@ let CasesController = class CasesController {
     }
     async findAll(user, page, limit) {
         return this.casesService.findAll(user, { page, limit });
+    }
+    // NOTE: declared before @Get(':id') so ':id' does not capture "samples".
+    listSamples() {
+        return this.casesService.listSamples();
+    }
+    createFromSample(user, body) {
+        return this.casesService.createFromSample(user, body.name);
     }
     async findOne(user, id) {
         return this.casesService.findOne(user, id);
@@ -85,6 +94,21 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CasesController.prototype, "findAll", null);
 __decorate([
+    (0, common_1.Get)('samples'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], CasesController.prototype, "listSamples", null);
+__decorate([
+    (0, common_1.Post)('from-sample'),
+    (0, common_1.HttpCode)(201),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], CasesController.prototype, "createFromSample", null);
+__decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id')),
@@ -121,7 +145,8 @@ __decorate([
 ], CasesController.prototype, "submitFeedback", null);
 exports.CasesController = CasesController = __decorate([
     (0, common_1.Controller)('cases'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('DOCTOR', 'PATIENT'),
     __metadata("design:paramtypes", [cases_service_1.CasesService,
         pdf_service_1.PdfService])
 ], CasesController);

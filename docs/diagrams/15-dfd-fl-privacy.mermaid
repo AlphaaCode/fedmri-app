@@ -1,0 +1,80 @@
+flowchart TD
+    %% ─── Hospital Silos ─────────────────────────────────────────
+    subgraph SiloA ["🏥 Hospital A Silo"]
+        direction TB
+        RawA[("🔒 Raw MRI Scans\nPatient records\nDCE-MRI volumes\nSTAYS IN SILO")]
+        WeightsA["📐 Local Model Weights\nw_A after local training\n(can leave as delta only)"]
+        DeltaA["Δw_A = w_A − w_global\nWeight delta only\n~12 MB per round"]
+    end
+
+    subgraph SiloB ["🏥 Hospital B Silo"]
+        direction TB
+        RawB[("🔒 Raw MRI Scans\nPatient records\nDCE-MRI volumes\nSTAYS IN SILO")]
+        WeightsB["📐 Local Model Weights\nw_B after local training"]
+        DeltaB["Δw_B = w_B − w_global\nWeight delta only\n~12 MB per round"]
+    end
+
+    subgraph SiloC ["🏥 Hospital C Silo"]
+        direction TB
+        RawC[("🔒 Raw MRI Scans\nPatient records\nDCE-MRI volumes\nSTAYS IN SILO")]
+        WeightsC["📐 Local Model Weights\nw_C after local training"]
+        DeltaC["Δw_C = w_C − w_global\nWeight delta only\n~12 MB per round"]
+    end
+
+    %% ─── Privacy Barrier ────────────────────────────────────────
+    BlockA["🚫 RAW DATA BLOCKED\nrawDataTransmitted = 0"]
+    BlockB["🚫 RAW DATA BLOCKED\nrawDataTransmitted = 0"]
+    BlockC["🚫 RAW DATA BLOCKED\nrawDataTransmitted = 0"]
+
+    RawA -.->|"BLOCKED ❌"| BlockA
+    RawB -.->|"BLOCKED ❌"| BlockB
+    RawC -.->|"BLOCKED ❌"| BlockC
+
+    %% ─── Weight Delta Flows ─────────────────────────────────────
+    subgraph Aggregation ["⚙️ FL Aggregation Server\n(fl-coordinator / Flower)"]
+        direction TB
+        Agg["FedAvg / FedProx\nW_global ← Σ(n_k/n × Δw_k)\nNo raw data involved"]
+        GlobalWeights["🌐 Global Model Weights\nW_global\n(updated each round)"]
+    end
+
+    WeightsA --> DeltaA
+    WeightsB --> DeltaB
+    WeightsC --> DeltaC
+
+    DeltaA -->|"Δw_A sent\n~12 MB"| Agg
+    DeltaB -->|"Δw_B sent\n~12 MB"| Agg
+    DeltaC -->|"Δw_C sent\n~12 MB"| Agg
+
+    Agg --> GlobalWeights
+
+    %% ─── Distribution back ──────────────────────────────────────
+    GlobalWeights -->|"W_global distributed\nback to hospitals"| WeightsA
+    GlobalWeights -->|"W_global distributed\nback to hospitals"| WeightsB
+    GlobalWeights -->|"W_global distributed\nback to hospitals"| WeightsC
+
+    %% ─── Portal Consumption ─────────────────────────────────────
+    subgraph Portals ["Portal Access"]
+        DocPortal["👨‍⚕️ Doctor Portal\nPredictions + Attention Maps\n+ FL round progress"]
+        PatPortal["👤 Patient Portal\nSubtype prediction\n(plain language)"]
+        ResPortal["🔬 Researcher Portal\nModel metrics\nConvergence charts\nNo patient data"]
+    end
+
+    GlobalWeights -->|"Inference via ML Service"| DocPortal
+    GlobalWeights -->|"Inference via ML Service"| PatPortal
+    GlobalWeights -->|"Aggregated metrics only"| ResPortal
+
+    %% ─── Annotation ─────────────────────────────────────────────
+    Total["📊 Total transmission per round:\nRaw patient data: 0 bytes ✅\nWeight deltas: ~36 MB\n(~12 MB × 3 hospitals)"]
+
+    style RawA fill:#ffebee,stroke:#c62828,color:#000
+    style RawB fill:#ffebee,stroke:#c62828,color:#000
+    style RawC fill:#ffebee,stroke:#c62828,color:#000
+    style BlockA fill:#c62828,color:#fff
+    style BlockB fill:#c62828,color:#fff
+    style BlockC fill:#c62828,color:#fff
+    style DeltaA fill:#e8f5e9,stroke:#2e7d32,color:#000
+    style DeltaB fill:#e8f5e9,stroke:#2e7d32,color:#000
+    style DeltaC fill:#e8f5e9,stroke:#2e7d32,color:#000
+    style Agg fill:#1a73e8,color:#fff
+    style GlobalWeights fill:#1557b0,color:#fff
+    style Total fill:#fff3e0,stroke:#e65100,color:#000

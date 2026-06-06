@@ -1,0 +1,59 @@
+
+> web@0.1.0 build
+> next build
+
+▲ Next.js 16.2.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 62s
+  Running TypeScript ...
+  Finished TypeScript in 28.3s ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/25) ...
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+  Generating static pages using 15 workers (6/25) 
+  Generating static pages using 15 workers (12/25) 
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+  Generating static pages using 15 workers (18/25) 
+✓ Generating static pages using 15 workers (25/25) in 1068ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /doctor
+├ ○ /doctor/chat
+├ ○ /doctor/docs
+├ ○ /doctor/history
+├ ○ /doctor/model
+├ ○ /doctor/scan
+├ ○ /doctor/settings
+├ ○ /doctor/support
+├ ○ /login
+├ ○ /patient/chat
+├ ○ /patient/onboarding
+├ ○ /patient/register
+├ ○ /patient/results
+├ ○ /patient/scan
+├ ○ /researcher
+├ ○ /researcher/datasets
+├ ○ /researcher/federated
+├ ○ /researcher/logs
+├ ○ /researcher/settings
+├ ○ /researcher/support
+└ ○ /researcher/topology
+
+
+○  (Static)  prerendered as static content
+

@@ -1,0 +1,38 @@
+INFO:     Started server process [22008]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+FedMRI ML Service started in mock mode
+INFO:     127.0.0.1:60109 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60112 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65463 - "GET /attention/47b784a7-a191-4b1b-9530-2362e24e15c8?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5Cfedmri-app%5Capps%5Cbackend%5Cuploads-tmp%5Cfa429e5c-7b95-4b7c-a9db-9c788384dc7e.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65463 - "GET /attention/47b784a7-a191-4b1b-9530-2362e24e15c8?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5Cfedmri-app%5Capps%5Cbackend%5Cuploads-tmp%5Cfa429e5c-7b95-4b7c-a9db-9c788384dc7e.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50323 - "POST /verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50323 - "POST /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50323 - "GET /attention/004d5604-e4c9-47f1-9e1a-992761674053?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5Cfedmri-app%5Capps%5Cbackend%5Cuploads-tmp%5C40d2f403-8d37-4c34-a9a9-764c714d8e22.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50323 - "GET /attention/004d5604-e4c9-47f1-9e1a-992761674053?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5Cfedmri-app%5Capps%5Cbackend%5Cuploads-tmp%5C40d2f403-8d37-4c34-a9a9-764c714d8e22.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50417 - "POST /verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50417 - "POST /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50417 - "GET /attention/4535ed99-5106-49b8-8ad5-cc596f1a1a8b?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5Cfedmri-app%5Capps%5Cbackend%5Cuploads-tmp%5Cb122319d-4a1a-4eeb-ae7b-cfc48e48c545.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50417 - "GET /attention/4535ed99-5106-49b8-8ad5-cc596f1a1a8b?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5Cfedmri-app%5Capps%5Cbackend%5Cuploads-tmp%5Cb122319d-4a1a-4eeb-ae7b-cfc48e48c545.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52389 - "POST /verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52389 - "POST /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52389 - "GET /attention/23bffd8c-205d-4b89-a9f3-fde4895f2620?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5Cfedmri-app%5Capps%5Cbackend%5Cuploads-tmp%5C7a0f7f23-d531-4872-a0a9-e10b23a906c1.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52389 - "GET /attention/23bffd8c-205d-4b89-a9f3-fde4895f2620?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5Cfedmri-app%5Capps%5Cbackend%5Cuploads-tmp%5C7a0f7f23-d531-4872-a0a9-e10b23a906c1.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64931 - "GET /attention/23bffd8c-205d-4b89-a9f3-fde4895f2620?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5Cfedmri-app%5Capps%5Cbackend%5Cuploads-tmp%5C7a0f7f23-d531-4872-a0a9-e10b23a906c1.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64931 - "GET /attention/23bffd8c-205d-4b89-a9f3-fde4895f2620?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5Cfedmri-app%5Capps%5Cbackend%5Cuploads-tmp%5C7a0f7f23-d531-4872-a0a9-e10b23a906c1.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58893 - "POST /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "GET /attention/507a99a5-f307-4785-8f98-9ac3da983359?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5CDatasets%5Cbreast-mri-molecular-cancer-subtype%5Csamples%5CBreast_MRI_0001_0000.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50653 - "GET /attention/507a99a5-f307-4785-8f98-9ac3da983359?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5CDatasets%5Cbreast-mri-molecular-cancer-subtype%5Csamples%5CBreast_MRI_0001_0000.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50653 - "GET /attention/507a99a5-f307-4785-8f98-9ac3da983359?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5CDatasets%5Cbreast-mri-molecular-cancer-subtype%5Csamples%5CBreast_MRI_0001_0000.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52980 - "POST /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52980 - "GET /attention/5614b95c-4421-4f32-8a59-3fdd6b8d5992?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5CDatasets%5Cbreast-mri-molecular-cancer-subtype%5Csamples%5CBreast_MRI_0001_0000.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52980 - "GET /attention/5614b95c-4421-4f32-8a59-3fdd6b8d5992?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5CDatasets%5Cbreast-mri-molecular-cancer-subtype%5Csamples%5CBreast_MRI_0001_0000.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61278 - "GET /attention/5614b95c-4421-4f32-8a59-3fdd6b8d5992?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5CDatasets%5Cbreast-mri-molecular-cancer-subtype%5Csamples%5CBreast_MRI_0001_0000.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61278 - "GET /attention/5614b95c-4421-4f32-8a59-3fdd6b8d5992?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5CDatasets%5Cbreast-mri-molecular-cancer-subtype%5Csamples%5CBreast_MRI_0001_0000.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57631 - "POST /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57631 - "GET /attention/122aa137-cc00-46ed-a11f-c91e40a6f06e?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5CDatasets%5Cbreast-mri-molecular-cancer-subtype%5Csamples%5CBreast_MRI_0001_0000.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57631 - "GET /attention/122aa137-cc00-46ed-a11f-c91e40a6f06e?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5CDatasets%5Cbreast-mri-molecular-cancer-subtype%5Csamples%5CBreast_MRI_0001_0000.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64370 - "POST /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64370 - "GET /attention/ad573e1d-36e2-4ffa-97e5-1945ce9d2ab2?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5CDatasets%5Cbreast-mri-molecular-cancer-subtype%5Csamples%5CBreast_MRI_0003_0000.mha HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64370 - "GET /attention/ad573e1d-36e2-4ffa-97e5-1945ce9d2ab2?path=D%3A%5Cstudy%5CBioInfo%20M2%20(2026)%5CMemoir%5CDatasets%5Cbreast-mri-molecular-cancer-subtype%5Csamples%5CBreast_MRI_0003_0000.mha HTTP/1.1" 200 OK

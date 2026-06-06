@@ -1,0 +1,161 @@
+{
+	"assetNamespace": "fab",
+	"listing":
+	{
+		"averageRating": 0,
+		"createdAt": "",
+		"description": "<p>This 3D model of a human brain is meticulously crafted for accuracy and detail, showcasing the intricate folds and structures of the cerebral cortex. Ideal for medical presentations, educational purposes, or 3D animations. The model captures the complex anatomy of the brain, making it perfect for scientific visualizations or creative projects.</p>",
+		"isAiForbidden": false,
+		"isAiGenerated": true,
+		"lastUpdatedAt": "",
+		"listingType": "3d-model",
+		"media": "",
+		"publishedAt": "2024-11-21T19:12:38.466174Z",
+		"reviewCount": 0,
+		"thumbnail": "https://media.fab.com/image_previews/gallery_images/e89c15dc-9ce4-4874-9a4f-6dbf53848924/b6985542-ee1b-4c34-b7ab-b3f0f68200e2.png",
+		"title": "Stylized Human Brain Anatomy",
+		"uid": "7fc9671c-094e-4e13-9875-37c46c49064c",
+		"updatedAt": "",
+		"user":
+		{
+			"coverImageUrl": "",
+			"profileImageUrl": "https://cdn1.epicgames.com/fab/seller/o-xpmxtnv7nbsypxbplmvlt5etl3rp47/profile/576fc407.png",
+			"sellerName": "danes_dysfunction",
+			"uid": "c71620e3-a96d-436c-9660-d65f2f0e6cea"
+		},
+		"tags": [
+			{
+				"name": "Educational",
+				"slug": "educational",
+				"uid": "08887d92-a86f-45f7-900f-13207f5db0a3"
+			},
+			{
+				"name": "Medicine",
+				"slug": "medicine",
+				"uid": "0942b5b4-ad81-47f2-ad6f-b3ecdf253828"
+			},
+			{
+				"name": "Brain",
+				"slug": "brain",
+				"uid": "2bd4b557-7e82-4f89-b856-fb97c80390a0"
+			},
+			{
+				"name": "Education",
+				"slug": "education",
+				"uid": "55d7ae8b-5393-4a80-a6ef-53eb0aea9e1a"
+			},
+			{
+				"name": "Science",
+				"slug": "science",
+				"uid": "70c515f0-3eaa-4f74-8238-b96f9624c4f4"
+			},
+			{
+				"name": "Medical",
+				"slug": "medical",
+				"uid": "72f65bd1-01a1-485b-bb41-3702b15cf992"
+			},
+			{
+				"name": "Anatomy",
+				"slug": "anatomy",
+				"uid": "7c9bfcb0-dcb0-4083-9e88-d917a353811c"
+			},
+			{
+				"name": "Organ",
+				"slug": "organ",
+				"uid": "9a55a110-8500-4f18-8be2-c732bd68b4e0"
+			},
+			{
+				"name": "Biology",
+				"slug": "biology",
+				"uid": "a6374230-e60e-4b75-853c-5fbbfc9813a4"
+			},
+			{
+				"name": "Human",
+				"slug": "human",
+				"uid": "cbc60226-383b-49fc-bc12-fde398c13fba"
+			},
+			{
+				"name": "Biological",
+				"slug": "biological",
+				"uid": "de94b089-a034-4a94-a049-aa0fccd91ee0"
+			}
+		],
+		"category":
+		{
+			"name": "Nature & Plants",
+			"path": "nature-plants",
+			"slug": "nature-plants",
+			"uid": "57243087-7d23-45a2-b08d-cf12cc77efed"
+		},
+		"assetFormats": [
+			{
+				"assetFormatType":
+				{
+					"name": "Blender",
+					"groupName": "3D DCC Formats",
+					"code": "blender",
+					"icon": "blender",
+					"extensions": [
+						"blend"
+					]
+				}
+			},
+			{
+				"assetFormatType":
+				{
+					"name": "FBX",
+					"groupName": "3D Exchange Formats",
+					"code": "fbx",
+					"icon": "cube",
+					"extensions": [
+						"fbx"
+					]
+				}
+			},
+			{
+				"assetFormatType":
+				{
+					"name": "Converted Files",
+					"groupName": "",
+					"code": "converted-files",
+					"icon": "cube",
+					"extensions": [
+						"gltf",
+						"glb",
+						"usdz"
+					]
+				}
+			},
+			{
+				"assetFormatType":
+				{
+					"name": "Additional files",
+					"groupName": "Other Formats",
+					"code": "additional-files",
+					"icon": "file",
+					"extensions": [
+						"zip"
+					]
+				}
+			}
+		],
+		"_PluginMetas":
+		{
+			"apiDataVersion": "0.0.1",
+			"entitlementUid": "720358ae-4ef3-48a6-8db8-28941f0db61a",
+			"cacheSize": 0,
+			"downloaded": []
+		}
+	},
+	"target": "",
+	"quality": "",
+	"format": "fbx",
+	"fileId": "5e529b53-1edc-4590-bb7b-dd576b59a3c9",
+	"platformIncluded": "",
+	"distributionPointBaseUrls": [],
+	"distributionMethod": "",
+	"entitlementUid": "720358ae-4ef3-48a6-8db8-28941f0db61a",
+	"invertedNormal": false,
+	"isConverted": false,
+	"isQuixel": false
+}

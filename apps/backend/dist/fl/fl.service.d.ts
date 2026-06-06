@@ -13,6 +13,8 @@ export declare class FlService {
     triggerRound(hospitalId: string, caseId: string): void;
     handleProgress(body: any): Promise<void>;
     handleRoundComplete(body: any): Promise<void>;
+    handleTestProgress(body: any): Promise<void>;
+    runFlTest(strategy: string, rounds: number): Promise<any>;
     findRounds(page?: number, limit?: number): Promise<{
         data: any[];
         total: number;

@@ -26,11 +26,15 @@ let InferenceService = class InferenceService {
         this.httpService = httpService;
         this.mlServiceUrl = this.configService.get('ML_SERVICE_URL', 'http://localhost:8001');
     }
-    async getAttention(caseId) {
-        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.mlServiceUrl}/attention/${caseId}`));
+    async getAttention(caseId, imagePath) {
+        const url = `${this.mlServiceUrl}/attention/${caseId}` +
+            (imagePath ? `?path=${encodeURIComponent(imagePath)}` : '');
+        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(url));
         return {
             attention: response.data.attention,
             size: response.data.size,
+            slicePng: response.data.slicePng,
+            topSlice: response.data.topSlice,
         };
     }
     async verifyImage(buffer, filename) {
@@ -55,6 +59,9 @@ let InferenceService = class InferenceService {
             probs: response.data.probs,
             model_version: response.data.model_version,
             strategy: response.data.strategy,
+            f1: response.data.f1,
+            auc: response.data.auc,
+            hormone_therapy: response.data.hormone_therapy,
         };
     }
 };

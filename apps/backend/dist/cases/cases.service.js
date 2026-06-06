@@ -16,6 +16,8 @@ const inference_service_1 = require("../inference/inference.service");
 const fl_service_1 = require("../fl/fl.service");
 const al_service_1 = require("./al.service");
 const crypto_1 = require("crypto");
+const fs_1 = require("fs");
+const path_1 = require("path");
 const client_1 = require("@prisma/client");
 let CasesService = class CasesService {
     constructor(prisma, inferenceService, flService, alService) {
@@ -23,6 +25,27 @@ let CasesService = class CasesService {
         this.inferenceService = inferenceService;
         this.flService = flService;
         this.alService = alService;
+        this.samplesDir = process.env.SAMPLES_DIR || '';
+    }
+    /** List bundled sample MRI volumes (for the "Use a sample scan" picker). */
+    listSamples() {
+        if (!this.samplesDir || !(0, fs_1.existsSync)(this.samplesDir))
+            return [];
+        return (0, fs_1.readdirSync)(this.samplesDir)
+            .filter((f) => f.endsWith('.mha') || f.endsWith('.nii') || f.endsWith('.nii.gz'))
+            .slice(0, 12)
+            .map((name) => ({ name }));
+    }
+    /** Create a case from a bundled sample volume (runs the same real pipeline). */
+    async createFromSample(user, name) {
+        if (!/^[\w.-]+\.(mha|nii|nii\.gz)$/.test(name)) {
+            throw new common_1.ForbiddenException('bad sample name');
+        }
+        const path = (0, path_1.join)(this.samplesDir, name);
+        if (!(0, fs_1.existsSync)(path))
+            throw new common_1.ForbiddenException('sample not found');
+        // Reuse create() with a multer-shaped object pointing at the sample on disk.
+        return this.create(user, { path, originalname: name });
     }
     async create(user, file) {
         if (!file) {
@@ -70,10 +93,14 @@ let CasesService = class CasesService {
         const savedCase = await this.prisma.case.create({
             data: caseData,
         });
-        // Return case to client immediately
+        // Return case to client immediately. f1/auc/hormoneTherapy are additive
+        // real-mode fields surfaced transiently (not persisted — no schema change).
         const returnCase = {
             ...savedCase,
             probs: savedCase.probs, // Ensure probs is returned as array
+            f1: predictionResult.f1,
+            auc: predictionResult.auc,
+            hormoneTherapy: predictionResult.hormone_therapy,
         };
         // Fire-and-forget: trigger FL round if DOCTOR
         if (user.role === 'DOCTOR' && hospitalId) {
@@ -111,9 +138,10 @@ let CasesService = class CasesService {
         };
     }
     async getAttention(user, id) {
-        // Reuse findOne for silo enforcement (throws ForbiddenException on mismatch)
-        await this.findOne(user, id);
-        return this.inferenceService.getAttention(id);
+        // Reuse findOne for silo enforcement (throws ForbiddenException on mismatch);
+        // it returns the case with imagePath, which real-mode attention needs.
+        const c = await this.findOne(user, id);
+        return this.inferenceService.getAttention(id, c.imagePath);
     }
     async findOne(user, id) {
         const caseData = await this.prisma.case.findUnique({

@@ -1,0 +1,62 @@
+sequenceDiagram
+    actor DB as Doctor Browser
+    participant NX as Next.js (Doctor Portal)
+    participant NE as NestJS API
+    participant ML as FastAPI ML Service
+    participant FL as FastAPI FL Coordinator
+    participant PG as PostgreSQL
+    participant RD as Redis
+    participant WS as Doctor Browser (WS)
+
+    %% ─── SYNC LANE ───────────────────────────────────────────────
+    rect rgb(230, 245, 255)
+        Note over DB,PG: SYNC — Doctor receives result before FL round starts
+        DB->>NX: Drop MRI in upload zone
+        NX->>NE: POST /cases (Doctor JWT)
+        activate NE
+        NE->>NE: Validate JWT → role=DOCTOR\nExtract hospitalId from token
+        NE->>NE: Store file to\nuploads/hospitals/{hospitalId}/cases/{caseId}/\nscope=HOSPITAL
+        NE->>ML: POST /predict {imagePath}
+        activate ML
+        ML->>ML: Hash filename → select mock entry\nAdd noise, sleep 1.5–3s
+        ML-->>NE: PredictionResult {predictedSubtype, confidence,\nattentionMap, modelVersion}
+        deactivate ML
+        NE->>PG: INSERT Case {scope=HOSPITAL, hospitalId,\nstoredLocally=true, predictedSubtype}
+        PG-->>NE: Case saved
+        NE-->>NX: 201 with case (includes attentionMap)
+        deactivate NE
+        NX-->>DB: Render: subtype + confidence + attention map\n+ "AI training in progress..."
+    end
+
+    Note over DB,WS: ← DOCTOR SEES RESULT HERE
+
+    %% ─── ASYNC LANE ──────────────────────────────────────────────
+    rect rgb(255, 245, 230)
+        Note over NE,WS: ASYNC — FL round fires after response is returned
+        NE-->>NE: setImmediate: FLRoundService.triggerRound(hospitalId, caseId)
+        NE->>RD: SET fl:active:{hospitalId} = roundId (TTL 10min)
+        NE->>FL: POST /round/start {hospitalId, caseId, strategy=FEDAVG}
+        activate FL
+
+        loop for each of 3 hospitals (H_A, H_B, H_C)
+            FL->>FL: Simulate local training (8–13s)\nCompute weight delta Δw
+            FL->>NE: POST /internal/fl/progress {roundId, hospitalId, epochsDone}
+            NE->>WS: emit 'fl:round:progress' {hospitalId, phase}
+            WS-->>DB: Topology widget: hospital node pulses green
+        end
+
+        FL->>FL: FedAvg aggregation (3s)\nW_global ← Σ(n_k/n * w_k)
+        FL->>NE: POST /internal/fl/round-complete\n(webhook, FL_WEBHOOK_SECRET)\n{roundId, globalF1After, f1PerClass, modelVersion}
+        deactivate FL
+        activate NE
+        NE->>PG: INSERT FlRound {strategy, globalF1Before, globalF1After}
+        NE->>PG: INSERT FlContribution ×3 {hospitalId, weightDeltaNorm, privacyBudgetUsed=0.1}
+        NE->>PG: INSERT PrivacyAuditLog ×3 {eventType=ROUND_COMPLETE,\nrawDataTransmitted=0}
+        Note over NE,PG: rawDataTransmitted=0 — FL privacy invariant
+        NE->>PG: INSERT/UPDATE ModelMetrics {modelVersion, f1Macro, f1PerClass}
+        NE->>RD: DEL fl:active:{hospitalId}
+        NE->>WS: emit 'fl:round:complete' {roundId, globalF1After, f1Delta, modelVersion}
+        deactivate NE
+        WS-->>DB: Topology animation completes\n"Model v{n} — F1 improved by +{delta}"
+        DB->>DB: Silo status bar:\n"Your data stayed in your hospital.\n0 bytes transmitted."
+    end

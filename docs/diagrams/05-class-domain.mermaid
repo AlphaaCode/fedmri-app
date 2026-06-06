@@ -1,0 +1,145 @@
+classDiagram
+    %% ─── Hospital Silo Context ───────────────────────────────────
+    namespace HospitalSilo {
+        class Hospital {
+            +String id
+            +String flClientId
+            +String displayName
+            +Int totalCases
+        }
+        class Doctor {
+            +String id
+            +String email
+            +Role role = DOCTOR
+            +String hospitalId
+            +Int casesContributed
+        }
+        class HospitalCase {
+            +String id
+            +CaseScope scope = HOSPITAL
+            +String hospitalId
+            +String imagePath
+            +Boolean storedLocally = true
+            +String predictedSubtype
+            +Float confidence
+            +CaseStatus status
+        }
+    }
+
+    %% ─── Global Model Context ─────────────────────────────────────
+    namespace GlobalModel {
+        class FlRound {
+            +String id
+            +Int roundNumber
+            +FLStrategy strategy
+            +Float globalF1Before
+            +Float globalF1After
+            +FLTrigger triggeredBy
+        }
+        class FlContribution {
+            +String hospitalId
+            +Int samplesUsed
+            +Float weightDeltaNorm
+            +Float privacyBudgetUsed
+        }
+        class ModelMetrics {
+            +Int modelVersion
+            +Float f1Macro
+            +Json f1PerClass
+            +String strategy
+        }
+        class PrivacyAuditLog {
+            +PrivacyEvent eventType
+            +Int bytesTransmitted
+            +Int rawDataTransmitted = 0
+        }
+    }
+
+    %% ─── Patient Space Context ─────────────────────────────────────
+    namespace PatientSpace {
+        class Patient {
+            +String id
+            +String email
+            +Role role = PATIENT
+            +Boolean onboardingDone
+        }
+        class PatientCase {
+            +String id
+            +CaseScope scope = PATIENT
+            +String userId
+            +String imagePath
+            +Boolean storedLocally = true
+            +String predictedSubtype
+        }
+        class ChatMessage {
+            +String userId
+            +String caseId
+            +ChatRole role
+            +String content
+        }
+    }
+
+    %% ─── Service Interfaces ────────────────────────────────────────
+    class InferenceEngine {
+        <<interface>>
+        +predict(imagePath) PredictionResult
+        +getMetrics() ModelMetrics
+    }
+    class FLEngine {
+        <<interface>>
+        +startRound(hospitalId, caseId) FlRound
+        +getCurrentMetrics() ModelMetrics
+    }
+    class StorageProvider {
+        <<interface>>
+        +store(path, data) String
+        +retrieve(path) Buffer
+        +presignedUrl(path) String
+    }
+    class AttentionMapGenerator {
+        <<interface>>
+        +generate(imagePath) number[]
+    }
+    class MockInferenceEngine {
+        +mockResults: PredictionResult[]
+        +predict(imagePath) PredictionResult
+        +getMetrics() ModelMetrics
+    }
+    class TorchInferenceEngine {
+        +checkpoint: string
+        +predict(imagePath) PredictionResult
+        +getMetrics() ModelMetrics
+    }
+    class MockFLEngine {
+        +simulate(hospitalId) FlRound
+        +startRound(hospitalId, caseId) FlRound
+        +getCurrentMetrics() ModelMetrics
+    }
+    class FlowerFLEngine {
+        +flwrServer: string
+        +startRound(hospitalId, caseId) FlRound
+        +getCurrentMetrics() ModelMetrics
+    }
+
+    %% Relationships — Silo
+    Hospital "1" --> "*" Doctor : employs
+    Hospital "1" --> "*" HospitalCase : owns
+    Doctor "1" --> "*" HospitalCase : submits
+
+    %% Relationships — Global
+    FlRound "1" --> "*" FlContribution : aggregates
+    FlRound "1" --> "*" PrivacyAuditLog : generates
+    FlRound "1" --> "1" ModelMetrics : produces
+
+    %% Relationships — Patient
+    Patient "1" --> "*" PatientCase : uploads
+    Patient "1" --> "*" ChatMessage : sends
+    PatientCase "1" --> "*" ChatMessage : contextualises
+
+    %% Interface implementations
+    MockInferenceEngine ..|> InferenceEngine : implements
+    TorchInferenceEngine ..|> InferenceEngine : implements
+    MockFLEngine ..|> FLEngine : implements
+    FlowerFLEngine ..|> FLEngine : implements
+
+    %% Researcher context: read-only views of Global Model (no class, just note)

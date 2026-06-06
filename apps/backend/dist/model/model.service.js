@@ -24,10 +24,10 @@ const THESIS_BASELINE = {
         accuracy: 0.52,
         f1PerClass: { 'Luminal A': 0.68, 'Luminal B': 0.24, 'HER2': 0.09, 'Triple Negative': 0.18 },
     },
-    FedProx: {
-        f1Macro: 0.41,
-        accuracy: 0.55,
-        f1PerClass: { 'Luminal A': 0.71, 'Luminal B': 0.27, 'HER2': 0.11, 'Triple Negative': 0.21 },
+    FedSCRT: {
+        f1Macro: 0.6289,
+        accuracy: 0.7027,
+        f1PerClass: { 'Luminal': 0.6624, 'Non-Luminal': 0.5954 },
     },
 };
 let ModelService = class ModelService {
@@ -43,13 +43,13 @@ let ModelService = class ModelService {
             orderBy: { roundNumber: 'asc' },
         });
         const fedavgPoints = [];
-        const fedproxPoints = [];
+        const fedscrtPoints = [];
         rounds.forEach((r) => {
             const pt = { round: r.roundNumber, f1: Number(r.globalF1After.toFixed(4)) };
             if (r.strategy === 'FEDAVG')
                 fedavgPoints.push(pt);
-            else
-                fedproxPoints.push(pt);
+            else if (r.strategy === 'FEDSCRT')
+                fedscrtPoints.push(pt);
         });
         // Centralized is a flat line at the baseline value across observed rounds
         const maxRound = Math.max(10, ...rounds.map((r) => r.roundNumber));
@@ -60,7 +60,7 @@ let ModelService = class ModelService {
         return {
             curves: {
                 FedAvg: fedavgPoints,
-                FedProx: fedproxPoints,
+                FedSCRT: fedscrtPoints,
                 Centralized: centralizedPoints,
             },
             baseline: THESIS_BASELINE,
@@ -72,11 +72,11 @@ let ModelService = class ModelService {
     async getPerClass() {
         return {
             subtypes: ['Luminal A', 'Luminal B', 'HER2', 'Triple Negative'],
-            strategies: ['Centralized', 'FedAvg', 'FedProx'],
+            strategies: ['Centralized', 'FedAvg', 'FedSCRT'],
             values: {
                 Centralized: THESIS_BASELINE.Centralized.f1PerClass,
                 FedAvg: THESIS_BASELINE.FedAvg.f1PerClass,
-                FedProx: THESIS_BASELINE.FedProx.f1PerClass,
+                FedSCRT: THESIS_BASELINE.FedSCRT.f1PerClass,
             },
         };
     }
@@ -114,14 +114,14 @@ let ModelService = class ModelService {
         return { subtypes, matrix };
     }
     /**
-     * Comparison card: centralized vs FedProx gap + privacy framing.
+     * Comparison card: centralized vs FedSCRT gap + privacy framing.
      */
     async getComparison() {
         const totalCases = await this.prisma.case.count();
         return {
             centralized: { f1Macro: THESIS_BASELINE.Centralized.f1Macro },
-            fedprox: { f1Macro: THESIS_BASELINE.FedProx.f1Macro },
-            gap: Number((THESIS_BASELINE.FedProx.f1Macro - THESIS_BASELINE.Centralized.f1Macro).toFixed(4)),
+            fedscrt: { f1Macro: THESIS_BASELINE.FedSCRT.f1Macro },
+            gap: Number((THESIS_BASELINE.FedSCRT.f1Macro - THESIS_BASELINE.Centralized.f1Macro).toFixed(4)),
             privacyCost: {
                 // The thesis training set is 737 patients — total raw scans that would have been shared
                 patientsProtected: 737,

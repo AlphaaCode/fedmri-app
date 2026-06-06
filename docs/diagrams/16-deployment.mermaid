@@ -1,0 +1,78 @@
+graph LR
+    subgraph MockDev ["🖥️ Mock (Dev) — Single Machine\nDocker Compose\nINFERENCE_MODE=mock, FL_MODE=mock, STORAGE_MODE=local"]
+        direction TB
+        subgraph DevContainers ["Docker Compose Services"]
+            DevWeb["📱 Next.js Web\n:3000\nnode:20-alpine"]
+            DevBackend["⚙️ NestJS API\n:3001\nnode:20-alpine"]
+            DevML["🧠 FastAPI ML\n:8001\npython:3.11-slim\nNo GPU required"]
+            DevFL["🔄 FastAPI FL\n:8002\npython:3.11-slim\nMock FL rounds"]
+            DevPG[("🗄️ PostgreSQL\n:5432\npostgres:16")]
+            DevRedis[("⚡ Redis\n:6379\nredis:7-alpine")]
+            DevStorage[("💾 Local Disk\n./uploads/\nDocker volume")]
+        end
+        DevEnv["ENV:\nINFERENCE_MODE=mock\nFL_MODE=mock\nSTORAGE_MODE=local\nNo GPU — runs on any laptop"]
+    end
+
+    subgraph ProdEnv ["🚀 Production — Multiple VMs\nFL_MODE=flower, INFERENCE_MODE=real, STORAGE_MODE=minio"]
+        direction TB
+
+        subgraph AppVM ["VM 1 — App Server"]
+            ProdBackend["⚙️ NestJS API"]
+            ProdWeb["📱 Next.js Web"]
+            ProdNginx["🔀 Nginx reverse proxy"]
+        end
+
+        subgraph MLVM ["VM 2 — ML Server\n(GPU required)"]
+            ProdML["🧠 FastAPI ML Service\nDINOv2-S/14 + GatedAttentionMIL\ncheckpoint.pt loaded\nINFERENCE_MODE=real"]
+        end
+
+        subgraph FLCoordVM ["VM 3 — FL Coordinator\n(Flower Server)"]
+            ProdFLCoord["🔄 Flower FL Server\nflwr.server.start_server()\nstrategy=FedAvg|FedProx\nFL_MODE=flower"]
+        end
+
+        subgraph HospitalFirewalls ["Hospital Firewalls\n(only weight deltas cross)"]
+            subgraph HospVM1 ["VM 4 — Hospital A Node"]
+                HospA["🌸 Flower Client A\nflwr.client.start_client()\nLocal data: /data/hospital_a/"]
+            end
+            subgraph HospVM2 ["VM 5 — Hospital B Node"]
+                HospB["🌸 Flower Client B\nflwr.client.start_client()\nLocal data: /data/hospital_b/"]
+            end
+            subgraph HospVM3 ["VM 6 — Hospital C Node"]
+                HospC["🌸 Flower Client C\nflwr.client.start_client()\nLocal data: /data/hospital_c/"]
+            end
+        end
+
+        ProdPG[("🗄️ PostgreSQL\nManaged DB\n(RDS / Cloud SQL)")]
+        ProdRedis[("⚡ Redis\nManaged\n(ElastiCache / Upstash)")]
+        ProdMinio[("💾 MinIO / S3\nSTORAGE_MODE=minio\nImage storage")]
+    end
+
+    %% Dev internal wiring
+    DevWeb --> DevBackend
+    DevBackend --> DevML
+    DevBackend --> DevFL
+    DevBackend --> DevPG
+    DevBackend --> DevRedis
+    DevBackend --> DevStorage
+    DevML --> DevStorage
+
+    %% Prod internal wiring
+    ProdNginx --> ProdWeb
+    ProdNginx --> ProdBackend
+    ProdBackend --> ProdML
+    ProdBackend --> ProdPG
+    ProdBackend --> ProdRedis
+    ProdBackend --> ProdMinio
+    ProdML --> ProdMinio
+    ProdBackend -->|"POST /round/start"| ProdFLCoord
+    ProdFLCoord -->|"POST /internal/fl/round-complete\nwebhook"| ProdBackend
+
+    %% Flower protocol — only weight deltas cross hospital firewall
+    ProdFLCoord -->|"Flower protocol\n⚠️ Weight deltas only\nno raw data crosses firewall"| HospA
+    ProdFLCoord -->|"Flower protocol\n⚠️ Weight deltas only"| HospB
+    ProdFLCoord -->|"Flower protocol\n⚠️ Weight deltas only"| HospC
+
+    style MockDev fill:#e8f5e9,stroke:#2e7d32
+    style ProdEnv fill:#e3f2fd,stroke:#1565c0
+    style HospitalFirewalls fill:#fff3e0,stroke:#e65100
+    style DevEnv fill:#f1f8e9,stroke:#558b2f

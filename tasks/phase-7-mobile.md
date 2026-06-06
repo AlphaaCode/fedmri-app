@@ -8,9 +8,8 @@
 
 Run zoom-out skill first: "Understand the patient-facing API endpoints and WebSocket
 events in apps/backend/src/ — list every route and WS event that the mobile app needs."
-
 ## Prompt for Claude Code
-
+f
 ```
 Read CLAUDE.md and CONTEXT.md. Read packages/shared/src/types/index.ts.
 Run zoom-out on apps/backend/src/ to map all patient-facing endpoints before writing code.
@@ -20,7 +19,6 @@ Run zoom-out on apps/backend/src/ to map all patient-facing endpoints before wri
    Install: nativewind, @tanstack/react-query, socket.io-client, expo-image-picker,
             expo-camera, expo-notifications, expo-file-system, @react-navigation/native,
             @react-navigation/bottom-tabs
-
 2. Shared API client (packages/shared/src/api/client.ts):
    - Axios instance with baseURL from env
    - Request interceptor: attach JWT from SecureStore

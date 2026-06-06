@@ -1,0 +1,119 @@
+{
+	"assetNamespace": "fab",
+	"listing":
+	{
+		"averageRating": 0,
+		"createdAt": "",
+		"description": "<p>A SciFi lab, inspired by a MRI device.\nThe model is displayed with 2K textures.\n4K and 8K are also provided.\nNative format is FBX and the .blend is included.</p>",
+		"isAiForbidden": false,
+		"isAiGenerated": false,
+		"lastUpdatedAt": "",
+		"listingType": "3d-model",
+		"media": "https://media.fab.com/image_previews/gallery_images/da24f218-b741-4c15-849e-7e92c9415680/3527e383-1452-4318-bcbf-70404b366ed1.jpeg",
+		"publishedAt": "2024-10-02T21:12:59.433469Z",
+		"reviewCount": 0,
+		"thumbnail": "https://media.fab.com/image_previews/gallery_images/4b6e7216-75d8-4eac-8a1e-f529f6bb6732/14de8cc9-fe3a-4ad6-80f8-4a2ed4d8093c.jpeg",
+		"title": "Sci Fi lab 02",
+		"uid": "f0b18256-f910-46dc-8edf-516d34612bb8",
+		"updatedAt": "",
+		"user":
+		{
+			"coverImageUrl": "",
+			"profileImageUrl": "https://cdn1.epicgames.com/fab/seller/o-qjfc23nts5xe4c869rg982lnlj6s72/profileImage/blob-500x500-a9c81137a01ff1bb74304fbd876c69a8.jpg",
+			"sellerName": "Romain Ferre",
+			"uid": "427303b0-486c-4631-a909-e368013fdf3b"
+		},
+		"tags": [
+			{
+				"name": "Fiction",
+				"slug": "fiction",
+				"uid": "12de1ac4-9cbc-4b06-995e-c50999706ab3"
+			},
+			{
+				"name": "Scifi",
+				"slug": "scifi",
+				"uid": "50945d2d-b4f5-4e56-bda9-b81d5722599e"
+			},
+			{
+				"name": "Mri",
+				"slug": "mri",
+				"uid": "564dba91-3ece-4816-8700-6f9d6a37056a"
+			},
+			{
+				"name": "Science",
+				"slug": "science",
+				"uid": "70c515f0-3eaa-4f74-8238-b96f9624c4f4"
+			},
+			{
+				"name": "Laboratory",
+				"slug": "laboratory",
+				"uid": "ef2043b7-d6c8-410e-a55c-4e18851bd4dd"
+			}
+		],
+		"category":
+		{
+			"name": "Electronics & Technology",
+			"path": "electronics-technology",
+			"slug": "electronics-technology",
+			"uid": "18e672da-2da2-4d1b-b0a1-b6a64f108c69"
+		},
+		"assetFormats": [
+			{
+				"assetFormatType":
+				{
+					"name": "FBX",
+					"groupName": "3D Exchange Formats",
+					"code": "fbx",
+					"icon": "cube",
+					"extensions": [
+						"fbx"
+					]
+				}
+			},
+			{
+				"assetFormatType":
+				{
+					"name": "Additional files",
+					"groupName": "Other Formats",
+					"code": "additional-files",
+					"icon": "file",
+					"extensions": [
+						"zip"
+					]
+				}
+			},
+			{
+				"assetFormatType":
+				{
+					"name": "Converted Files",
+					"groupName": "",
+					"code": "converted-files",
+					"icon": "cube",
+					"extensions": [
+						"gltf",
+						"glb",
+						"usdz"
+					]
+				}
+			}
+		],
+		"_PluginMetas":
+		{
+			"apiDataVersion": "0.0.1",
+			"entitlementUid": "d7c2c602-dd09-4c42-89e3-187f634e2516",
+			"cacheSize": 0,
+			"downloaded": []
+		}
+	},
+	"target": "",
+	"quality": "",
+	"format": "fbx",
+	"fileId": "d7cc1e71-c223-421d-96bb-6dc679612cb6",
+	"platformIncluded": "",
+	"distributionPointBaseUrls": [],
+	"distributionMethod": "",
+	"entitlementUid": "d7c2c602-dd09-4c42-89e3-187f634e2516",
+	"invertedNormal": false,
+	"isConverted": false,
+	"isQuixel": false
+}

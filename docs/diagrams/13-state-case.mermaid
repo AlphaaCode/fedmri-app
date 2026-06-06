@@ -1,0 +1,26 @@
+stateDiagram-v2
+    [*] --> PENDING : POST /cases\n(case created after inference)
+
+    PENDING --> VALIDATED : Doctor submits\nfeedbackType=VALIDATE
+    PENDING --> DISPUTED : Doctor submits\nfeedbackType=DISPUTE\n(correctedSubtype provided)
+
+    DISPUTED --> PENDING : AL update complete\n(model re-evaluates — optional in mock mode)
+
+    note right of PENDING
+        Awaiting doctor validation.
+        FL model prediction stored.
+        storedLocally=true, rawDataTransmitted=0
+    end note
+
+    note right of VALIDATED
+        Doctor confirmed prediction.
+        Positive training signal for
+        next FL round aggregation.
+    end note
+
+    note right of DISPUTED
+        Doctor provided correction.
+        AL epoch triggered async.
+        Model version bumped after
+        fine-tune completes.
+    end note

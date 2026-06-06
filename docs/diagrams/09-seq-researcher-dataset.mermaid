@@ -1,0 +1,41 @@
+sequenceDiagram
+    actor RB as Researcher Browser
+    participant NX as Next.js (Researcher Portal)
+    participant NE as NestJS API
+    participant PG as PostgreSQL
+
+    RB->>NX: Navigate to Dataset Management
+    NX->>NE: GET /researcher/datasets\n(Researcher JWT)
+    activate NE
+    NE->>NE: Validate JWT → role=RESEARCHER
+
+    Note over NE,PG: ══════ Raw patient records NEVER cross this line ══════
+
+    NE->>PG: SELECT aggregate stats only:\nCOUNT(*) by subtype,\nCOUNT(*) by hospitalId,\nquality metrics (no imagePath, userId exposed)
+    PG-->>NE: Aggregate rows only
+
+    Note over NE,PG: ══════ Raw patient records NEVER cross this line ══════
+
+    NE-->>NX: {totalRecords:737,\nbySubtype:{lumA:247,lumB:132,HER2:44,TN:81,unknown:233},\nbySilo:{HospitalA:247,HospitalB:312,HospitalC:178},\nqualityMetrics:{avgContrast:0.73,completeness:0.94}}
+    deactivate NE
+    NX-->>RB: Render silo breakdown\n(Hospital A/B/C counts — no patient IDs)
+
+    RB->>NX: Apply filter (MRI type=DCE, dateFrom=2023-01)
+    NX->>NE: GET /researcher/datasets?mriType=DCE&dateFrom=2023-01
+    activate NE
+    NE->>PG: SELECT aggregate stats WHERE\nmriType='DCE' AND createdAt >= '2023-01-01'\n(still aggregate only — no raw records)
+    PG-->>NE: Filtered aggregate rows
+    NE-->>NX: Filtered aggregate stats
+    deactivate NE
+    NX-->>RB: Updated stats view (no raw patient data)
+
+    RB->>NX: Export anonymised metrics CSV
+    NX->>NE: GET /researcher/datasets/export
+    activate NE
+    NE->>PG: SELECT aggregate statistics only\nfor CSV export (no patient data)
+    PG-->>NE: Aggregate data
+    NE-->>NX: CSV of aggregate statistics only\n(no patient identifiers, no image paths)
+    deactivate NE
+    NX-->>RB: Download CSV
+
+    Note over RB,PG: Researcher sees: counts, distributions, quality metrics, silo stats\nResearcher NEVER sees: imagePath, userId, hospitalId of individual records

@@ -1,0 +1,49 @@
+flowchart TD
+    Start([🟢 Start]) --> Login["Login\n(hospital assigned from DB — no choice)"]
+    Login --> Dashboard["🏥 Doctor Dashboard\n(silo status: ACTIVE | upload count | FL rounds)"]
+
+    Dashboard --> Upload["Upload MRI scan\n(DICOM / .mha / .png)"]
+    Upload --> Inference["⏳ ML Inference\n(1.5–3s via FastAPI)"]
+    Inference --> CaseCreated["Case created, response returned\n(subtype + confidence + attention map)"]
+
+    CaseCreated --> FLBackground[["🔄 FL Round starts in background\n(async — doctor already has result)"]]
+    FLBackground -.->|async| FLProgress
+
+    CaseCreated --> ViewResult["View prediction result\n+ attention map heatmap overlay\n+ model version"]
+
+    ViewResult --> Confidence{Confident\nin result?}
+
+    Confidence -->|Yes| Validate["Submit: feedbackType=VALIDATE"]
+    Validate --> CaseValidated["case.status = VALIDATED\nPositive signal for next FL round"]
+
+    Confidence -->|No| Dispute["Open dispute form"]
+    Dispute --> SelectSubtype["Select corrected subtype\n(Luminal A | B | HER2 | Triple Negative)"]
+    SelectSubtype --> SelectEvidence["Select evidence types\n(Biopsy | IHC | Imaging | Clinical)"]
+    SelectEvidence --> SubmitDispute["Submit dispute"]
+    SubmitDispute --> CaseDisputed["case.status = DISPUTED\nFeedback row created (alTriggered=true)"]
+    CaseDisputed --> ALBackground[["🧠 AL epoch fires async\n(model fine-tune, mock: +0.5–1.5% F1)"]]
+    ALBackground -.->|async WS| ModelUpdated["Toast: 'Model updated —\n{subtype} classification improved'"]
+
+    CaseValidated --> PostCase{View more?}
+    CaseDisputed --> PostCase
+
+    PostCase -->|"Chat"| Chat["Open clinical chatbot\n(case context auto-injected)"]
+    Chat --> ChatInteraction["Ask clinical questions\n(case-aware, HIPAA-compliant language)"]
+    ChatInteraction --> PostCase
+
+    PostCase -->|"Metrics"| Metrics["Model performance dashboard\n(convergence chart, F1 per class)"]
+    Metrics --> PostCase
+
+    PostCase -->|"Done"| WaitFL{FL round\ncomplete?}
+
+    FLProgress[["WS: fl:round:progress\n(per hospital node)"]]--> Topology["Topology widget:\nhospital nodes pulse green one by one"]
+    Topology --> WaitFL
+
+    WaitFL -->|"Yes"| FLComplete["WS: fl:round:complete\n'Model v{n} — F1 improved by +{delta}'"]
+    FLComplete --> SiloStatus["Silo status bar:\n'Your data stayed in your hospital.\n0 bytes transmitted.'"]
+    SiloStatus --> ContribStats["Contribution stats updated\n(cases contributed, rounds participated)"]
+    ContribStats --> Dashboard
+
+    WaitFL -->|"No (upload more)"| Dashboard
+
+    Dashboard --> End([🔴 End])

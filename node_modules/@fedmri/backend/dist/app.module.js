@@ -17,6 +17,7 @@ const cases_module_1 = require("./cases/cases.module");
 const fl_module_1 = require("./fl/fl.module");
 const chat_module_1 = require("./chat/chat.module");
 const model_module_1 = require("./model/model.module");
+const researcher_module_1 = require("./researcher/researcher.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -35,6 +36,7 @@ exports.AppModule = AppModule = __decorate([
             fl_module_1.FlModule,
             chat_module_1.ChatModule,
             model_module_1.ModelModule,
+            researcher_module_1.ResearcherModule,
         ],
     })
 ], AppModule);

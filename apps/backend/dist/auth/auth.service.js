@@ -83,7 +83,6 @@ let AuthService = class AuthService {
                 name: dto.name,
                 role: dto.role,
                 hospitalId: dto.hospitalId || null,
-                onboardingDone: true,
             },
         });
         const { accessToken, refreshToken } = await this.generateTokens(user.id, user.email, user.role, user.hospitalId);
@@ -96,6 +95,7 @@ let AuthService = class AuthService {
                 name: user.name,
                 role: user.role,
                 hospitalId: user.hospitalId,
+                onboardingDone: user.onboardingDone ?? false,
             },
         };
     }
@@ -120,6 +120,7 @@ let AuthService = class AuthService {
                 name: user.name,
                 role: user.role,
                 hospitalId: user.hospitalId,
+                onboardingDone: user.onboardingDone ?? false,
             },
         };
     }

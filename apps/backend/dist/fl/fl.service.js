@@ -73,8 +73,8 @@ let FlService = FlService_1 = class FlService {
     async handleRoundComplete(body) {
         const roundId = body.round_id || (0, crypto_1.randomUUID)();
         const roundNumber = body.round_number ?? 1;
-        const strategyRaw = (body.strategy || 'FEDPROX').toUpperCase();
-        const strategy = strategyRaw === 'FEDAVG' ? client_1.FLStrategy.FEDAVG : client_1.FLStrategy.FEDPROX;
+        const strategyRaw = (body.strategy || 'FEDSCRT').toUpperCase();
+        const strategy = strategyRaw === 'FEDAVG' ? client_1.FLStrategy.FEDAVG : client_1.FLStrategy.FEDSCRT;
         const contributionsIn = body.contributions || [];
         const triggeredCase = body.triggered_case;
         // Resolve hospitals for every contribution by flClientId
@@ -150,6 +150,31 @@ let FlService = FlService_1 = class FlService {
             f1Delta: Number(f1Delta.toFixed(4)),
             modelVersion: body.model_version ?? 1,
         });
+    }
+    async handleTestProgress(body) {
+        this.gateway.emitTestProgress({
+            testId: body.test_id,
+            strategy: body.strategy,
+            round: body.round,
+            f1: body.f1,
+            auc: body.auc,
+            accuracy: body.accuracy,
+            clientSizes: body.client_sizes ?? [],
+        });
+        if (body.done) {
+            this.gateway.emitTestComplete({
+                testId: body.test_id,
+                strategy: body.strategy,
+                finalF1: body.f1,
+            });
+        }
+    }
+    async runFlTest(strategy, rounds) {
+        const resp = await (0, rxjs_1.firstValueFrom)(this.httpService.post(`${this.flCoordinatorUrl}/fl-test/run`, {
+            strategy,
+            rounds,
+        }));
+        return resp.data; // { test_id, status, ... }
     }
     async findRounds(page = 1, limit = 10) {
         const skip = (page - 1) * limit;

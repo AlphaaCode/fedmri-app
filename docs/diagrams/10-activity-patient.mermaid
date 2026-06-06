@@ -1,0 +1,39 @@
+flowchart TD
+    Start([🟢 Start]) --> Register["Register independently\n(email + password, no hospital field)"]
+    Register --> FirstLogin{First login?}
+    FirstLogin -->|Yes| Onboarding["View FL explainer onboarding\n(3 steps: What is FL? → Privacy → Your data)"]
+    FirstLogin -->|No| Dashboard
+    Onboarding --> Dashboard["🏠 Patient Dashboard\n(scan history summary, AI health score)"]
+
+    Dashboard --> Choice{Choose action}
+
+    Choice -->|"Upload"| Upload["Upload MRI scan\n(drag-drop or file picker)"]
+    Upload --> Processing["⏳ Processing...\n(ML inference 1.5–3s)"]
+    Processing --> Result["View subtype prediction\n(plain-language description)\n+ confidence badge (High/Medium/Low)\n+ non-dismissable disclaimer"]
+
+    Result --> ConfidenceCheck{Confidence level?}
+    ConfidenceCheck -->|Low| SpecialistWarning["⚠ 'Please consult a specialist'\nwarning shown prominently"]
+    ConfidenceCheck -->|High/Medium| ResultActions
+
+    SpecialistWarning --> ResultActions{Next step?}
+    ResultActions -->|"Download"| PDF["Generate PDF summary\n(subtype + confidence + date)"]
+    ResultActions -->|"Chat"| Chat
+
+    PDF --> Dashboard
+
+    Choice -->|"Chat"| Chat["💬 Open patient AI assistant\n(no case context unless navigated from result)"]
+    Chat --> AskQuestion["Ask questions about subtype,\ntreatment options, lifestyle"]
+    AskQuestion --> ReceiveGuidance["Receive AI guidance\n(plain language, no FL jargon)"]
+    ReceiveGuidance --> MoreQuestions{More questions?}
+    MoreQuestions -->|Yes| AskQuestion
+    MoreQuestions -->|No| Dashboard
+
+    Choice -->|"History"| History["View scan history\n(all past uploads, status, predictions)"]
+    History --> SelectScan{Select a past scan?}
+    SelectScan -->|Yes| Result
+    SelectScan -->|No| Dashboard
+
+    Choice -->|"Settings"| Privacy["Manage privacy settings\n(data retention, consent)"]
+    Privacy --> Dashboard
+
+    Dashboard --> End([🔴 End])

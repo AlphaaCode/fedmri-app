@@ -1,0 +1,47 @@
+stateDiagram-v2
+    [*] --> IDLE : App starts\n(no active round)
+
+    IDLE --> TRIGGERED : Doctor uploads scan\n→ POST /round/start to FL Coordinator
+
+    TRIGGERED --> LOCAL_TRAINING : FL Coordinator begins\nhospital simulation loop
+
+    LOCAL_TRAINING --> LOCAL_TRAINING : Each hospital completes\nlocal training epoch\n(progress callback fires per hospital)
+
+    LOCAL_TRAINING --> AGGREGATING : All 3 hospitals complete\nlocal training
+
+    AGGREGATING --> COMPLETE : FedAvg / FedProx applied\nwebhook fires to NestJS\nDB updated
+
+    COMPLETE --> IDLE : Ready for next trigger\n(fl:active key deleted from Redis)
+
+    LOCAL_TRAINING --> FAILED : Timeout (>120s) or\nFL Coordinator error
+
+    AGGREGATING --> FAILED : Aggregation math error or\nwebhook delivery failure
+
+    FAILED --> IDLE : Error logged to system\n(FlRound saved with error status)
+
+    note right of TRIGGERED
+        round_id generated.
+        Stored in Redis:
+        fl:active:{hospitalId} = roundId
+        TTL: 10 minutes
+    end note
+
+    note right of LOCAL_TRAINING
+        Hospital A: done → Hospital B: done → Hospital C: done
+        WS event fl:round:progress fired per hospital.
+        Topology node pulses green as each finishes.
+    end note
+
+    note right of AGGREGATING
+        Weight deltas averaged — no raw data involved.
+        Δw_global = Σ(n_k/n × Δw_k)
+        ~3 seconds in mock mode.
+    end note
+
+    note right of COMPLETE
+        FlRound row saved.
+        FlContribution ×3 rows saved.
+        PrivacyAuditLog ×3 rows written.
+        rawDataTransmitted=0 (FL privacy invariant).
+        WS event fl:round:complete broadcast.
+    end note

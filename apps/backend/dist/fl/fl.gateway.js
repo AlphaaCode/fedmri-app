@@ -41,8 +41,12 @@ let FlGateway = FlGateway_1 = class FlGateway {
                 socket.join('doctors');
                 this.logger.log(`Doctor ${payload.sub} joined room 'doctors'`);
             }
+            else if (payload.role === 'RESEARCHER') {
+                socket.join('researchers');
+                this.logger.log(`Researcher ${payload.sub} joined room 'researchers'`);
+            }
             else {
-                this.logger.warn(`Non-doctor ${payload.sub} connected (no room)`);
+                this.logger.warn(`Unhandled role ${payload.sub} connected (no room)`);
             }
         }
         catch (err) {
@@ -61,6 +65,12 @@ let FlGateway = FlGateway_1 = class FlGateway {
     }
     emitRoundComplete(payload) {
         this.server.to('doctors').emit('fl:round:complete', payload);
+    }
+    emitTestProgress(payload) {
+        this.server.to('researchers').emit('fl:test:progress', payload);
+    }
+    emitTestComplete(payload) {
+        this.server.to('researchers').emit('fl:test:complete', payload);
     }
 };
 exports.FlGateway = FlGateway;

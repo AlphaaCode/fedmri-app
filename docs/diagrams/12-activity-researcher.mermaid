@@ -1,0 +1,44 @@
+flowchart TD
+    Start([🟢 Start]) --> Login["Login\n(institution field required)"]
+    Login --> Dashboard["🔬 Researcher Dashboard\n(quick stats: total rounds, global F1, active nodes)"]
+
+    Dashboard --> NavChoice{Navigate to}
+
+    %% ─── System Logs ─────────────────────────────────────────────
+    NavChoice -->|"System Logs"| Logs["View system logs feed\n(real-time + historical)"]
+    Logs --> FilterLogs["Filter by severity:\nINFO | WARN | ERROR"]
+    FilterLogs --> BrowseLogs["Browse FL training events:\nround starts, completions, node joins/leaves"]
+    BrowseLogs --> ExportLogs["Export log subset\n(CSV / JSON)"]
+    ExportLogs --> Dashboard
+
+    %% ─── Model Performance ───────────────────────────────────────
+    NavChoice -->|"Model Performance"| Perf["Model performance dashboard"]
+    Perf --> SelectStrategy["Select FL strategy:\nFedAvg | FedProx | Centralized (baseline)"]
+    SelectStrategy --> ConvergenceCurve["View convergence curve\n(F1 macro vs rounds)"]
+    ConvergenceCurve --> PerClassF1["View per-class F1\n(Luminal A | B | HER2 | TN)"]
+    PerClassF1 --> ConfMatrix["View confusion matrix\n(predicted vs actual subtypes)"]
+    ConfMatrix --> CompareStrategies["Compare strategies side-by-side\n(FedAvg F1=0.38 | FedProx F1=0.41 | Central F1=0.46)"]
+    CompareStrategies --> DownloadMetrics["Download anonymised metrics\n(no patient data — aggregates only)"]
+    DownloadMetrics --> Dashboard
+
+    %% ─── Dataset Management ──────────────────────────────────────
+    NavChoice -->|"Dataset Management"| Datasets["View aggregate dataset stats\n(counts, distributions, quality)"]
+    Datasets --> FilterDatasets["Filter by silo / date range / MRI type"]
+    FilterDatasets --> QualityMetrics["View quality metrics\n(contrast, completeness, slice count)"]
+    QualityMetrics --> ExportCSV["Export anonymised metrics CSV\n(no patient data — aggregates only)"]
+    ExportCSV --> Dashboard
+
+    %% ─── Network Topology ────────────────────────────────────────
+    NavChoice -->|"Network Topology"| Topology["View global node map\n(3 hospital nodes + aggregation server)"]
+    Topology --> SelectNode{Select hospital node?}
+    SelectNode -->|Yes| NodeDetails["Inspect contribution stats:\ncases contributed, rounds participated,\nlocal F1, weight delta norm"]
+    NodeDetails --> ConsensusStream["View consensus stream\n(live weight aggregation progress)"]
+    ConsensusStream --> NodeHealth["Check node health:\nONLINE | TRAINING | IDLE | ERROR"]
+    NodeHealth --> Topology
+    SelectNode -->|No| Dashboard
+
+    %% ─── Support ─────────────────────────────────────────────────
+    NavChoice -->|"Support"| Support["Submit support ticket\n(category: Technical | Data | Model | Other)"]
+    Support --> Dashboard
+
+    Dashboard --> End([🔴 End])

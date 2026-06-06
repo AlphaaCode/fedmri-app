@@ -15,10 +15,18 @@ export declare class CasesController {
         data: any[];
         total: number;
     }>;
+    listSamples(): {
+        name: string;
+    }[];
+    createFromSample(user: any, body: {
+        name: string;
+    }): Promise<any>;
     findOne(user: any, id: string): Promise<any>;
     getAttention(user: any, id: string): Promise<{
         attention: number[];
         size: number;
+        slicePng?: string;
+        topSlice?: number;
     }>;
     downloadPdf(user: any, id: string, res: Response): Promise<void>;
     submitFeedback(user: any, id: string, body: {

@@ -1,0 +1,43 @@
+sequenceDiagram
+    actor DB as Doctor Browser
+    participant NE as NestJS API
+    participant ML as FastAPI ML Service
+    participant PG as PostgreSQL
+    participant WS as Doctor Browser (WS)
+
+    DB->>DB: Views prediction result\npredictedSubtype = "HER2"
+
+    DB->>DB: Opens dispute form
+
+    DB->>DB: Selects correct subtype: "Luminal B"\nSelects evidence: ["Biopsy", "IHC"]
+
+    DB->>NE: POST /feedback\n{caseId, feedbackType:"DISPUTE",\ncorrectedSubtype:"Luminal B",\nevidenceTypes:["Biopsy","IHC"]}
+    activate NE
+
+    NE->>NE: HospitalSiloGuard validates\nhospitalId matches case.hospitalId
+    NE->>PG: UPDATE Case {status = DISPUTED}
+    NE->>PG: INSERT Feedback {caseId, feedbackType=DISPUTE,\ncorrectedSubtype="Luminal B",\nalTriggered=true}
+    PG-->>NE: Feedback saved
+
+    NE-->>DB: 201 — feedback accepted
+    deactivate NE
+
+    Note over DB,WS: ← DOCTOR DOESN'T WAIT for Active Learning
+
+    rect rgb(255, 245, 230)
+        Note over NE,WS: ASYNC — AL epoch fires after response
+        NE-->>NE: setImmediate: ALService.triggerUpdate(\ncaseId, "Luminal B", hospitalId)
+
+        NE->>ML: POST /feedback\n{case_id, correct_subtype:"Luminal B",\npredicted_subtype:"HER2"}
+        activate ML
+        ML->>ML: Mock AL update:\nf1["Luminal B"] += uniform(0.005, 0.015)\nmodel_version += 1\nsleep(2s)
+        ML-->>NE: {model_version, f1_per_class, f1_macro}
+        deactivate ML
+
+        NE->>PG: INSERT ModelMetrics\n{modelVersion, f1Macro, f1PerClass}
+        NE->>PG: UPDATE Feedback\n{newModelVersion = model_version}
+        Note over NE,PG: rawDataTransmitted=0 — only correction label transmitted
+
+        NE->>WS: emit 'model:updated'\n{modelVersion, f1Delta, correctedSubtype:"Luminal B"}
+        WS-->>DB: Toast: "Model updated —\nLuminal B classification improved"
+    end

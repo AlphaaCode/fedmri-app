@@ -1,0 +1,91 @@
+graph LR
+    %% Actors
+    PT(["👤 Patient"])
+    DR(["👨‍⚕️ Doctor"])
+    RE(["🔬 Researcher"])
+
+    subgraph PatientUC ["Patient Use Cases"]
+        UC_P1["Register independently\n(no hospital field)"]
+        UC_P2["View FL explainer onboarding\n(3-step, privacy-focused)"]
+        UC_P3["Upload MRI scan"]
+        UC_P4["View subtype prediction\n(plain language)"]
+        UC_P5["Download PDF summary"]
+        UC_P6["Chat with patient AI assistant"]
+        UC_P7["View scan history"]
+        UC_P8["Manage privacy settings"]
+    end
+
+    subgraph DoctorUC ["Doctor Use Cases"]
+        UC_D1["Login with hospital assignment"]
+        UC_D2["Upload patient MRI scan"]
+        UC_D3["View prediction + attention map overlay"]
+        UC_D4["Validate prediction"]
+        UC_D5["Dispute prediction with evidence"]
+        UC_D6["View FL round progress\n(topology animation)"]
+        UC_D7["View hospital contribution stats"]
+        UC_D8["View privacy audit log\n('0 bytes transmitted')"]
+        UC_D9["Chat with clinical AI assistant\n(case-aware)"]
+        UC_D10["View model performance metrics"]
+        UC_D11["Configure federated node settings"]
+        UC_AL["Trigger Active Learning epoch"]
+        UC_FL["Trigger FL Round"]
+        UC_ATT["View Attention Map"]
+    end
+
+    subgraph ResearcherUC ["Researcher Use Cases"]
+        UC_R1["Login (institution required)"]
+        UC_R2["Browse aggregated dataset statistics\n(no raw records)"]
+        UC_R3["View model performance across FL rounds"]
+        UC_R4["Compare strategies: FedAvg vs FedProx vs Centralized"]
+        UC_R5["Inspect network topology\n(node status, contribution per hospital)"]
+        UC_R6["View system logs\n(training events, round completions)"]
+        UC_R7["Download anonymised model metrics"]
+        UC_R8["Submit support request"]
+        UC_R9["Read documentation\n(FL architecture, API reference)"]
+    end
+
+    %% Patient connections
+    PT --> UC_P1
+    PT --> UC_P2
+    PT --> UC_P3
+    PT --> UC_P4
+    PT --> UC_P5
+    PT --> UC_P6
+    PT --> UC_P7
+    PT --> UC_P8
+
+    %% Doctor connections
+    DR --> UC_D1
+    DR --> UC_D2
+    DR --> UC_D3
+    DR --> UC_D4
+    DR --> UC_D5
+    DR --> UC_D6
+    DR --> UC_D7
+    DR --> UC_D8
+    DR --> UC_D9
+    DR --> UC_D10
+    DR --> UC_D11
+
+    %% Include / extend
+    UC_P3 -->|"<<include>>"| UC_P4
+    UC_D2 -->|"<<include>>"| UC_FL
+    UC_D2 -->|"<<include>>"| UC_D3
+    UC_D3 -->|"<<include>>"| UC_ATT
+    UC_D5 -->|"<<include>>"| UC_AL
+    UC_P4 -->|"<<extend>>\nif confidence Low"| UC_P6
+
+    %% Researcher connections
+    RE --> UC_R1
+    RE --> UC_R2
+    RE --> UC_R3
+    RE --> UC_R4
+    RE --> UC_R5
+    RE --> UC_R6
+    RE --> UC_R7
+    RE --> UC_R8
+    RE --> UC_R9
+
+    style PT fill:#34a853,color:#fff
+    style DR fill:#ea4335,color:#fff
+    style RE fill:#fbbc04,color:#000
