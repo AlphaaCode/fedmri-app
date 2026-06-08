@@ -248,7 +248,14 @@
       "Bash(grep -nE \"^/?\\(android|ios\\)/?$|/android|/ios\" apps/mobile/.gitignore)",
       "PowerShell(Get-NetTCPConnection *)",
       "PowerShell(Get-NetConnectionProfile *)",
-      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://192.168.100.39:3001/health\" -TimeoutSec 4 -UseBasicParsing; Write-Output \"WiFi IP .39 -> $\\($r.StatusCode\\) $\\($r.Content\\)\" } catch { Write-Output \"WiFi IP .39 FAIL: $\\($_.Exception.Message\\)\" })"
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://192.168.100.39:3001/health\" -TimeoutSec 4 -UseBasicParsing; Write-Output \"WiFi IP .39 -> $\\($r.StatusCode\\) $\\($r.Content\\)\" } catch { Write-Output \"WiFi IP .39 FAIL: $\\($_.Exception.Message\\)\" })",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8002/health)",
+      "Bash(curl -s http://localhost:8002/health)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/health)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000)",
+      "Bash(cat /tmp/coord.json)",
+      "Bash(tail -8 .scratch/coordinator.log)",
+      "Bash(:)"
     ]
   }
 }

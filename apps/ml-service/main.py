@@ -150,11 +150,15 @@ async def attention(case_id: str, path: str = Query(default=None)):
     the volume at `path`. Blob mode (mock): 2-3 Gaussian blobs seeded by case_id.
     """
     if INFERENCE_MODE == "real":
-        if not path or not os.path.exists(path):
+        if not path:
             raise HTTPException(status_code=404, detail="volume path required for real attention")
         import real_inference
 
-        return real_inference.attention_for_path(path)
+        resolved_path = real_inference._resolve_path(path)
+        if not os.path.exists(resolved_path):
+            raise HTTPException(status_code=404, detail=f"volume not found: {path}")
+
+        return real_inference.attention_for_path(resolved_path)
 
     if ATTN_MODE == "mil":
         raise HTTPException(

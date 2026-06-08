@@ -1,0 +1,2 @@
+Error while loading conda entry point: anaconda-auth (The installed pydantic-core version (2.41.5) is incompatible with the current pydantic version, which requires 2.46.4. If you encounter this error, make sure that you haven't upgraded pydantic-core manually.)
+Error while loading conda entry point: conda-anaconda-tos (The installed pydantic-core version (2.41.5) is incompatible with the current pydantic version, which requires 2.46.4. If you encounter this error, make sure that you haven't upgraded pydantic-core manually.)

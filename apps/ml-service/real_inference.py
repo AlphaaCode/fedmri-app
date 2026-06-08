@@ -23,37 +23,78 @@ os.environ.setdefault("MRI_NUM_CLASSES", "2")
 CKPT = os.environ.get("FEDSCRT_CKPT")
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 LABELS = ["Luminal", "Non-Luminal"]
+HOST_WORKSPACE_ROOT = os.environ.get("HOST_WORKSPACE_ROOT")
+CONTAINER_WORKSPACE_ROOT = os.environ.get("CONTAINER_WORKSPACE_ROOT", "/workspace-root")
 
 
-def _load_repo_main():
-    """Import build_model from the model repo's main.py without colliding with
-    the ml-service's own `main` module. Under `uvicorn main:app`,
-    sys.modules['main'] is the ml-service entrypoint (no build_model), so a bare
-    `from main import build_model` resolves to the wrong file — load by path."""
+def _resolve_path(path: str) -> str:
+    if os.path.exists(path):
+        return path
+
+    if not HOST_WORKSPACE_ROOT:
+        return path
+
+    host_root = HOST_WORKSPACE_ROOT.replace("\\", "/").rstrip("/")
+    candidate = path.replace("\\", "/")
+    if candidate.lower().startswith(host_root.lower() + "/"):
+        rel = candidate[len(host_root) + 1 :]
+        translated = os.path.join(CONTAINER_WORKSPACE_ROOT, *rel.split("/"))
+        if os.path.exists(translated):
+            return translated
+
+    return path
+
+
+def _load_repo_model_module():
+    """Import the model class from the federated-learning-model repo without
+    importing the training entrypoint.
+
+    The repo's `main.py` pulls in the full training stack and can block startup
+    on dataset or hub setup. For inference we only need `model.py`.
+    """
     import importlib.util
-    mod = sys.modules.get("main")
-    if mod is not None and hasattr(mod, "build_model"):
+    try:
+        import timm
+
+        original_create_model = timm.create_model
+
+        if not getattr(original_create_model, "_fedmri_no_pretrained", False):
+            def _create_model_no_pretrained(*args, **kwargs):
+                kwargs = dict(kwargs)
+                kwargs["pretrained"] = False
+                kwargs.pop("pretrained_cfg", None)
+                kwargs.pop("pretrained_cfg_overlay", None)
+                return original_create_model(*args, **kwargs)
+
+            _create_model_no_pretrained._fedmri_no_pretrained = True  # type: ignore[attr-defined]
+            timm.create_model = _create_model_no_pretrained
+    except Exception:
+        pass
+
+    mod = sys.modules.get("fedscrt_repo_model")
+    if mod is not None and hasattr(mod, "ConvNeXtMILClassifier"):
         return mod
     if not V2:
-        raise RuntimeError("MODEL_V2_PATH not set; cannot locate the model repo main.py")
-    path = os.path.join(V2, "main.py")
-    spec = importlib.util.spec_from_file_location("fedscrt_repo_main", path)
+        raise RuntimeError("MODEL_V2_PATH not set; cannot locate the model repo model.py")
+    path = os.path.join(V2, "model.py")
+    spec = importlib.util.spec_from_file_location("fedscrt_repo_model", path)
     mod = importlib.util.module_from_spec(spec)
-    sys.modules["fedscrt_repo_main"] = mod
+    sys.modules["fedscrt_repo_model"] = mod
     spec.loader.exec_module(mod)
     return mod
 
 
 @lru_cache(maxsize=1)
 def _model_and_meta():
-    build_model = _load_repo_main().build_model  # model repo main.py:140
     if not CKPT or not os.path.exists(CKPT):
         raise RuntimeError(
             f"FEDSCRT_CKPT not found: {CKPT!r}. Set it to fedscrt_final.pt "
             f"(or fedscrt_stub.pt) and ensure MODEL_V2_PATH points at the model repo."
         )
     ck = torch.load(CKPT, map_location=DEVICE, weights_only=False)
-    model = build_model("convnext_mil", DEVICE)
+    model_module = _load_repo_model_module()
+    model = model_module.ConvNeXtMILClassifier(num_classes=2, proj_dim=256, attn_dim=128)
+    model = model.to(DEVICE)
     model.load_state_dict(ck["model_state"], strict=False)
     model.eval()
     label_map = ck.get("label_map", {0: "Luminal", 1: "Non-Luminal"})
@@ -72,7 +113,7 @@ def _slices_from_path(path: str) -> Tuple[torch.Tensor, torch.Tensor]:
     Uses the trained slice_view_transform which resizes, channel-replicates,
     AND ImageNet-normalizes (the user's draft skipped normalization)."""
     from image_process import preprocess_raw, slice_view_transform
-    vol = preprocess_raw(path)                       # (64,128,128) float32 [0,1]
+    vol = preprocess_raw(_resolve_path(path))       # (64,128,128) float32 [0,1]
     vol_t = torch.from_numpy(vol)
     x = slice_view_transform(vol_t)                  # (64,3,224,224) — normalizes!
     return x.unsqueeze(0).to(DEVICE), vol_t
