@@ -26,6 +26,8 @@ async function apiLogin(email: string, password: string) {
   return res.json();
 }
 
+// Patient-facing copy only — no FL jargon (per project invariant). We say
+// "AI trained across 3 hospitals", never "federated learning".
 const FEATURES = [
   {
     icon: (
@@ -34,8 +36,8 @@ const FEATURES = [
         <path d="M5.5 8V6a3.5 3.5 0 017 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
       </svg>
     ),
-    title: "Zero-Trust Architecture",
-    desc: "Data remains exclusively on local institutional servers during model training.",
+    title: "Your scans stay private",
+    desc: "Your images are analysed without ever leaving the hospital that holds them.",
   },
   {
     icon: (
@@ -44,22 +46,31 @@ const FEATURES = [
         <path d="M5 9l2.5 2.5L13 6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    title: "Distributed Compute",
-    desc: "Leverage aggregated model weights to achieve state-of-the-art diagnostic accuracy.",
+    title: "Trained across 3 hospitals",
+    desc: "Your result is reviewed by an AI that learned from breast MRI scans at three hospitals.",
+  },
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M3 4.5h12M3 9h12M3 13.5h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    ),
+    title: "Results, explained simply",
+    desc: "Plain-language explanations of what your result means — your care team stays in the loop.",
   },
 ];
 
 export default function PatientRegisterPage() {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
-  const [form, setForm] = useState({ name: "", institution: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!agreed) { setError("Please agree to the Data Privacy Protocol."); return; }
+    if (!agreed) { setError("Please agree to the Terms and Privacy Policy."); return; }
     setError(null);
     setLoading(true);
     try {
@@ -76,7 +87,7 @@ export default function PatientRegisterPage() {
 
   return (
     <main className="min-h-screen flex">
-      {/* Left — marketing panel */}
+      {/* Left — reassurance panel */}
       <div className="hidden lg:flex flex-col justify-between w-1/2 p-10 relative overflow-hidden"
         style={{ background: "linear-gradient(135deg, #050a0e 0%, #0d1117 60%, #0a1a1a 100%)" }}>
         <div className="absolute inset-0 pointer-events-none" style={{
@@ -90,17 +101,18 @@ export default function PatientRegisterPage() {
         <div className="relative z-10 space-y-6">
           <div>
             <h2 className="text-3xl font-bold leading-snug" style={{ color: "var(--text-primary)" }}>
-              Advanced Federated<br />Clinical Network
+              Your results,<br />kept private.
             </h2>
             <p className="text-sm mt-3 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-              Train visual diagnostics across institutions without ever compromising patient privacy or data sovereignty.
+              Follow your breast MRI analysis securely. The AI was trained across three
+              hospitals — and your scans are never shared.
             </p>
           </div>
           <div className="space-y-4">
             {FEATURES.map((f) => (
               <div key={f.title} className="flex items-start gap-3">
                 <div className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center mt-0.5"
-                  style={{ background: "var(--teal-glow)", color: "var(--teal)", border: "1px solid var(--teal)30" }}>
+                  style={{ background: "var(--teal-glow)", color: "var(--teal)", border: "1px solid #2dd4bf30" }}>
                   {f.icon}
                 </div>
                 <div>
@@ -112,7 +124,7 @@ export default function PatientRegisterPage() {
           </div>
         </div>
         <p className="relative z-10 text-[11px]" style={{ color: "var(--text-secondary)", opacity: 0.5 }}>
-          © 2026 FedMRI — Federated Data Privacy Protocol v2.1
+          © 2026 FedMRI — Your data, your consent
         </p>
       </div>
 
@@ -126,15 +138,14 @@ export default function PatientRegisterPage() {
           </div>
 
           <div className="mb-6">
-            <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Create your secure account</h1>
-            <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>Join the federated clinical network</p>
+            <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Create your account</h1>
+            <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>Securely follow your breast MRI results</p>
           </div>
 
           <form onSubmit={onSubmit} className="space-y-3">
             {[
-              { label: "Full Name", key: "name", type: "text", placeholder: "Dr. Imene Researcher" },
-              { label: "Hospital / Institution", key: "institution", type: "text", placeholder: "Centre Hospitalier Universitaire" },
-              { label: "Institutional Email", key: "email", type: "email", placeholder: "you@hospital.edu" },
+              { label: "Full Name", key: "name", type: "text", placeholder: "Sara Benali" },
+              { label: "Email", key: "email", type: "email", placeholder: "you@email.com" },
               { label: "Password", key: "password", type: "password", placeholder: "••••••••" },
             ].map(({ label, key, type, placeholder }) => (
               <div key={key}>
@@ -146,7 +157,8 @@ export default function PatientRegisterPage() {
                   placeholder={placeholder}
                   className="w-full rounded-lg text-sm px-3 py-2.5 outline-none"
                   style={{ background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
-                  required={key !== "institution"}
+                  required
+                  autoComplete={key === "password" ? "new-password" : key === "email" ? "email" : "name"}
                 />
               </div>
             ))}
@@ -156,7 +168,8 @@ export default function PatientRegisterPage() {
                 className="mt-0.5 accent-teal-400 shrink-0" />
               <span className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                 I agree to the{" "}
-                <span className="underline" style={{ color: "var(--teal)" }}>Federated Data Privacy Protocol</span>
+                <span className="underline" style={{ color: "var(--teal)" }}>Terms of Use</span>{" "}and{" "}
+                <span className="underline" style={{ color: "var(--teal)" }}>Privacy Policy</span>
               </span>
             </label>
 
@@ -178,7 +191,7 @@ export default function PatientRegisterPage() {
             <Link href="/login" className="underline" style={{ color: "var(--teal)" }}>Sign In</Link>
           </p>
           <p className="text-center text-[11px] mt-2" style={{ color: "var(--text-secondary)", opacity: 0.5 }}>
-            End-to-end encrypted · Zero raw data transfer · HIPAA compliant
+            Your data is encrypted and never shared without your consent.
           </p>
         </motion.div>
       </div>

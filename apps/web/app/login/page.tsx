@@ -145,9 +145,9 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-xs mt-5" style={{ color: "var(--text-secondary)" }}>
-            Don't have an account?{" "}
+            New patient?{" "}
             <Link href="/patient/register" className="underline" style={{ color: "var(--teal)" }}>
-              Request access
+              Create an account
             </Link>
           </p>
 
