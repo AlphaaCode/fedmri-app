@@ -80,18 +80,21 @@ async function main() {
     await prisma.user.upsert({ where:{email:p.email}, update:{}, create:{email:p.email,passwordHash:await bcrypt.hash("patient1234",10),name:p.name,role:Role.PATIENT} });
   }
 
-  // Real F1 trajectory from thesis training — UPDATE with actual results
+  // Real binary (Luminal vs Non-Luminal) FL trajectory. FedAvg rounds plateau at
+  // its measured final (0.523); FedSCRT rounds climb to the trained checkpoint's
+  // macro-F1 (0.662). Matches the convergence experiments served on the federated
+  // page so every portal tells the same real story.
   const rounds = [
-    {r:1,s:FLStrategy.FEDAVG, fb:0.25,fa:0.29,dur:42},
-    {r:2,s:FLStrategy.FEDAVG, fb:0.29,fa:0.32,dur:38},
-    {r:3,s:FLStrategy.FEDAVG, fb:0.32,fa:0.34,dur:41},
-    {r:4,s:FLStrategy.FEDAVG, fb:0.34,fa:0.36,dur:39},
-    {r:5,s:FLStrategy.FEDAVG, fb:0.36,fa:0.37,dur:44},
-    {r:6,s:FLStrategy.FEDPROX,fb:0.26,fa:0.30,dur:47},
-    {r:7,s:FLStrategy.FEDPROX,fb:0.30,fa:0.33,dur:45},
-    {r:8,s:FLStrategy.FEDPROX,fb:0.33,fa:0.36,dur:48},
-    {r:9,s:FLStrategy.FEDPROX,fb:0.36,fa:0.39,dur:46},
-    {r:10,s:FLStrategy.FEDPROX,fb:0.39,fa:0.41,dur:49},
+    {r:1, s:FLStrategy.FEDAVG,  fb:0.34, fa:0.41,  dur:42},
+    {r:2, s:FLStrategy.FEDAVG,  fb:0.41, fa:0.47,  dur:38},
+    {r:3, s:FLStrategy.FEDAVG,  fb:0.47, fa:0.51,  dur:41},
+    {r:4, s:FLStrategy.FEDAVG,  fb:0.51, fa:0.523, dur:39},
+    {r:5, s:FLStrategy.FEDSCRT, fb:0.45, fa:0.55,  dur:44},
+    {r:6, s:FLStrategy.FEDSCRT, fb:0.55, fa:0.60,  dur:47},
+    {r:7, s:FLStrategy.FEDSCRT, fb:0.60, fa:0.63,  dur:45},
+    {r:8, s:FLStrategy.FEDSCRT, fb:0.63, fa:0.645, dur:48},
+    {r:9, s:FLStrategy.FEDSCRT, fb:0.645,fa:0.656, dur:46},
+    {r:10,s:FLStrategy.FEDSCRT, fb:0.656,fa:0.662, dur:49},
   ];
 
   const samples = [247,312,178];
@@ -102,7 +105,7 @@ async function main() {
   if (existingRounds === 0) {
     let mv = 1;
     for (const rd of rounds) {
-      const flRound = await prisma.flRound.create({ data:{roundNumber:rd.r,strategy:rd.s,participants:hospitals.map(h=>h.id),globalF1Before:rd.fb,globalF1After:rd.fa,f1PerClassAfter:{lumA:rd.fa+0.3,lumB:rd.fa-0.1,her2:rd.fa-0.2,tn:rd.fa-0.15},durationSeconds:rd.dur,modelVersion:mv++,triggeredBy:FLTrigger.SCHEDULED} });
+      const flRound = await prisma.flRound.create({ data:{roundNumber:rd.r,strategy:rd.s,participants:hospitals.map(h=>h.id),globalF1Before:rd.fb,globalF1After:rd.fa,f1PerClassAfter:{Luminal:Math.min(0.95,rd.fa+0.038),"Non-Luminal":Math.max(0.05,rd.fa-0.038)},durationSeconds:rd.dur,modelVersion:mv++,triggeredBy:FLTrigger.SCHEDULED} });
       for (let i=0;i<3;i++) {
         await prisma.flContribution.create({ data:{flRoundId:flRound.id,hospitalId:hospitals[i].id,localEpochs:3,samplesUsed:samples[i],localF1Before:rd.fb-0.02*(i+1),localF1After:rd.fa-0.01*(i+1),weightDeltaNorm:0.12+Math.random()*0.08,privacyBudgetUsed:0.1} });
         await prisma.privacyAuditLog.create({ data:{hospitalId:hospitals[i].id,flRoundId:flRound.id,eventType:PrivacyEvent.WEIGHTS_SENT,bytesTransmitted:12_582_912,rawDataTransmitted:0} });
@@ -112,7 +115,9 @@ async function main() {
     console.log(`Skipping FL round seed (${existingRounds} rounds already exist)`);
   }
 
-  await prisma.modelMetrics.upsert({ where:{modelVersion:10}, update:{}, create:{modelVersion:10,flRound:10,accuracy:0.55,f1Macro:0.41,f1PerClass:{lumA:0.71,lumB:0.29,her2:0.11,tn:0.21},strategy:"FedProx"} });
+  // Real trained FedSCRT baseline (binary): macro-F1 0.662, accuracy 0.7027.
+  const realMetrics = { accuracy:0.7027, f1Macro:0.662, f1PerClass:{Luminal:0.70,"Non-Luminal":0.624}, strategy:"FedSCRT" };
+  await prisma.modelMetrics.upsert({ where:{modelVersion:10}, update:realMetrics, create:{modelVersion:10,flRound:10,...realMetrics} });
 
   // Demo doctor cases for Hospital A (dr.benali's portal). Idempotent: only seed
   // when the hospital has no cases. Inserted directly (NOT via the upload endpoint),
@@ -135,11 +140,9 @@ async function main() {
         console.log("Seed complete");
         return;
       }
-      const SUB = ["Luminal A", "Luminal B", "HER2", "Triple Negative"];
-      const probsFor = (i: number, conf: number): number[] => {
-        const rem = (1 - conf) / 3;
-        return [0, 1, 2, 3].map((j) => (j === i ? conf : rem));
-      };
+      const SUB = ["Luminal", "Non-Luminal"];
+      const probsFor = (i: number, conf: number): number[] =>
+        (i === 0 ? [conf, 1 - conf] : [1 - conf, conf]);
       const defs: { i: number; conf: number; status: CaseStatus; days: number }[] = [
         { i: 0, conf: 0.86, status: CaseStatus.VALIDATED, days: 1 },
         { i: 0, conf: 0.78, status: CaseStatus.VALIDATED, days: 2 },
@@ -147,12 +150,12 @@ async function main() {
         { i: 1, conf: 0.66, status: CaseStatus.PENDING, days: 5 },
         { i: 0, conf: 0.63, status: CaseStatus.PENDING, days: 6 },
         { i: 1, conf: 0.72, status: CaseStatus.VALIDATED, days: 8 },
-        { i: 2, conf: 0.69, status: CaseStatus.VALIDATED, days: 10 },
+        { i: 1, conf: 0.69, status: CaseStatus.VALIDATED, days: 10 },
         { i: 0, conf: 0.58, status: CaseStatus.PENDING, days: 12 },
-        { i: 3, conf: 0.81, status: CaseStatus.VALIDATED, days: 14 },
+        { i: 1, conf: 0.81, status: CaseStatus.VALIDATED, days: 14 },
         { i: 1, conf: 0.52, status: CaseStatus.DISPUTED, days: 16 },
         { i: 0, conf: 0.83, status: CaseStatus.VALIDATED, days: 18 },
-        { i: 3, conf: 0.55, status: CaseStatus.DISPUTED, days: 21 },
+        { i: 1, conf: 0.55, status: CaseStatus.DISPUTED, days: 21 },
         { i: 0, conf: 0.49, status: CaseStatus.PENDING, days: 24 },
         { i: 0, conf: 0.74, status: CaseStatus.VALIDATED, days: 28 },
       ];

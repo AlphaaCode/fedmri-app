@@ -1,2 +1,5 @@
 node_modules
 .gstack/
+
+# Stray 3D asset dump (not part of the app)
+3D/

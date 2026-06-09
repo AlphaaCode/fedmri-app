@@ -217,7 +217,9 @@ export class CasesService {
         correctedSubtype: body.correctSubtype ?? null,
         evidenceTypes: [],
         justification: body.justification ?? null,
-        alTriggered: isDispute,
+        // Both paths feed the model: a correction relabels, a confirmation
+        // reinforces the prediction. Either way an AL fine-tune is triggered.
+        alTriggered: true,
       },
     });
 
@@ -226,15 +228,17 @@ export class CasesService {
       data: { status: isDispute ? CaseStatus.DISPUTED : CaseStatus.VALIDATED },
     });
 
-    // On DISPUTE: fire-and-forget active-learning fine-tune
-    if (isDispute && body.correctSubtype) {
-      this.alService.triggerUpdate(
-        id,
-        body.correctSubtype,
-        caseRow.predictedSubtype,
-        feedback.id,
-      );
-    }
+    // Fire-and-forget active-learning fine-tune. DISPUTE relabels the case to the
+    // corrected subtype; VALIDATE confirms the predicted subtype as ground truth
+    // (a confirmed label is training signal too — the model learns on approval).
+    const confirmedSubtype = isDispute ? body.correctSubtype! : caseRow.predictedSubtype;
+    this.alService.triggerUpdate(
+      id,
+      confirmedSubtype,
+      caseRow.predictedSubtype,
+      feedback.id,
+      isDispute ? 'DISPUTE' : 'VALIDATE',
+    );
 
     return feedback;
   }

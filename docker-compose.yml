@@ -81,7 +81,8 @@ services:
     ports:
       - "8001:8001"
     volumes:
-      - C:/Users/akaro/Documents/GitHub/federated-learning-model:/model-v2
+      # In-repo model copy (code + fedscrt_final.pt) — self-contained, no external path
+      - ./model-core:/model-v2
       - D:/study/BioInfo M2 (2026)/Memoir:/workspace-root
     restart: unless-stopped
 

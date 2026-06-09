@@ -15,12 +15,18 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-V2 = os.environ.get("MODEL_V2_PATH")
+# Default to the in-repo model copy (apps/ml-service -> ../../model-core) so the
+# app loads the FedSCRT model + checkpoint from THIS repository with no external
+# path configuration. Override MODEL_V2_PATH / FEDSCRT_CKPT to point elsewhere.
+_REPO_MODEL_CORE = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "model-core")
+)
+V2 = os.environ.get("MODEL_V2_PATH") or _REPO_MODEL_CORE
 if V2 and V2 not in sys.path:
     sys.path.insert(0, V2)
 os.environ.setdefault("MRI_NUM_CLASSES", "2")
 
-CKPT = os.environ.get("FEDSCRT_CKPT")
+CKPT = os.environ.get("FEDSCRT_CKPT") or os.path.join(V2, "checkpoints", "fedscrt_final.pt")
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 LABELS = ["Luminal", "Non-Luminal"]
 HOST_WORKSPACE_ROOT = os.environ.get("HOST_WORKSPACE_ROOT")

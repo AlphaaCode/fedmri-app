@@ -170,8 +170,8 @@ export default function ResearcherHome() {
         title="Global Model Performance"
         description={
           overview
-            ? `Federated DINOv2-MIL · Round ${overview.totalRounds}/${overview.totalRounds} · ${overview.strategy}`
-            : "Federated DINOv2-MIL"
+            ? `Federated ConvNeXt-MIL · Round ${overview.totalRounds}/${overview.totalRounds} · ${overview.strategy}`
+            : "Federated ConvNeXt-MIL"
         }
         action={
           overview ? (

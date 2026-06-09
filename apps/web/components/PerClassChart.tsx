@@ -10,7 +10,7 @@ interface Props {
   };
 }
 
-const STRAT_COLOR = { Centralized: "#f59e0b", FedAvg: "#60a5fa", FedProx: "#2dd4bf" };
+const STRAT_COLOR = { Centralized: "#f59e0b", FedAvg: "#60a5fa", FedSCRT: "#2dd4bf", FedProx: "#2dd4bf" };
 
 export function PerClassChart({ data }: Props) {
   const rows = data.subtypes.map((s) => {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePortalTitle } from "@/lib/use-portal-title";
 import { useToastStore } from "@/components/ToastProvider";
+import { useFlStore } from "@/lib/fl-store";
 import { ScanUpload } from "@/components/ScanUpload";
 import { PredictionCard } from "@/components/PredictionCard";
 import { MedicationCard } from "@/components/MedicationCard";
@@ -103,13 +104,28 @@ function BinaryPredictionCard({ result }: { result: CaseResult }) {
   );
 }
 
-// Doctor validates or corrects the prediction. VALIDATE confirms it; a correction
-// (DISPUTE with the right subtype) triggers an active-learning fine-tune so the
-// model improves. The new model version arrives over WS ('model:updated').
+// Doctor validates or corrects the prediction. Both train the model: VALIDATE
+// confirms the predicted subtype as ground truth (reinforcement), a correction
+// (DISPUTE with the right subtype) relabels the case. Either way an active-learning
+// fine-tune runs and the new model version arrives over WS ('model:updated').
 function FeedbackBar({ result }: { result: CaseResult }) {
   const push = useToastStore((s) => s.push);
   const [state, setState] = useState<"idle" | "picking" | "sent">("idle");
   const [busy, setBusy] = useState(false);
+  const [sentAtVersion, setSentAtVersion] = useState<number | null>(null);
+
+  // Live model state — updates when the AL fine-tune emits 'model:updated'.
+  const modelVersion = useFlStore((s) => s.modelVersion);
+  const lastF1After = useFlStore((s) => s.lastF1After);
+  const lastF1Delta = useFlStore((s) => s.lastF1Delta);
+  const lastUpdateSource = useFlStore((s) => s.lastUpdateSource);
+
+  // The fine-tune produced a newer version than the one in effect when we sent.
+  const learned =
+    state === "sent" &&
+    lastUpdateSource === "al" &&
+    modelVersion != null &&
+    modelVersion > (sentAtVersion ?? 0);
 
   const ALL: string[] = isBinaryResult(result)
     ? ["Luminal", "Non-Luminal"]
@@ -118,10 +134,11 @@ function FeedbackBar({ result }: { result: CaseResult }) {
 
   async function validate() {
     setBusy(true);
+    setSentAtVersion(useFlStore.getState().modelVersion ?? 0);
     try {
       await apiSubmitFeedback(result.id, "VALIDATE");
       setState("sent");
-      push("Confirmed — recorded for the global model", "success");
+      push("Confirmed — the model is learning from your approval", "success");
     } catch (e: any) {
       push(e?.message || "Could not record feedback", "warning");
     } finally {
@@ -131,6 +148,7 @@ function FeedbackBar({ result }: { result: CaseResult }) {
 
   async function dispute(correct: string) {
     setBusy(true);
+    setSentAtVersion(useFlStore.getState().modelVersion ?? 0);
     try {
       await apiSubmitFeedback(result.id, "DISPUTE", correct);
       setState("sent");
@@ -143,10 +161,35 @@ function FeedbackBar({ result }: { result: CaseResult }) {
   }
 
   if (state === "sent") {
+    if (learned) {
+      const delta = lastF1Delta ?? 0;
+      return (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className="rounded-xl border p-3 text-xs flex items-center justify-between gap-3"
+          style={{ background: "var(--teal-glow)", borderColor: "var(--teal)", color: "var(--teal)" }}
+        >
+          <span className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--teal)" }} />
+            Model learned from your feedback — now <strong>v{modelVersion}</strong>
+          </span>
+          <span className="tabular-nums" style={{ color: "var(--text-secondary)" }}>
+            F1 {lastF1After != null ? lastF1After.toFixed(3) : "—"}
+            {delta !== 0 && (
+              <span style={{ color: delta >= 0 ? "var(--teal)" : "#fb7185" }}>
+                {" "}({delta >= 0 ? "+" : ""}{delta.toFixed(3)})
+              </span>
+            )}
+          </span>
+        </motion.div>
+      );
+    }
     return (
       <div className="rounded-xl border p-3 text-xs flex items-center gap-2" style={{ background: "var(--bg-card)", borderColor: "var(--teal)", color: "var(--teal)" }}>
-        <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--teal)" }} />
-        Feedback recorded — the federated model is incorporating your input.
+        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "var(--teal)" }} />
+        Feedback recorded — the model is fine-tuning on your input…
       </div>
     );
   }

@@ -1,0 +1,2973 @@
+{
+  "name": "Duke Breast MRI",
+  "description": "Differentiate between four breast cancer molecular subtypes on MRI",
+  "licence": "CC BY-NC 4.0",
+  "reference": "Saha, A., Harowicz, M.R., Grimm, L.J., Kim, C.E., Ghate, S.V., Walsh, R. and Mazurowski, M.A., 2018. A machine learning approach to radiogenomics of breast cancer: a study of 922 subjects and 529 DCE-MRI features. British journal of cancer, 119(4), pp.508-516.",
+  "tensorImageSize": "3D",
+  "modality": {
+    "0": "T1_subtraction"
+  },
+  "classification_labels": [
+    {
+      "name": "Molecular_subtype",
+      "ordinal": false,
+      "values": {
+        "0": "Luminal A, ER and/or PR positive, HER2 negative",
+        "1": "Luminal B, ER and/or PR negative, HER2 positive",
+        "2": "HER2, ER and PR negative, HER2 positive",
+        "3": "Triple negative, ER, PR and HER2 negative"
+      }
+    }
+  ],
+  "numTraining": 737,
+  "training": [
+    {
+      "image": "imagesTr/Breast_MRI_0237.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0659.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0020.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0125.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0530.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0122.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0774.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0029.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0873.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0105.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0016.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0736.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0018.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0528.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0789.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0390.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0080.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0248.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0225.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0755.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0624.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0098.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0380.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0661.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0181.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0885.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0783.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0391.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0889.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0061.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0073.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0917.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0635.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0012.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0814.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0144.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0603.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0307.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0896.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0776.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0206.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0745.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0688.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0180.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0087.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0183.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0795.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0620.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0788.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0060.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0693.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0671.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0685.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0507.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0302.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0140.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0825.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0623.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0107.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0667.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0001.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0353.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0785.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0099.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0077.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0706.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0854.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0701.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0732.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0720.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0686.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0327.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0853.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0263.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0172.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0147.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0584.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0050.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0830.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0673.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0502.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0615.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0204.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0301.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0478.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0175.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0663.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0864.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0738.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0735.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0236.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0540.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0168.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0339.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0863.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0568.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0446.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0818.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0717.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0259.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0710.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0251.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0419.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0595.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0093.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0641.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0313.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0317.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0796.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0331.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0318.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0846.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0749.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0443.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0195.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0173.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0910.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0369.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0108.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0905.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0559.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0575.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0670.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0552.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0345.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0064.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0866.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0101.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0088.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0063.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0760.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0509.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0848.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0023.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0543.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0184.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0436.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0386.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0255.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0169.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0178.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0121.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0176.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0360.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0358.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0677.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0004.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0239.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0417.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0245.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0859.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0280.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0585.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0279.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0127.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0444.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0862.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0842.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0428.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0648.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0258.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0046.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0845.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0159.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0614.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0387.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0778.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0881.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0743.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0187.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0474.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0157.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0266.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0800.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0835.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0083.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0312.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0160.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0372.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0689.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0021.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0492.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0305.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0138.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0347.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0196.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0028.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0013.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0216.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0483.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0777.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0086.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0779.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0611.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0570.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0324.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0155.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0858.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0188.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0733.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0277.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0270.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0111.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0103.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0751.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0465.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0038.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0550.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0090.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0416.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0542.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0868.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0341.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0534.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0192.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0273.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0489.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0182.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0472.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0408.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0617.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0558.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0405.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0573.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0368.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0075.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0115.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0674.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0367.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0849.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0283.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0129.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0672.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0703.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0750.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0342.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0884.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0100.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0498.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0201.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0309.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0613.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0371.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0500.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0850.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0880.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0744.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0254.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0918.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0310.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0481.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0300.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0113.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0149.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0495.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0375.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0177.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0812.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0582.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0631.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0675.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0748.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0504.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0132.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0506.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0109.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0593.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0298.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0092.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0297.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0337.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0808.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0350.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0014.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0790.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0212.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0690.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0639.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0448.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0763.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0406.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0921.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0400.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0627.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0286.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0382.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0030.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0608.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0501.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0193.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0847.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0904.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0421.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0696.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0071.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0459.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0695.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0205.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0902.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0185.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0250.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0619.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0072.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0062.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0131.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0632.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0458.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0548.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0343.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0066.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0834.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0462.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0681.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0190.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0505.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0604.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0598.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0435.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0794.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0397.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0385.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0145.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0244.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0154.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0070.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0607.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0319.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0057.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0402.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0861.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0058.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0451.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0714.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0067.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0191.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0704.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0837.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0709.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0179.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0042.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0799.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0351.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0662.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0521.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0757.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0901.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0544.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0338.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0725.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0739.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0484.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0162.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0084.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0374.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0913.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0053.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0645.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0262.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0772.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0268.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0580.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0089.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0126.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0535.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0413.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0078.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0366.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0879.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0068.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0356.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0007.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0653.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0095.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0747.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0647.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0497.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0875.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0694.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0722.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0234.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0822.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0322.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0232.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0081.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0354.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0538.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0539.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0537.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0515.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0915.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0441.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0213.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0414.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0134.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0572.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0820.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0152.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0333.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0758.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0775.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0810.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0828.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0246.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0290.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0389.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0642.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0340.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0524.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0892.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0293.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0817.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0600.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0320.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0629.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0430.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0791.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0383.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0856.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0346.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0599.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0024.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0499.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0040.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0094.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0768.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0074.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0423.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0721.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0276.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0392.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0287.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0142.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0411.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0581.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0019.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0137.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0569.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0826.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0531.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0508.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0124.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0596.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0909.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0166.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0897.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0557.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0549.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0654.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0824.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0821.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0463.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0469.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0510.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0114.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0118.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0526.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0328.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0123.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0811.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0684.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0872.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0130.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0128.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0056.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0420.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0612.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0466.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0586.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0226.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0393.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0376.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0618.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0908.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0644.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0275.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0304.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0296.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0482.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0857.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0033.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0658.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0512.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0867.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0085.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0574.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0221.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0227.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0395.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0765.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0723.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0303.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0214.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0373.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0404.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0517.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0295.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0664.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0626.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0477.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0787.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0384.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0032.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0348.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0407.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0228.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0571.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0605.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0746.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0447.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0589.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0554.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0711.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0163.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0194.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0247.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0592.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0541.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0335.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0564.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0455.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0655.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0533.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0903.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0396.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0767.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0741.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0468.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0577.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0871.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0473.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0907.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0454.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0855.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0792.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0249.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0344.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0781.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0870.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0773.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0097.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0349.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0267.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0315.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0682.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0878.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0634.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0102.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0841.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0456.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0587.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0096.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0288.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0467.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0597.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0555.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0370.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0336.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0900.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0323.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0039.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0874.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0189.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0410.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0561.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0691.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0059.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0852.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0893.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0638.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0494.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0091.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0809.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0762.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0731.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0633.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0656.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0170.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0401.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0017.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0865.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0640.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0438.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0882.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0833.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0139.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0278.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0450.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0476.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0730.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0802.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0174.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0224.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0522.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0727.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0388.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0272.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0698.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0769.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0513.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0394.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0022.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0010.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0899.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0229.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0551.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0334.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0422.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0480.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0831.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0520.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0055.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0527.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0425.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0503.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0471.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0565.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0049.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0282.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0838.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0716.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0724.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0299.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0475.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0442.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0289.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0015.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0418.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0364.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0525.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0167.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0606.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0164.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0136.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0529.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0146.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0625.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0243.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0637.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0621.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0485.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0567.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0041.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0065.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0649.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0797.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0646.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0117.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0770.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0379.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0363.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0153.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0003.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0702.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0601.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0806.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0756.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0257.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0198.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0771.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0801.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0453.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0590.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0803.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0764.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0490.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0220.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0233.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0186.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0922.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0141.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0650.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0754.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0156.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0036.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0148.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0780.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0403.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0261.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0208.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0906.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0895.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0238.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0832.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0556.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0161.mha",
+      "Molecular_subtype": 2
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0700.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0365.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0705.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0911.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0133.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0265.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0804.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0009.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0269.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0165.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0045.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0203.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0199.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0708.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0035.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0284.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0916.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0285.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0753.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0784.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0488.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0352.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0479.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0827.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0230.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0886.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0920.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0786.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0668.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0432.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0914.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0219.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0437.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0807.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0031.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0643.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0457.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0223.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0292.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0793.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0308.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0197.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0398.mha",
+      "Molecular_subtype": 3
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0912.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0651.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0025.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0734.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0104.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0231.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0253.mha",
+      "Molecular_subtype": 1
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0805.mha",
+      "Molecular_subtype": 0
+    },
+    {
+      "image": "imagesTr/Breast_MRI_0493.mha",
+      "Molecular_subtype": 0
+    }
+  ]
+}

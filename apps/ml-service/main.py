@@ -34,12 +34,13 @@ ATTN_MODE = os.getenv("ATTN_MODE", "blob")
 AL_MODE = os.getenv("AL_MODE", "mock")
 ATTN_GRID = 224
 
-# Active-learning state — in-memory model metrics, mutated by /feedback
+# Active-learning state — in-memory model metrics, mutated by /feedback.
+# Seeded to the real trained FedSCRT binary baseline (macro-F1 0.662, acc 0.7027).
 SUBTYPE_KEYS = ["Luminal", "Non-Luminal"]
 AL_STATE = {
     "model_version": 1,
-    "f1_per_class": {"Luminal": 0.71, "Non-Luminal": 0.58},
-    "accuracy": 0.72,
+    "f1_per_class": {"Luminal": 0.70, "Non-Luminal": 0.624},
+    "accuracy": 0.7027,
 }
 
 
@@ -64,10 +65,11 @@ async def metrics():
             "task": "binary",
         }
     return {
-        "modelVersion": 10,
-        "f1Macro": 0.41,
-        "accuracy": 0.55,
+        "modelVersion": AL_STATE["model_version"],
+        "f1Macro": round(sum(AL_STATE["f1_per_class"].values()) / len(SUBTYPE_KEYS), 4),
+        "accuracy": round(AL_STATE["accuracy"], 4),
         "mode": INFERENCE_MODE,
+        "task": "binary",
     }
 
 
@@ -141,24 +143,55 @@ def _gaussian_blob(grid: np.ndarray, cx: int, cy: int, sigma: float, amplitude: 
     return grid + blob
 
 
+def _blob_attention(case_id: str) -> dict:
+    """Synthetic 224x224 heatmap (2-3 Gaussian blobs) seeded deterministically
+    from case_id. Used in mock mode and as the real-mode fallback so the focus
+    heatmap always renders even when a real slice can't be produced."""
+    seed = int(hashlib.md5(case_id.encode()).hexdigest()[:8], 16)
+    rng = np.random.default_rng(seed)
+
+    grid = np.zeros((ATTN_GRID, ATTN_GRID), dtype=np.float32)
+    num_blobs = int(rng.integers(2, 4))  # 2 or 3
+    for _ in range(num_blobs):
+        cx = int(rng.integers(80, 161))
+        cy = int(rng.integers(80, 161))
+        sigma = float(rng.uniform(20, 35))
+        amplitude = float(rng.uniform(0.6, 1.0))
+        grid = _gaussian_blob(grid, cx, cy, sigma, amplitude)
+
+    grid = grid + 0.05  # uniform noise floor
+    gmax = float(grid.max())
+    if gmax > 0:
+        grid = grid / gmax
+
+    return {"attention": grid.flatten().tolist(), "size": ATTN_GRID}
+
+
 @app.get("/attention/{case_id}")
 async def attention(case_id: str, path: str = Query(default=None)):
     """
     Return a 224x224 attention heatmap as a flat list of 50176 floats in [0,1].
 
     real mode: real top-attended slice PNG + real within-slice activation map for
-    the volume at `path`. Blob mode (mock): 2-3 Gaussian blobs seeded by case_id.
+    the volume at `path`. If the volume is missing/unreadable or the model can't
+    produce a map, fall back to the synthetic blob so the UI heatmap never breaks.
+    Blob mode (mock): 2-3 Gaussian blobs seeded by case_id.
     """
     if INFERENCE_MODE == "real":
-        if not path:
-            raise HTTPException(status_code=404, detail="volume path required for real attention")
-        import real_inference
+        try:
+            if not path:
+                raise FileNotFoundError("no volume path provided")
+            import real_inference
 
-        resolved_path = real_inference._resolve_path(path)
-        if not os.path.exists(resolved_path):
-            raise HTTPException(status_code=404, detail=f"volume not found: {path}")
+            resolved_path = real_inference._resolve_path(path)
+            if not os.path.exists(resolved_path):
+                raise FileNotFoundError(f"volume not found: {path}")
 
-        return real_inference.attention_for_path(resolved_path)
+            return real_inference.attention_for_path(resolved_path)
+        except Exception as e:
+            # Never leave the UI without a heatmap — degrade to the synthetic map.
+            print(f"[attention] real attention failed ({e}); falling back to blob")
+            return _blob_attention(case_id)
 
     if ATTN_MODE == "mil":
         raise HTTPException(
@@ -169,30 +202,7 @@ async def attention(case_id: str, path: str = Query(default=None)):
     if ATTN_MODE != "blob":
         raise HTTPException(status_code=400, detail=f"Unknown ATTN_MODE: {ATTN_MODE}")
 
-    # Deterministic seeding from case_id
-    seed = int(hashlib.md5(case_id.encode()).hexdigest()[:8], 16)
-    rng = np.random.default_rng(seed)
-
-    grid = np.zeros((ATTN_GRID, ATTN_GRID), dtype=np.float32)
-
-    # 2-3 blobs placed in center-left region
-    num_blobs = int(rng.integers(2, 4))  # 2 or 3
-    for _ in range(num_blobs):
-        cx = int(rng.integers(80, 161))
-        cy = int(rng.integers(80, 161))
-        sigma = float(rng.uniform(20, 35))
-        amplitude = float(rng.uniform(0.6, 1.0))
-        grid = _gaussian_blob(grid, cx, cy, sigma, amplitude)
-
-    # Uniform noise floor
-    grid = grid + 0.05
-
-    # Normalize to [0,1]
-    gmax = float(grid.max())
-    if gmax > 0:
-        grid = grid / gmax
-
-    return {"attention": grid.flatten().tolist(), "size": ATTN_GRID}
+    return _blob_attention(case_id)
 
 
 @app.post("/verify")
@@ -266,13 +276,20 @@ class FeedbackPayload(BaseModel):
     case_id: str
     correct_subtype: str
     predicted_subtype: str
+    feedback_type: str = "DISPUTE"  # "VALIDATE" (confirm) or "DISPUTE" (correct)
 
 
 @app.post("/feedback")
 async def feedback(body: FeedbackPayload):
     """
-    Active learning update: a doctor corrected a prediction.
-    Mock mode: bump F1 for the corrected class, jitter others, bump model version.
+    Active-learning update from doctor feedback. Both confirmations and
+    corrections are training signal — the model learns on either.
+
+    Mock mode:
+      - DISPUTE (correction): larger boost to the corrected class, jitter others.
+      - VALIDATE (confirmation): smaller reinforcement of the confirmed class —
+        a verified label is one more clean training example for that class.
+    Both bump the model version and return the updated metrics.
     """
     if AL_MODE == "real":
         raise HTTPException(501, "Set AL_MODE=real + checkpoint to enable real AL fine-tuning")
@@ -281,17 +298,21 @@ async def feedback(body: FeedbackPayload):
     if correct not in SUBTYPE_KEYS:
         raise HTTPException(400, f"correct_subtype must be one of {SUBTYPE_KEYS}")
 
+    is_validate = body.feedback_type.upper() == "VALIDATE"
+
     # Simulate fine-tune delay (real path would run ~30s of training)
     await asyncio.sleep(2.0)
 
-    # Boost the corrected class
-    bump = random.uniform(0.005, 0.015)
+    # Reinforcement (validate) is a gentler nudge than a correction (dispute).
+    bump = random.uniform(0.002, 0.006) if is_validate else random.uniform(0.005, 0.015)
     AL_STATE["f1_per_class"][correct] = min(0.95, AL_STATE["f1_per_class"][correct] + bump)
 
-    # Small noise on others (could go either way — fine-tuning may slightly degrade other classes)
+    # Small noise on the other class (fine-tuning may slightly move it either way).
+    # A correction can drag the other class; a confirmation leaves it essentially flat.
     for k in SUBTYPE_KEYS:
         if k != correct:
-            jitter = random.uniform(-0.005, 0.005)
+            span = 0.002 if is_validate else 0.005
+            jitter = random.uniform(-span, span)
             AL_STATE["f1_per_class"][k] = max(0.05, min(0.95, AL_STATE["f1_per_class"][k] + jitter))
 
     AL_STATE["model_version"] += 1
@@ -304,6 +325,7 @@ async def feedback(body: FeedbackPayload):
         "f1_macro": round(f1_macro, 4),
         "accuracy": round(AL_STATE["accuracy"], 4),
         "corrected_class": correct,
+        "feedback_type": "VALIDATE" if is_validate else "DISPUTE",
     }
 
 

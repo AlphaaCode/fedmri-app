@@ -31,19 +31,26 @@ let AlService = AlService_1 = class AlService {
      * Fire-and-forget AL fine-tune trigger after a doctor disputes a prediction.
      * Same pattern as FL round trigger — returns immediately, work happens async.
      */
-    triggerUpdate(caseId, correctSubtype, predictedSubtype, feedbackId) {
+    triggerUpdate(caseId, correctSubtype, predictedSubtype, feedbackId, kind = 'DISPUTE') {
         Promise.resolve().then(async () => {
             try {
                 const resp = await (0, rxjs_1.firstValueFrom)(this.http.post(`${this.mlServiceUrl}/feedback`, {
                     case_id: caseId,
                     correct_subtype: correctSubtype,
                     predicted_subtype: predictedSubtype,
+                    feedback_type: kind,
                 }));
                 const data = resp.data;
-                const newVersion = data.model_version;
                 const f1Macro = data.f1_macro;
                 const f1PerClass = data.f1_per_class;
                 const accuracy = data.accuracy;
+                // Derive the next version from our own metrics history rather than the
+                // ml-service's in-memory counter (which resets on restart and would
+                // collide with the unique modelVersion column).
+                const top = await this.prisma.modelMetrics.findFirst({
+                    orderBy: { modelVersion: 'desc' },
+                });
+                const newVersion = (top?.modelVersion ?? 1) + 1;
                 await this.prisma.feedback.update({
                     where: { id: feedbackId },
                     data: { newModelVersion: newVersion },
@@ -59,21 +66,17 @@ let AlService = AlService_1 = class AlService {
                         strategy: 'AL',
                     },
                 });
-                // F1 delta vs the previous best version
-                const prev = await this.prisma.modelMetrics.findFirst({
-                    where: { modelVersion: { lt: newVersion } },
-                    orderBy: { modelVersion: 'desc' },
-                });
-                const prevF1 = prev?.f1Macro ?? f1Macro;
+                const prevF1 = top?.f1Macro ?? f1Macro;
                 const f1Delta = Number((f1Macro - prevF1).toFixed(4));
                 this.gateway.server.to('doctors').emit('model:updated', {
                     modelVersion: newVersion,
                     f1Macro,
                     f1Delta,
                     correctedSubtype: correctSubtype,
+                    kind,
                     caseId,
                 });
-                this.logger.log(`AL update: model v${newVersion}, F1 ${f1Macro.toFixed(4)} (Δ ${f1Delta >= 0 ? '+' : ''}${f1Delta.toFixed(4)})`);
+                this.logger.log(`AL ${kind}: model v${newVersion}, F1 ${f1Macro.toFixed(4)} (Δ ${f1Delta >= 0 ? '+' : ''}${f1Delta.toFixed(4)})`);
             }
             catch (err) {
                 this.logger.error(`AL trigger failed: ${err?.message}`);
