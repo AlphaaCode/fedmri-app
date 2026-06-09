@@ -1,6 +1,17 @@
 import Constants from "expo-constants";
 import { Platform } from "react-native";
+import { uploadAsync, FileSystemUploadType } from "expo-file-system/legacy";
 import { getItem, setItem, deleteItem } from "./storage";
+
+/** MIME type from a filename — images get their real type; MRI volumes
+ * (.mha/.mhd/.nii/.nii.gz/.raw) and unknowns go as binary; DICOM is tagged. */
+function mimeForName(name: string): string {
+  const n = (name || "").toLowerCase();
+  if (n.endsWith(".png")) return "image/png";
+  if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
+  if (n.endsWith(".dcm")) return "application/dicom";
+  return "application/octet-stream";
+}
 
 // Default from app.json — used until the user overrides it at runtime
 const DEFAULT_API_URL: string =
@@ -130,17 +141,52 @@ export async function apiVerifyImage(uri: string, filename: string): Promise<{ v
   return res.json();
 }
 
-export async function apiUploadImage(uri: string, filename: string): Promise<any> {
+/**
+ * Upload any scan file (image OR MRI volume: .mha/.nii/.dcm) to /cases.
+ * Native uses expo-file-system's multipart uploadAsync, which streams the file
+ * by URI through the native networking stack — reliable for binary volumes and
+ * free of React Native's "unsupported FormDataPart implementation" error.
+ */
+export async function apiUploadFile(uri: string, filename: string): Promise<any> {
   const t = await getToken();
-  const form = await buildFileForm(uri, filename);
-  const res = await fetch(`${getApiUrl()}/cases`, {
-    method: "POST",
-    headers: t ? { Authorization: `Bearer ${t}` } : {},
-    body: form as any,
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err as any).message || `Upload failed (${res.status})`);
+  const url = `${getApiUrl()}/cases`;
+
+  if (Platform.OS === "web") {
+    // Web has no native FS upload — use a real multipart fetch with a Blob.
+    const form = await buildFileForm(uri, filename);
+    const res = await fetch(url, {
+      method: "POST",
+      headers: t ? { Authorization: `Bearer ${t}` } : {},
+      body: form as any,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error((err as any).message || `Upload failed (${res.status})`);
+    }
+    return res.json();
   }
-  return res.json();
+
+  const res = await uploadAsync(url, uri, {
+    httpMethod: "POST",
+    uploadType: FileSystemUploadType.MULTIPART,
+    fieldName: "file",
+    mimeType: mimeForName(filename),
+    headers: {
+      Accept: "application/json",
+      ...(t ? { Authorization: `Bearer ${t}` } : {}),
+    },
+  });
+  if (res.status >= 400) {
+    let detail = `Upload failed (${res.status})`;
+    try { detail = (JSON.parse(res.body) as any).message || detail; } catch {}
+    if (res.status === 401) {
+      await clearToken();
+      throw new Error("Session expired — please sign in again");
+    }
+    throw new Error(detail);
+  }
+  try { return JSON.parse(res.body); } catch { return {}; }
 }
+
+// Back-compat alias (older call sites)
+export const apiUploadImage = apiUploadFile;

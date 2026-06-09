@@ -3,28 +3,61 @@ import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Image, Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { Plus, UploadCloud, Crosshair } from "lucide-react-native";
+import * as DocumentPicker from "expo-document-picker";
+import { Plus, UploadCloud, Crosshair, Camera, Images as ImagesIcon, FileUp, FileBox } from "lucide-react-native";
 import { colors, subtypeColor, subtypePlain, isBinarySubtype } from "../lib/theme";
-import { apiUploadImage } from "../lib/api";
+import { apiUploadFile } from "../lib/api";
 import { AppHeader, Card, Pill, SectionLabel, ProbBar } from "../components/ui";
 
+const IMAGE_EXT = /\.(png|jpe?g|heic|heif|webp|gif|bmp)$/i;
+
 export function ScanScreen({ navigation }: any) {
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [fileUri, setFileUri] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string>("");
+  const [isImage, setIsImage] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function pick() {
+  function select(uri: string, name: string, image: boolean) {
+    setFileUri(uri);
+    setFileName(name);
+    setIsImage(image);
+    setResult(null);
+    setError(null);
+    upload(uri, name);
+  }
+
+  async function takePhoto() {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) { Alert.alert("Permission needed", "FedMRI needs camera access to capture a scan."); return; }
+    const r = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.9 });
+    if (!r.canceled && r.assets?.[0]) select(r.assets[0].uri, `photo-${Date.now()}.jpg`, true);
+  }
+
+  async function pickGallery() {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) { Alert.alert("Permission needed", "FedMRI needs gallery access."); return; }
     const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.9 });
-    if (!r.canceled && r.assets?.[0]) { setImageUri(r.assets[0].uri); setResult(null); setError(null); upload(r.assets[0].uri); }
+    if (!r.canceled && r.assets?.[0]) {
+      const a = r.assets[0];
+      select(a.uri, a.fileName || `scan-${Date.now()}.jpg`, true);
+    }
   }
 
-  async function upload(uri: string) {
+  async function pickFile() {
+    const r = await DocumentPicker.getDocumentAsync({ type: ["*/*"], copyToCacheDirectory: true, multiple: false });
+    if (r.canceled || !r.assets?.[0]) return;
+    const a = r.assets[0];
+    const name = a.name || `volume-${Date.now()}.mha`;
+    const image = IMAGE_EXT.test(name) || (a.mimeType?.startsWith("image/") ?? false);
+    select(a.uri, name, image);
+  }
+
+  async function upload(uri: string, name: string) {
     setUploading(true); setError(null);
     try {
-      const data = await apiUploadImage(uri, `scan-${Date.now()}.jpg`);
+      const data = await apiUploadFile(uri, name);
       setResult(data);
     } catch (e: any) {
       setError(e?.message || "Analysis failed");
@@ -33,7 +66,7 @@ export function ScanScreen({ navigation }: any) {
     }
   }
 
-  function reset() { setImageUri(null); setResult(null); setError(null); }
+  function reset() { setFileUri(null); setFileName(""); setIsImage(true); setResult(null); setError(null); }
 
   const subtype = result?.predictedSubtype as string | undefined;
   const sColor = subtype ? subtypeColor[subtype] ?? colors.teal : colors.teal;
@@ -55,7 +88,7 @@ export function ScanScreen({ navigation }: any) {
         <Text style={s.h1}>Scan Analysis</Text>
         <View style={s.metaRow}>
           <Pill label="Node Alpha-7 Active" />
-          {(imageUri || result) && (
+          {(fileUri || result) && (
             <TouchableOpacity onPress={reset} style={s.newBtn} activeOpacity={0.8}>
               <Plus size={14} color={colors.teal} />
               <Text style={s.newBtnText}>New Analysis</Text>
@@ -63,27 +96,44 @@ export function ScanScreen({ navigation }: any) {
           )}
         </View>
 
-        {/* Upload zone */}
-        {!imageUri && !result && (
-          <TouchableOpacity style={s.drop} onPress={pick} activeOpacity={0.85}>
-            <View style={s.dropIcon}><UploadCloud size={26} color={colors.teal} /></View>
-            <Text style={s.dropTitle}>Drop MRI · DICOM / NIfTI</Text>
-            <Text style={s.dropSub}>Federated processing ensures local data privacy. File remains on-device.</Text>
-          </TouchableOpacity>
+        {/* Upload zone — three sources */}
+        {!fileUri && !result && (
+          <>
+            <View style={s.drop}>
+              <View style={s.dropIcon}><UploadCloud size={26} color={colors.teal} /></View>
+              <Text style={s.dropTitle}>Add an MRI scan</Text>
+              <Text style={s.dropSub}>Take a photo, choose from your gallery, or pick a file (.mha, .nii, DICOM). Processing stays on-device.</Text>
+            </View>
+            <View style={s.srcRow}>
+              <SourceBtn icon={<Camera size={18} color={colors.teal} />} label="Take Photo" onPress={takePhoto} />
+              <SourceBtn icon={<ImagesIcon size={18} color={colors.teal} />} label="Gallery" onPress={pickGallery} />
+              <SourceBtn icon={<FileUp size={18} color={colors.teal} />} label="Pick File" onPress={pickFile} />
+            </View>
+          </>
         )}
 
-        {/* Attention map slice view */}
-        {imageUri && (
-          <Card style={{ padding: 0, overflow: "hidden" }}>
-            <View style={s.sliceHeader}>
-              <Crosshair size={13} color={colors.teal} />
-              <Text style={s.sliceTitle}>Attention Map · Slice View</Text>
-            </View>
-            <View style={s.sliceImgWrap}>
-              <Image source={{ uri: imageUri }} style={s.sliceImg} resizeMode="cover" />
-              <View style={s.crossV} /><View style={s.crossH} />
-            </View>
-          </Card>
+        {/* Preview — image slice OR volume file chip */}
+        {fileUri && (
+          isImage ? (
+            <Card style={{ padding: 0, overflow: "hidden" }}>
+              <View style={s.sliceHeader}>
+                <Crosshair size={13} color={colors.teal} />
+                <Text style={s.sliceTitle}>Attention Map · Slice View</Text>
+              </View>
+              <View style={s.sliceImgWrap}>
+                <Image source={{ uri: fileUri }} style={s.sliceImg} resizeMode="cover" />
+                <View style={s.crossV} /><View style={s.crossH} />
+              </View>
+            </Card>
+          ) : (
+            <Card style={s.fileChip}>
+              <View style={s.fileChipIcon}><FileBox size={22} color={colors.teal} /></View>
+              <View style={{ flex: 1 }}>
+                <Text style={s.fileChipName} numberOfLines={1}>{fileName}</Text>
+                <Text style={s.fileChipSub}>MRI volume ready for analysis</Text>
+              </View>
+            </Card>
+          )
         )}
 
         {uploading && (
@@ -132,6 +182,15 @@ export function ScanScreen({ navigation }: any) {
   );
 }
 
+function SourceBtn({ icon, label, onPress }: { icon: React.ReactNode; label: string; onPress: () => void }) {
+  return (
+    <TouchableOpacity style={s.srcBtn} onPress={onPress} activeOpacity={0.85}>
+      {icon}
+      <Text style={s.srcBtnText}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
 function Meta({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
   return (
     <View style={s.metaLine}>
@@ -153,6 +212,15 @@ const s = StyleSheet.create({
   dropIcon: { width: 58, height: 58, borderRadius: 16, backgroundColor: colors.bgCard, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.border },
   dropTitle: { color: colors.textPrimary, fontSize: 15, fontWeight: "700" },
   dropSub: { color: colors.textSecondary, fontSize: 11, textAlign: "center", lineHeight: 16, paddingHorizontal: 8 },
+
+  srcRow: { flexDirection: "row", gap: 10, marginTop: 12 },
+  srcBtn: { flex: 1, alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 14, borderRadius: 14, backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.border },
+  srcBtnText: { color: colors.textPrimary, fontSize: 12, fontWeight: "600" },
+
+  fileChip: { flexDirection: "row", alignItems: "center", gap: 12 },
+  fileChipIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: colors.tealGlow, borderWidth: 1, borderColor: colors.teal + "40" },
+  fileChipName: { color: colors.textPrimary, fontSize: 14, fontWeight: "700" },
+  fileChipSub: { color: colors.textSecondary, fontSize: 11, marginTop: 2 },
 
   sliceHeader: { flexDirection: "row", alignItems: "center", gap: 6, padding: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
   sliceTitle: { color: colors.textPrimary, fontSize: 12, fontWeight: "600" },
