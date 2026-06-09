@@ -73,7 +73,7 @@
       ]
     ],
     "extra": {
-      "apiUrl": "http://192.168.100.29:3001",
+      "apiUrl": "http://192.168.100.39:3001",
       "eas": {
         "projectId": "460eec42-89ad-4624-b5b2-4d8da0d0be85"
       }
