@@ -3,3 +3,6 @@ node_modules
 
 # Stray 3D asset dump (not part of the app)
 3D/
+
+# brainstorming visual companion artifacts
+.superpowers/

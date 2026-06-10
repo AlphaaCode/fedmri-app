@@ -22,9 +22,24 @@ let UsersService = class UsersService {
         });
     }
     async updateMe(id, data) {
+        // Whitelist: profile fields a user may set on themselves — never role,
+        // passwordHash, hospitalId, etc. (mass-assignment guard).
+        const updatable = {};
+        if (typeof data?.name === 'string')
+            updatable.name = data.name;
+        if (typeof data?.onboardingDone === 'boolean')
+            updatable.onboardingDone = data.onboardingDone;
         return this.prisma.user.update({
             where: { id },
-            data,
+            data: updatable,
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                role: true,
+                hospitalId: true,
+                onboardingDone: true,
+            },
         });
     }
 };

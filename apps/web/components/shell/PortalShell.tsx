@@ -7,6 +7,10 @@ import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { usePortalChrome } from "@/lib/portal-chrome";
+import { cn } from "@/lib/cn";
+import { pageEnter, animateInProps } from "@/lib/anim";
+import { AuroraBackground } from "@/components/ui/AuroraBackground";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export interface NavItem { href: string; label: string; icon: LucideIcon; }
 export interface FooterItem { label: string; icon: LucideIcon; href?: string; onClick?: () => void; }
@@ -63,7 +67,8 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
 
   return (
     <div className="min-h-screen flex">
-      <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+      <AuroraBackground />
+      <aside className="glass hidden lg:flex w-60 shrink-0 flex-col border-r relative z-10" style={{ borderColor: "var(--border)" }}>
         <div className="px-4 py-4 flex items-center gap-3 border-b" style={{ borderColor: "var(--border)" }}>
           <div className="flex flex-col gap-1 min-w-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -79,7 +84,7 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
 
         {primaryAction && (
           <div className="px-4 pt-4">
-            <Link href={primaryAction.href} className="flex items-center justify-center gap-2 rounded-lg text-sm font-semibold py-2.5 w-full" style={{ background: "var(--teal-dim)", color: "#0d1117" }}>
+            <Link href={primaryAction.href} className="btn-press flex items-center justify-center gap-2 rounded-lg text-sm font-semibold py-2.5 w-full" style={{ background: "var(--teal-dim)", color: "#0d1117" }}>
               {primaryAction.icon && <primaryAction.icon size={16} />}
               {primaryAction.label}
             </Link>
@@ -94,15 +99,19 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors"
-                style={{
-                  background: active ? "var(--teal-glow)" : "transparent",
-                  color: active ? "var(--teal)" : "var(--text-secondary)",
-                  border: "1px solid " + (active ? "#2dd4bf40" : "transparent"),
-                }}
+                className="relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors"
+                style={{ color: active ? "var(--teal)" : "var(--text-secondary)" }}
               >
-                <Icon size={16} />
-                {item.label}
+                {active && (
+                  <motion.span
+                    layoutId="nav-pill"
+                    className="absolute inset-0 rounded-lg"
+                    style={{ background: "var(--teal-glow)", border: "1px solid #2dd4bf40" }}
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                  />
+                )}
+                <Icon size={16} className="relative z-10" />
+                <span className="relative z-10">{item.label}</span>
               </Link>
             );
           })}
@@ -114,12 +123,17 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
               const Icon = item.icon;
               const active = item.href != null && item.href === activeHref;
               return item.href ? (
-                <Link key={item.label} href={item.href} className={footerItemClass} style={{
-                  background: active ? "var(--teal-glow)" : "transparent",
-                  color: active ? "var(--teal)" : "var(--text-secondary)",
-                  border: "1px solid " + (active ? "#2dd4bf40" : "transparent"),
-                }}>
-                  <Icon size={16} />{item.label}
+                <Link key={item.label} href={item.href} className={cn(footerItemClass, "relative")}
+                  style={{ color: active ? "var(--teal)" : "var(--text-secondary)" }}>
+                  {active && (
+                    <motion.span
+                      layoutId="nav-pill"
+                      className="absolute inset-0 rounded-lg"
+                      style={{ background: "var(--teal-glow)", border: "1px solid #2dd4bf40" }}
+                      transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                    />
+                  )}
+                  <Icon size={16} className="relative z-10" /><span className="relative z-10">{item.label}</span>
                 </Link>
               ) : (
                 <button key={item.label} type="button" onClick={item.onClick} className={footerItemClass} style={{ color: "var(--text-secondary)" }}>
@@ -131,20 +145,20 @@ export function PortalShell({ identity, nav, footerNav, primaryAction, headerSta
         )}
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 shrink-0 border-b px-5 flex items-center justify-between" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+      <div className="flex-1 flex flex-col min-w-0 relative z-10">
+        <header className="glass h-14 shrink-0 border-b px-5 flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
           <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{chromeTitle}</div>
           <div className="flex items-center gap-4">
             {headerStatus}
             <div className="text-xs" style={{ color: "var(--text-secondary)" }}>{user?.name}</div>
+            <ThemeToggle />
           </div>
         </header>
 
         <motion.main
           key={pathname}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          variants={pageEnter}
+          {...animateInProps}
           className="flex-1 w-full p-5 md:p-6 overflow-y-auto"
         >
           {children}

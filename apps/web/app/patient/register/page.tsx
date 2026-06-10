@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/lib/auth-store";
+import { AuroraBackground } from "@/components/ui/AuroraBackground";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 async function apiRegister(email: string, password: string, name: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
@@ -87,8 +89,10 @@ export default function PatientRegisterPage() {
 
   return (
     <main className="min-h-screen flex">
+      <AuroraBackground />
+      <div className="absolute top-5 right-5 z-20"><ThemeToggle /></div>
       {/* Left — reassurance panel */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 p-10 relative overflow-hidden"
+      <div className="hidden lg:flex flex-col justify-between w-1/2 p-10 relative z-10 overflow-hidden"
         style={{ background: "linear-gradient(135deg, #050a0e 0%, #0d1117 60%, #0a1a1a 100%)" }}>
         <div className="absolute inset-0 pointer-events-none" style={{
           backgroundImage: "linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px)",
@@ -128,8 +132,8 @@ export default function PatientRegisterPage() {
         </p>
       </div>
 
-      {/* Right — form panel */}
-      <div className="flex-1 flex items-center justify-center p-6" style={{ background: "var(--bg-base)" }}>
+      {/* Right — form panel (transparent: the fixed aurora layer reads through) */}
+      <div className="flex-1 flex items-center justify-center p-6 relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
           className="w-full max-w-sm">
           <div className="lg:hidden mb-8">
@@ -180,7 +184,7 @@ export default function PatientRegisterPage() {
             )}
 
             <button type="submit" disabled={loading || !agreed}
-              className="w-full rounded-lg text-sm font-semibold py-2.5 flex items-center justify-center gap-2 disabled:opacity-50 transition-opacity"
+              className="btn-press w-full rounded-lg text-sm font-semibold py-2.5 flex items-center justify-center gap-2 disabled:opacity-50"
               style={{ background: "var(--teal-dim)", color: "#0d1117" }}>
               {loading ? "Creating account…" : (<>Create Account <span>→</span></>)}
             </button>

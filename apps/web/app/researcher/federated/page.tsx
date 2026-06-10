@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   LineChart,
   Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   Tooltip,
@@ -11,9 +13,11 @@ import {
   Legend,
   CartesianGrid,
 } from "recharts";
+import { motion, AnimatePresence } from "framer-motion";
 import { io, Socket } from "socket.io-client";
 import { usePortalTitle } from "@/lib/use-portal-title";
 import { getFlExperiments, runFlTest, type FlExperiment } from "@/lib/researcher-api";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { API_URL } from "@/lib/api";
 
 const STRAT_COLOR: Record<string, string> = {
@@ -22,6 +26,9 @@ const STRAT_COLOR: Record<string, string> = {
   scaffold: "#a78bfa",
   fedscrt: "#2dd4bf",
 };
+
+const HOSPITALS = ["Hospital A", "Hospital B", "Hospital C"];
+const TEST_ROUNDS = 10;
 
 export default function FederatedPage() {
   usePortalTitle("Federated Learning");
@@ -75,16 +82,21 @@ export default function FederatedPage() {
     setLive([]);
     setRunning(true);
     try {
-      await runFlTest(liveStrategy, 10);
+      await runFlTest(liveStrategy, TEST_ROUNDS);
     } catch {
       setRunning(false);
     }
   }
 
+  const lastF1 = live.length ? live[live.length - 1].f1 : 0;
+  const bestF1 = live.length ? Math.max(...live.map((l) => l.f1)) : 0;
+  const deltaF1 = live.length > 1 ? lastF1 - live[0].f1 : 0;
+  const finished = !running && live.length > 0;
+
   return (
     <div className="space-y-4">
       {/* Objective card */}
-      <div className="rounded-xl border p-5" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+      <div className="glass rounded-xl border p-5" style={{ borderColor: "var(--border)" }}>
         <div className="text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-secondary)" }}>
           Optimization objective
         </div>
@@ -102,7 +114,7 @@ export default function FederatedPage() {
       </div>
 
       {/* Real convergence */}
-      <div className="rounded-xl border p-5" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+      <div className="glass rounded-xl border p-5" style={{ borderColor: "var(--border)" }}>
         <div className="flex items-center justify-between mb-3">
           <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
             Real convergence (per-round macro-F1)
@@ -112,7 +124,7 @@ export default function FederatedPage() {
               <button
                 key={a}
                 onClick={() => setAlpha(a)}
-                className="px-2.5 py-1 rounded-lg"
+                className="btn-press px-2.5 py-1 rounded-lg"
                 style={{
                   background: alpha === a ? "var(--teal-glow)" : "var(--bg-card2)",
                   color: alpha === a ? "var(--teal)" : "var(--text-secondary)",
@@ -133,16 +145,16 @@ export default function FederatedPage() {
             <div style={{ width: "100%", height: 260 }}>
               <ResponsiveContainer>
                 <LineChart data={curves.rows}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="round" stroke="var(--text-secondary)" fontSize={11} />
-                  <YAxis domain={[yMin, 1]} stroke="var(--text-secondary)" fontSize={11} tickFormatter={(v: number) => v.toFixed(2)} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                  <XAxis dataKey="round" stroke="var(--chart-axis)" fontSize={11} />
+                  <YAxis domain={[yMin, 1]} stroke="var(--chart-axis)" fontSize={11} tickFormatter={(v: number) => v.toFixed(2)} />
                   <Tooltip
-                    contentStyle={{ background: "var(--bg-card2)", border: "1px solid var(--border)" }}
+                    contentStyle={{ background: "var(--chart-tooltip-bg)", border: "1px solid var(--border)" }}
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     formatter={(v: any, name: any) => [typeof v === "number" ? v.toFixed(4) : String(v ?? ""), name ?? ""]}
                   />
                   <Legend />
-                  {curves.strategies.map((s) => {
+                  {curves.strategies.map((s, i) => {
                     const pts = curves.rows.filter((r) => r[s] !== undefined).length;
                     return (
                       <Line
@@ -155,6 +167,7 @@ export default function FederatedPage() {
                         dot={pts <= 1 ? { r: 5, fill: STRAT_COLOR[s] ?? "#888" } : false}
                         isAnimationActive
                         animationDuration={800}
+                        animationBegin={i * 200}
                         animationEasing="ease-out"
                       />
                     );
@@ -186,17 +199,27 @@ export default function FederatedPage() {
         </table>
       </div>
 
-      {/* Live FL test */}
-      <div className="rounded-xl border p-5" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Run a live federated test
+      {/* ── Live FL test — demo theater ─────────────────────────────────── */}
+      <div
+        className={`glass rounded-xl border p-6 ${running ? "hero-glow glow-border" : ""}`}
+        style={{ borderColor: "var(--border)" }}
+      >
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
+          <div>
+            <div className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>
+              Live federated training
+            </div>
+            <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+              3 hospitals train locally on frozen-backbone features — only head weights travel.{" "}
+              <span style={{ color: "var(--teal)" }}>0 bytes of raw data</span>.
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex items-center gap-2">
             <select
               value={liveStrategy}
               onChange={(e) => setLiveStrategy(e.target.value as "fedscrt" | "fedavg")}
-              className="rounded-lg px-2 py-1"
+              disabled={running}
+              className="rounded-lg px-3 py-2 text-sm"
               style={{ background: "var(--bg-card2)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
             >
               <option value="fedscrt">FedSCRT</option>
@@ -205,45 +228,133 @@ export default function FederatedPage() {
             <button
               onClick={startTest}
               disabled={running}
-              className="px-3 py-1.5 rounded-lg font-semibold disabled:opacity-50"
-              style={{ background: "var(--teal-glow)", color: "var(--teal)", border: "1px solid #2dd4bf40" }}
+              className={`btn-press px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-60 ${running ? "pulse-glow" : ""}`}
+              style={{ background: "var(--teal-dim)", color: "#0d1117" }}
             >
-              {running ? "Training…" : "Run FL test"}
+              {running ? "Training…" : "▶ Run FL test"}
             </button>
           </div>
         </div>
-        <div className="text-xs mb-3 space-y-1" style={{ color: "var(--text-secondary)" }}>
-          <p>
-            Each hospital trains a classifier head on its own <strong style={{ color: "var(--teal)" }}>frozen</strong> backbone
-            features; the server aggregates using the selected strategy. Only head weights move —{" "}
-            <span style={{ color: "var(--teal)" }}>0 bytes of raw data</span>.
-          </p>
-          <p style={{ opacity: 0.75 }}>
-            Results use pre-extracted synthetic features and are reproducible per strategy.{" "}
-            <strong>FedSCRT</strong> freezes the backbone entirely; <strong>FedAvg</strong> averages the full head.
-            FedSCRT typically achieves higher F1 on non-IID data.
-          </p>
-        </div>
-        <div style={{ width: "100%", height: 220 }}>
-          <ResponsiveContainer>
-            <LineChart data={live}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="round" stroke="var(--text-secondary)" fontSize={11} />
-              <YAxis domain={[0, 1]} stroke="var(--text-secondary)" fontSize={11} />
-              <Tooltip contentStyle={{ background: "var(--bg-card2)", border: "1px solid var(--border)" }} />
-              <Line
-                type="monotone"
-                dataKey="f1"
-                stroke="var(--teal)"
-                dot={{ r: 3, fill: "var(--teal)" }}
-                strokeWidth={2.5}
-                isAnimationActive
-                animationDuration={400}
-                name="macro-F1"
+
+        {/* Hospital activity row */}
+        <div className="flex items-center gap-2 mt-4 flex-wrap">
+          {HOSPITALS.map((h, i) => (
+            <div
+              key={h}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all duration-500 ${running ? "pulse-glow" : ""}`}
+              style={{
+                background: running ? "var(--teal-glow)" : "var(--bg-card2)",
+                color: running ? "var(--teal)" : "var(--text-secondary)",
+                border: `1px solid ${running ? "#2dd4bf50" : "var(--border)"}`,
+                animationDelay: `${i * 0.4}s`,
+              }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  background: running ? "var(--teal)" : "var(--text-secondary)",
+                  // single shorthand (delay folded in) — mixing `animation` with a
+                  // separate `animationDelay` triggers a React inline-style warning
+                  animation: running ? `node-pulse 1.4s ease ${i * 0.4}s infinite` : "none",
+                }}
               />
-            </LineChart>
-          </ResponsiveContainer>
+              {h}
+              <span style={{ opacity: 0.7 }}>{running ? "training head…" : "idle"}</span>
+            </div>
+          ))}
+          <div className="ml-auto flex items-center gap-5 text-xs" style={{ color: "var(--text-secondary)" }}>
+            <span>
+              Round{" "}
+              <span className="text-base font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
+                <AnimatedNumber value={live.length} duration={0.35} />
+              </span>
+              <span style={{ opacity: 0.6 }}>/{TEST_ROUNDS}</span>
+            </span>
+            <span>
+              macro-F1{" "}
+              <span className="text-base font-bold tabular-nums" style={{ color: "var(--teal)" }}>
+                <AnimatedNumber value={lastF1} decimals={3} duration={0.35} />
+              </span>
+            </span>
+            <span>
+              best{" "}
+              <span className="text-base font-bold tabular-nums" style={{ color: "var(--blue-accent)" }}>
+                <AnimatedNumber value={bestF1} decimals={3} duration={0.35} />
+              </span>
+            </span>
+          </div>
         </div>
+
+        {/* Big live chart */}
+        <div className="mt-4" style={{ width: "100%", height: 380 }}>
+          {live.length === 0 && !running ? (
+            <div
+              className="h-full rounded-lg border border-dashed flex flex-col items-center justify-center gap-2 text-sm"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+            >
+              <span className="float-y text-2xl" aria-hidden>⚡</span>
+              Run a test to stream live training rounds from the coordinator
+            </div>
+          ) : (
+            <ResponsiveContainer>
+              <AreaChart data={live} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
+                <defs>
+                  <linearGradient id="liveF1Grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--teal)" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="var(--teal)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                <XAxis dataKey="round" stroke="var(--chart-axis)" fontSize={11} domain={[1, TEST_ROUNDS]} type="number" allowDecimals={false} />
+                <YAxis domain={[0, 1]} stroke="var(--chart-axis)" fontSize={11} tickFormatter={(v: number) => v.toFixed(2)} />
+                <Tooltip
+                  contentStyle={{ background: "var(--chart-tooltip-bg)", border: "1px solid var(--border)" }}
+                  labelFormatter={(r) => `Round ${r}`}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  formatter={(v: any) => [typeof v === "number" ? v.toFixed(4) : v, "macro-F1"]}
+                />
+                {/* No per-point redraw animation — rounds stream in fast over WS */}
+                <Area
+                  type="monotone"
+                  dataKey="f1"
+                  stroke="var(--teal)"
+                  strokeWidth={2.5}
+                  fill="url(#liveF1Grad)"
+                  dot={{ r: 4, fill: "var(--teal)", strokeWidth: 0 }}
+                  isAnimationActive={false}
+                  name="macro-F1"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Completion banner */}
+        <AnimatePresence>
+          {finished && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-4 rounded-lg px-4 py-3 flex items-center justify-between text-sm"
+              style={{ background: "var(--teal-glow)", border: "1px solid #2dd4bf50", color: "var(--teal)" }}
+            >
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full" style={{ background: "var(--teal)" }} />
+                Federated test complete — {liveStrategy === "fedscrt" ? "FedSCRT" : "FedAvg"} converged in {live.length} rounds
+              </span>
+              <span className="tabular-nums font-semibold">
+                final F1 {lastF1.toFixed(3)}
+                {deltaF1 !== 0 && (
+                  <span style={{ color: deltaF1 >= 0 ? "var(--teal)" : "#fb7185" }}>
+                    {" "}({deltaF1 >= 0 ? "▲ +" : "▼ "}{deltaF1.toFixed(3)} vs round 1)
+                  </span>
+                )}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

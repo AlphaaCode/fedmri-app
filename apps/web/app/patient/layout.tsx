@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { LayoutDashboard, ScanLine, MessageSquare, FileText, Settings, HelpCircle, LogOut } from "lucide-react";
 import { PortalShell } from "@/components/shell/PortalShell";
 import { InsightsModal } from "@/components/patient/InsightsModal";
@@ -9,6 +9,7 @@ import { useAuthStore } from "@/lib/auth-store";
 
 export default function PatientLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const clear = useAuthStore((s) => s.clear);
   const user = useAuthStore((s) => s.user);
   const [showInsights, setShowInsights] = useState(false);
@@ -23,6 +24,11 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
     }, 300);
     return () => clearTimeout(t);
   }, [user]);
+
+  // /patient/register is a public page — its audience isn't logged in yet, so it
+  // must not be wrapped in the authenticated PortalShell (whose guard redirects
+  // visitors without a token straight to /login).
+  if (pathname === "/patient/register") return <>{children}</>;
 
   return (
     <>

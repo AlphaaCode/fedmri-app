@@ -15,7 +15,7 @@ export function Button({ variant = "primary", className, style, ...props }:
   ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
   return (
     <button
-      className={cn("rounded-lg text-sm font-semibold px-4 py-2 transition-opacity disabled:opacity-50", className)}
+      className={cn("btn-press rounded-lg text-sm font-semibold px-4 py-2 disabled:opacity-50", className)}
       style={{ ...VARIANT_STYLE[variant], ...style }}
       {...props}
     />

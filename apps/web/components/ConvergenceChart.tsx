@@ -41,18 +41,19 @@ export function ConvergenceChart({ data }: Props) {
   return (
     <ResponsiveContainer width="100%" height={260}>
       <LineChart data={merged} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
-        <CartesianGrid stroke="#30363d" strokeDasharray="3 3" />
-        <XAxis dataKey="round" stroke="#8b949e" fontSize={11} label={{ value: "FL round", position: "insideBottom", offset: -2, fill: "#8b949e", fontSize: 11 }} />
-        <YAxis stroke="#8b949e" fontSize={11} domain={[0.2, 0.8]} label={{ value: "F1 macro", angle: -90, position: "insideLeft", offset: 14, fill: "#8b949e", fontSize: 11 }} tickFormatter={(v: number) => v.toFixed(2)} />
+        <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 3" />
+        <XAxis dataKey="round" stroke="var(--chart-axis)" fontSize={11} label={{ value: "FL round", position: "insideBottom", offset: -2, fill: "var(--chart-axis)", fontSize: 11 }} />
+        <YAxis stroke="var(--chart-axis)" fontSize={11} domain={[0.2, 0.8]} label={{ value: "F1 macro", angle: -90, position: "insideLeft", offset: 14, fill: "var(--chart-axis)", fontSize: 11 }} tickFormatter={(v: number) => v.toFixed(2)} />
         <Tooltip
-          contentStyle={{ background: "#161b22", border: "1px solid #30363d", borderRadius: 6, fontSize: 12, color: "#e6edf3" }}
-          labelStyle={{ color: "#8b949e" }}
+          contentStyle={{ background: "var(--chart-tooltip-bg)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12, color: "var(--text-primary)" }}
+          labelStyle={{ color: "var(--text-secondary)" }}
           formatter={(v: any) => [typeof v === "number" ? v.toFixed(4) : v]}
         />
         <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
-        <Line type="monotone" dataKey="Centralized" stroke={COLOR.Centralized} strokeWidth={2} strokeDasharray="6 4" dot={false} isAnimationActive animationDuration={600} />
-        <Line type="monotone" dataKey="FedAvg" stroke={COLOR.FedAvg} strokeWidth={2} dot={{ r: 3 }} isAnimationActive animationDuration={700} />
-        <Line type="monotone" dataKey="FedSCRT" stroke={COLOR.FedSCRT} strokeWidth={2.5} dot={{ r: 4 }} isAnimationActive animationDuration={800} />
+        {/* Sequential draw-on: baseline first, then FedAvg, then the hero line */}
+        <Line type="monotone" dataKey="Centralized" stroke={COLOR.Centralized} strokeWidth={2} strokeDasharray="6 4" dot={false} isAnimationActive animationDuration={600} animationEasing="ease-out" />
+        <Line type="monotone" dataKey="FedAvg" stroke={COLOR.FedAvg} strokeWidth={2} dot={{ r: 3 }} isAnimationActive animationDuration={700} animationBegin={250} animationEasing="ease-out" />
+        <Line type="monotone" dataKey="FedSCRT" stroke={COLOR.FedSCRT} strokeWidth={2.5} dot={{ r: 4 }} isAnimationActive animationDuration={800} animationBegin={500} animationEasing="ease-out" />
       </LineChart>
     </ResponsiveContainer>
   );

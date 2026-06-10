@@ -51,6 +51,17 @@ export function NetworkDiagram({ topology, selectedId, onSelectNode }: Props) {
               stroke="var(--border)"
               strokeWidth={1}
             />
+            {/* Continuous data-flow stream (weight updates in transit) */}
+            <line
+              className="line-flow"
+              x1={pos.x}
+              y1={pos.y}
+              x2={AGG_POS.x}
+              y2={AGG_POS.y}
+              stroke="var(--teal)"
+              strokeWidth={1.2}
+              style={{ animationDelay: `${i * 0.3}s` }}
+            />
             {/* Teal overlay when this node is selected */}
             {isSelected && (
               <motion.line

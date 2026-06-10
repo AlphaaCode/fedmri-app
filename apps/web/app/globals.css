@@ -2,9 +2,17 @@
 
 :root {
   --bg-base: #0d1117;
-  --bg-card: #161b22;
+  --bg-card: rgba(22, 27, 34, 0.6);
   --bg-card2: #1c2128;
-  --border: #30363d;
+  --border: rgba(230, 237, 243, 0.12);
+  /* aurora-glass system (Balanced calibration — see 2026-06-10 spec §1) */
+  --bg-card-solid: #161b22;     /* escape hatch: surfaces that must stay opaque */
+  --border-solid: #30363d;
+  --glass-blur: 8px;
+  --aurora-teal: rgba(45, 212, 191, 0.3);
+  --aurora-blue: rgba(96, 165, 250, 0.22);
+  --hero-glow-border: rgba(45, 212, 191, 0.35);
+  --hero-glow-shadow: 0 0 18px rgba(45, 212, 191, 0.12);
   --text-primary: #e6edf3;
   --text-secondary: #8b949e;
   --teal: #2dd4bf;
@@ -25,6 +33,37 @@
   --subtype-luminal-b: #60a5fa;
   --subtype-her2: #f59e0b;
   --subtype-tn: #fb7185;
+  /* chart chrome — theme-aware so recharts flips in light mode */
+  --chart-grid: #30363d;
+  --chart-axis: #8b949e;
+  --chart-tooltip-bg: #161b22;
+  --text-dim: #6e7681;
+}
+
+/* ── Light theme — overrides the dark defaults above ──────────────────── */
+:root[data-theme="light"] {
+  --bg-base: #eef2f6;
+  --bg-card: rgba(255, 255, 255, 0.72);
+  --bg-card2: #e7ecf2;
+  --border: rgba(15, 23, 42, 0.12);
+  --bg-card-solid: #ffffff;
+  --border-solid: #d3dae3;
+  --aurora-teal: rgba(20, 184, 166, 0.22);
+  --aurora-blue: rgba(59, 130, 246, 0.16);
+  --hero-glow-border: rgba(13, 148, 136, 0.45);
+  --hero-glow-shadow: 0 0 18px rgba(13, 148, 136, 0.14);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-dim: #94a3b8;
+  /* teal as text needs more contrast on light surfaces */
+  --teal: #0d9488;
+  --teal-deep: #0f766e;
+  --teal-glow: rgba(13, 148, 136, 0.12);
+  --blue-accent: #2563eb;
+  --blue: #2563eb;
+  --chart-grid: #d8dee6;
+  --chart-axis: #64748b;
+  --chart-tooltip-bg: #ffffff;
 }
 
 @theme inline {
@@ -41,6 +80,7 @@ body {
   color: var(--text-primary);
   font-family: var(--font-geist-sans), -apple-system, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background 0.4s ease, color 0.4s ease;
 }
 
 /* Scrollbar */
@@ -99,12 +139,186 @@ body {
   }
 }
 
-/* Card hover lift */
+/* Card hover lift — asymmetric timing: quick rise, slow buttery settle */
 .card-hover {
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  transition:
+    border-color 0.5s ease,
+    box-shadow 0.6s ease,
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
 }
 .card-hover:hover {
-  border-color: rgba(45, 212, 191, 0.25) !important;
-  box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.08), 0 4px 16px rgba(0,0,0,0.25);
+  border-color: rgba(45, 212, 191, 0.45) !important;
+  box-shadow:
+    0 0 0 1px rgba(45, 212, 191, 0.18),
+    0 10px 34px rgba(0, 0, 0, 0.34),
+    0 0 28px rgba(45, 212, 191, 0.16);
+  transform: translateY(-5px) scale(1.012);
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.22s ease,
+    transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* ── Aurora-glass surface system ─────────────────────────────────────── */
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.hero-glow {
+  border-color: var(--hero-glow-border) !important;
+  box-shadow: var(--hero-glow-shadow);
+}
+
+/* button micro-interaction — slight rise with back-out overshoot, glow */
+.btn-press {
+  transition:
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s ease,
+    opacity 0.15s ease;
+}
+.btn-press:hover:not(:disabled) {
+  box-shadow: 0 0 16px rgba(45, 212, 191, 0.22);
   transform: translateY(-1px);
+}
+.btn-press:active:not(:disabled) { transform: scale(0.96); transition-duration: 0.08s; }
+
+/* aurora blob drift — transform-only (GPU-cheap) */
+@keyframes aurora-drift-1 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(-40px, 30px, 0) scale(1.12); }
+}
+@keyframes aurora-drift-2 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(50px, -25px, 0) scale(1.08); }
+}
+/* slow hue breathing for the aurora layer — the background feels alive */
+@keyframes aurora-hue {
+  0%, 100% { filter: hue-rotate(0deg); }
+  50%      { filter: hue-rotate(-18deg); }
+}
+
+/* ── Cranked animation system ─────────────────────────────────────────── */
+
+/* Rotating conic-gradient "comet ring" for hero cards. */
+@property --glow-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes glow-spin { to { --glow-angle: 360deg; } }
+.glow-border { position: relative; }
+.glow-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--glow-angle),
+    transparent 0deg,
+    var(--teal) 70deg,
+    var(--blue-accent) 150deg,
+    transparent 220deg,
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: glow-spin 7s linear infinite;
+  pointer-events: none;
+  opacity: 0.9;
+}
+/* soft halo trailing the comet — same ring, blurred, behind */
+.glow-border::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--glow-angle),
+    transparent 0deg,
+    var(--teal) 70deg,
+    var(--blue-accent) 150deg,
+    transparent 220deg,
+    transparent 360deg
+  );
+  filter: blur(12px);
+  opacity: 0.22;
+  animation: glow-spin 7s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Top-edge highlight sweep — eased pass, rest, repeat. */
+@keyframes edge-sweep {
+  0%       { background-position: -60% 0; opacity: 0; }
+  12%      { opacity: 1; }
+  55%      { background-position: 160% 0; opacity: 1; }
+  68%, 100%{ background-position: 160% 0; opacity: 0; }
+}
+.edge-sweep { position: relative; }
+.edge-sweep::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, var(--teal), var(--blue-accent), transparent);
+  background-size: 50% 100%;
+  background-repeat: no-repeat;
+  animation: edge-sweep 4.6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+  pointer-events: none;
+}
+
+/* Cursor spotlight — a soft light that follows the pointer over glass cards.
+   JS sets --mx/--my via onMouseMove (see lib/spotlight.ts). */
+.spotlight { position: relative; }
+.spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    260px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(45, 212, 191, 0.09),
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+}
+.spotlight:hover::before { opacity: 1; }
+
+/* Gentle vertical float — for hero icons / status orbs. */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+.float-y { animation: float-y 3.6s ease-in-out infinite; }
+
+/* Looping soft glow pulse — for live/active accents. */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.0); }
+  50%      { box-shadow: 0 0 16px 2px rgba(45, 212, 191, 0.45); }
+}
+.pulse-glow { animation: pulse-glow 2.4s ease-in-out infinite; }
+
+/* Animated gradient text — for hero headings. */
+@keyframes text-shimmer { to { background-position: 200% center; } }
+.text-shimmer {
+  background: linear-gradient(90deg, var(--text-primary) 0%, var(--teal) 35%, var(--blue-accent) 55%, var(--text-primary) 90%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shimmer 4.5s linear infinite;
+}
+
+/* Dashed line flow — for SVG edges carrying the data-flow motif. */
+.line-flow {
+  stroke-dasharray: 6 6;
+  animation: data-flow 1.4s linear infinite;
 }

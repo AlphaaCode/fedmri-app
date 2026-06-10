@@ -6,7 +6,15 @@ import { usePortalTitle } from "@/lib/use-portal-title";
 import { downloadCasePdf } from "@/lib/download-pdf";
 import { ScanUpload } from "@/components/ScanUpload";
 import { AttentionOverlay } from "@/components/AttentionOverlay";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import { scaleIn, fadeIn, fadeUp } from "@/lib/anim";
 import { SUBTYPE_COLOR, SUBTYPE_PLAIN, SUBTYPE_HORMONE_ADVISORY, type Subtype, type CaseResult } from "@/lib/types";
+
+// Reveal choreography: result card → attention heatmap → important notice.
+const revealSeq = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.3, delayChildren: 0.05 } },
+};
 
 // ─── Detect binary (FedSCRT real) vs 4-class (mock) result ──────────────────
 function isBinary(r: CaseResult): boolean {
@@ -28,8 +36,8 @@ function BinaryResultCard({ result, onReset }: { result: CaseResult; onReset: ()
     : "Less hormone-sensitive. Your oncologist will advise on the most appropriate treatment path.";
 
   return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-      <div className="rounded-xl border p-5 space-y-4" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+    <motion.div variants={revealSeq} initial="hidden" animate="show" className="space-y-3">
+      <motion.div variants={scaleIn} className="glass hero-glow glow-border rounded-xl border p-5 space-y-4">
         <div className="flex items-start justify-between">
           <div>
             <div className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--text-secondary)" }}>AI result</div>
@@ -37,7 +45,7 @@ function BinaryResultCard({ result, onReset }: { result: CaseResult; onReset: ()
             <div className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>Binary molecular class · AI trained across 3 hospitals</div>
           </div>
           <div className="text-sm font-bold px-3 py-1 rounded-full" style={{ background: color + "20", color, border: `1px solid ${color}50` }}>
-            {Math.round(result.confidence * 100)}%
+            <AnimatedNumber value={Math.round(result.confidence * 100)} suffix="%" duration={0.9} />
           </div>
         </div>
 
@@ -74,11 +82,13 @@ function BinaryResultCard({ result, onReset }: { result: CaseResult; onReset: ()
             Download PDF report
           </button>
         </div>
-      </div>
+      </motion.div>
 
-      <AttentionOverlay caseId={result.id} />
+      <motion.div variants={fadeIn}>
+        <AttentionOverlay caseId={result.id} />
+      </motion.div>
 
-      <div className="rounded-xl p-4" style={{ background: "#fb718510", border: "2px solid #fb718840", color: "#fb7185" }}>
+      <motion.div variants={fadeUp} className="rounded-xl p-4" style={{ background: "#fb718510", border: "2px solid #fb718840", color: "#fb7185" }}>
         <div className="font-semibold mb-1 text-sm flex items-center gap-1.5">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M7 1l6 11H1L7 1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
@@ -90,7 +100,7 @@ function BinaryResultCard({ result, onReset }: { result: CaseResult; onReset: ()
           This is an educational AI tool. Only a certified oncologist can diagnose cancer.
           Always confirm results with your doctor before making any medical decisions.
         </p>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
@@ -107,8 +117,8 @@ function StandardResultCard({ result, onReset }: { result: CaseResult; onReset: 
   const confLabel = conf >= 0.7 ? "High" : conf >= 0.5 ? "Moderate" : "Low";
 
   return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-      <div className="rounded-xl border p-5 space-y-4" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+    <motion.div variants={revealSeq} initial="hidden" animate="show" className="space-y-3">
+      <motion.div variants={scaleIn} className="glass hero-glow glow-border rounded-xl border p-5 space-y-4">
         <div className="text-xs uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>AI result</div>
         <div>
           <div className="text-3xl font-bold" style={{ color }}>{subtype}</div>
@@ -119,7 +129,7 @@ function StandardResultCard({ result, onReset }: { result: CaseResult; onReset: 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>AI confidence</span>
-            <span className="text-sm font-semibold" style={{ color: confColor }}>{confLabel} · {pct}%</span>
+            <span className="text-sm font-semibold" style={{ color: confColor }}>{confLabel} · <AnimatedNumber value={pct} suffix="%" duration={0.9} /></span>
           </div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-base)" }}>
             <motion.div className="h-full rounded-full" style={{ background: confColor }}
@@ -144,17 +154,19 @@ function StandardResultCard({ result, onReset }: { result: CaseResult; onReset: 
             Download PDF report
           </button>
         </div>
-      </div>
+      </motion.div>
 
-      <AttentionOverlay caseId={result.id} />
+      <motion.div variants={fadeIn}>
+        <AttentionOverlay caseId={result.id} />
+      </motion.div>
 
-      <div className="rounded-xl p-4" style={{ background: "#fb718510", border: "2px solid #fb718840", color: "#fb7185" }}>
+      <motion.div variants={fadeUp} className="rounded-xl p-4" style={{ background: "#fb718510", border: "2px solid #fb718840", color: "#fb7185" }}>
         <div className="font-semibold mb-1 text-sm">⚠ Important</div>
         <p className="text-xs leading-relaxed">
           This is an educational AI tool. Only a certified oncologist can diagnose cancer.
           Always confirm results with your doctor before making any medical decisions.
         </p>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

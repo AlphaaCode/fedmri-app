@@ -7,6 +7,9 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { apiLogin } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
+import { AuroraBackground } from "@/components/ui/AuroraBackground";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { staggerContainer, staggerItem, animateInProps } from "@/lib/anim";
 
 const LoginScene3D = dynamic(
   () => import("@/components/scene/LoginScene3D").then((m) => m.LoginScene3D),
@@ -41,8 +44,10 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen flex">
+      <AuroraBackground />
+      <div className="absolute top-5 right-5 z-20"><ThemeToggle /></div>
       {/* Left — brand panel */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 p-10 relative overflow-hidden"
+      <div className="hidden lg:flex flex-col justify-between w-1/2 p-10 relative z-10 overflow-hidden"
         style={{ background: "linear-gradient(135deg, #050a0e 0%, #0d1117 60%, #0a1a1a 100%)" }}>
         {/* Grid overlay */}
         <div className="absolute inset-0 pointer-events-none" style={{
@@ -70,13 +75,11 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right — auth panel */}
-      <div className="flex-1 flex items-center justify-center p-6"
-        style={{ background: "var(--bg-base)" }}>
+      {/* Right — auth panel (transparent: the fixed aurora layer reads through) */}
+      <div className="flex-1 flex items-center justify-center p-6 relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
+          variants={staggerContainer}
+          {...animateInProps}
           className="w-full max-w-md"
         >
           {/* Mobile logo */}
@@ -85,15 +88,15 @@ export default function LoginPage() {
             <img src="/main_logo.svg" alt="FedMRI" className="h-12 w-auto object-contain" />
           </div>
 
-          <div className="mb-7">
+          <motion.div variants={staggerItem} className="mb-7">
             <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Welcome Back</h1>
             <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
               Secure access to your federated medical node.
             </p>
-          </div>
+          </motion.div>
 
           <form onSubmit={onSubmit} className="space-y-4">
-            <div>
+            <motion.div variants={staggerItem}>
               <label className="text-xs uppercase tracking-widest block mb-1.5" style={{ color: "var(--text-secondary)" }}>
                 Institutional Email
               </label>
@@ -107,8 +110,8 @@ export default function LoginPage() {
                 required
                 autoFocus
               />
-            </div>
-            <div>
+            </motion.div>
+            <motion.div variants={staggerItem}>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
                   Node Password
@@ -124,7 +127,7 @@ export default function LoginPage() {
                 style={{ background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
                 required
               />
-            </div>
+            </motion.div>
 
             {error && (
               <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
@@ -134,22 +137,24 @@ export default function LoginPage() {
               </motion.div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg text-base font-semibold py-3 flex items-center justify-center gap-2 transition-opacity disabled:opacity-50"
-              style={{ background: "var(--teal-dim)", color: "#0d1117" }}
-            >
-              {loading ? "Signing in…" : (<>Sign In <span>→</span></>)}
-            </button>
+            <motion.div variants={staggerItem}>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-press w-full rounded-lg text-base font-semibold py-3 flex items-center justify-center gap-2 disabled:opacity-50"
+                style={{ background: "var(--teal-dim)", color: "#0d1117" }}
+              >
+                {loading ? "Signing in…" : (<>Sign In <span>→</span></>)}
+              </button>
+            </motion.div>
           </form>
 
-          <p className="text-center text-xs mt-5" style={{ color: "var(--text-secondary)" }}>
+          <motion.p variants={staggerItem} className="text-center text-xs mt-5" style={{ color: "var(--text-secondary)" }}>
             New patient?{" "}
             <Link href="/patient/register" className="underline" style={{ color: "var(--teal)" }}>
               Create an account
             </Link>
-          </p>
+          </motion.p>
 
           <p className="text-center text-[11px] mt-8 leading-relaxed" style={{ color: "var(--text-secondary)", opacity: 0.6 }}>
             Your healthcare data remains encrypted and decentralised.

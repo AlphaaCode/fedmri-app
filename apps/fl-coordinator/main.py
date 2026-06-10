@@ -166,6 +166,10 @@ async def _run_fl_test(rid: str, req: FlTestReq):
             strategy=req.strategy, rounds=req.rounds, local_epochs=10, seeds=5, on_round=None,
         )
         for i, e in enumerate(hist):
+            if i > 0:
+                # Pace the stream so the live chart visibly climbs round-by-round
+                # during a demo (the numpy compute itself is sub-second).
+                await asyncio.sleep(0.9)
             await _post_fl_test(rid, req.strategy, sizes, e, done=(i == len(hist) - 1))
         _rounds[rid]["status"] = "complete"
         _rounds[rid]["history"] = hist
