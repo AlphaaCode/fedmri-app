@@ -4,6 +4,7 @@ import { CSSProperties, ReactNode } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
 import { fadeIn, revealProps } from "@/lib/anim";
+import { spotlightHandlers } from "@/lib/spotlight";
 
 export function Card({ children, className, style, animate = true }: {
   children: ReactNode;
@@ -17,8 +18,9 @@ export function Card({ children, className, style, animate = true }: {
   if (!animate) {
     return (
       <div
-        className={cn("card-hover rounded-xl border p-4", className)}
-        style={{ background: "var(--bg-card)", borderColor: "var(--border)", ...style }}
+        className={cn("glass spotlight card-hover relative rounded-xl border p-4", className)}
+        style={{ borderColor: "var(--border)", ...style }}
+        {...spotlightHandlers}
       >
         {children}
       </div>
@@ -28,8 +30,9 @@ export function Card({ children, className, style, animate = true }: {
     <motion.div
       variants={fadeIn}
       {...revealProps}
-      className={cn("card-hover rounded-xl border p-4", className)}
-      style={{ background: "var(--bg-card)", borderColor: "var(--border)", ...style }}
+      className={cn("glass spotlight card-hover relative rounded-xl border p-4", className)}
+      style={{ borderColor: "var(--border)", ...style }}
+      {...spotlightHandlers}
     >
       {children}
     </motion.div>

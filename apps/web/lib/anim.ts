@@ -4,21 +4,41 @@ import type { Variants, Transition } from "framer-motion";
 export const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export const springSoft: Transition = { type: "spring", stiffness: 220, damping: 26, mass: 0.9 };
+export const springSnappy: Transition = { type: "spring", stiffness: 380, damping: 30, mass: 0.7 };
 
 // ── Single-element entrances ──────────────────────────────────────────────────
+// Entrances resolve from a soft blur to sharp — reads as a camera pulling focus.
 export const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE_OUT } },
+  hidden: { opacity: 0, y: 18, filter: "blur(6px)" },
+  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.55, ease: EASE_OUT } },
 };
 
 export const fadeIn: Variants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.4, ease: EASE_OUT } },
+  hidden: { opacity: 0, filter: "blur(6px)" },
+  show: { opacity: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: EASE_OUT } },
 };
 
 export const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.96, y: 8 },
-  show: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.4, ease: EASE_OUT } },
+  hidden: { opacity: 0, scale: 0.94, y: 10, filter: "blur(8px)" },
+  show: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.55, ease: EASE_OUT },
+  },
+};
+
+// Cinematic page transition for PortalShell's <main> — subtle rise + focus pull.
+export const pageEnter: Variants = {
+  hidden: { opacity: 0, y: 14, scale: 0.992, filter: "blur(7px)" },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: { duration: 0.55, ease: EASE_OUT },
+  },
 };
 
 // ── Parent/child orchestration (stagger) ──────────────────────────────────────
@@ -32,8 +52,8 @@ export const staggerContainer: Variants = {
 };
 
 export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 14 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE_OUT } },
+  hidden: { opacity: 0, y: 16, filter: "blur(5px)" },
+  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.5, ease: EASE_OUT } },
 };
 
 // Convenience props for an on-mount entrance without writing variants inline.

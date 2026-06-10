@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
 import { fadeUp, revealProps } from "@/lib/anim";
+import { spotlightHandlers } from "@/lib/spotlight";
 
 export function Panel({ title, subtitle, action, children, className, animate = true }: {
   title?: ReactNode;
@@ -25,7 +26,7 @@ export function Panel({ title, subtitle, action, children, className, animate = 
 
   if (!animate) {
     return (
-      <div className={cn("rounded-xl border p-4", className)} style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+      <div className={cn("glass spotlight relative rounded-xl border p-4", className)} style={{ borderColor: "var(--border)" }} {...spotlightHandlers}>
         {header}
         {children}
       </div>
@@ -35,8 +36,9 @@ export function Panel({ title, subtitle, action, children, className, animate = 
     <motion.div
       variants={fadeUp}
       {...revealProps}
-      className={cn("rounded-xl border p-4", className)}
-      style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+      className={cn("glass spotlight relative rounded-xl border p-4", className)}
+      style={{ borderColor: "var(--border)" }}
+      {...spotlightHandlers}
     >
       {header}
       {children}

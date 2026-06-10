@@ -40,8 +40,8 @@ export function FlTopology() {
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="rounded-xl border w-full"
-      style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+      className="glass rounded-xl border w-full"
+      style={{ borderColor: "var(--border)" }}
     >
       {/* Header */}
       <div className="px-4 pt-4 pb-2 border-b" style={{ borderColor: "var(--border)" }}>
@@ -84,6 +84,15 @@ export function FlTopology() {
                 x1={h.x} y1={h.y} x2={AGG.x} y2={AGG.y}
                 stroke="var(--border)"
                 strokeWidth={1}
+              />
+              {/* faint always-on data-flow so the network reads as live */}
+              <line
+                className="line-flow"
+                x1={h.x} y1={h.y} x2={AGG.x} y2={AGG.y}
+                stroke="var(--teal)"
+                strokeWidth={0.8}
+                opacity={0.22}
+                style={{ animationDelay: `${HOSPITALS.indexOf(h) * 0.35}s` }}
               />
               {(isTraining || isAggregating) && (
                 <motion.line
@@ -165,6 +174,20 @@ export function FlTopology() {
           >
             AGG
           </text>
+
+          {/* Celebration pulse wave — one shot across the nodes on completion */}
+          {isDone && HOSPITALS.map((h, i) => (
+            <motion.circle
+              key={`burst-${h.id}`}
+              cx={h.x} cy={h.y}
+              fill="none"
+              stroke="var(--teal)"
+              strokeWidth={2}
+              initial={{ r: 14, opacity: 0.8 }}
+              animate={{ r: 34, opacity: 0 }}
+              transition={{ duration: 1.1, delay: i * 0.18, ease: "easeOut" }}
+            />
+          ))}
 
           {/* Complete checkmark */}
           {isDone && (

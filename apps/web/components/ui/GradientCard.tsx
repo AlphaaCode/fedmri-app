@@ -1,4 +1,7 @@
+"use client";
+
 import { CSSProperties, ReactNode } from "react";
+import { spotlightHandlers } from "@/lib/spotlight";
 
 const ACCENT_HEX: Record<string, string> = {
   teal:   "#2dd4bf",
@@ -24,8 +27,9 @@ export function GradientCard({
   const hex = ACCENT_HEX[accent] ?? ACCENT_HEX.teal;
   return (
     <div
-      className={`relative rounded-xl border overflow-hidden ${className}`}
-      style={{ background: "var(--bg-card)", borderColor: "var(--border)", ...style }}
+      className={`glass spotlight card-hover relative rounded-xl border overflow-hidden ${className}`}
+      style={{ borderColor: "var(--border)", ...style }}
+      {...spotlightHandlers}
     >
       {/* top-right radial glow */}
       <div

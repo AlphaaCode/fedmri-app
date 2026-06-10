@@ -11,13 +11,11 @@ interface Props {
 }
 
 function colorFor(value: number, max: number): string {
-  if (max === 0) return "#161b22";
+  if (max === 0) return "transparent";
   const t = Math.min(1, value / max);
-  // dark slate → teal
-  const r = Math.round(22 + t * (45 - 22));
-  const g = Math.round(27 + t * (212 - 27));
-  const b = Math.round(34 + t * (191 - 34));
-  return `rgb(${r},${g},${b})`;
+  // Teal at variable opacity over the (theme-aware) card surface — low cells
+  // show the card background, high cells read solid teal. Flips with the theme.
+  return `rgba(45, 212, 191, ${(t * t).toFixed(3)})`;
 }
 
 export function ConfusionMatrix({ data }: Props) {
@@ -55,7 +53,7 @@ export function ConfusionMatrix({ data }: Props) {
                     className="p-2 text-center tabular-nums font-medium"
                     style={{
                       background: colorFor(v, max),
-                      color: onDiag && v > max * 0.4 ? "#0d1117" : "#e6edf3",
+                      color: onDiag && v > max * 0.4 ? "#0d1117" : "var(--text-primary)",
                       border: "1px solid var(--bg-base)",
                       minWidth: 60,
                     }}
@@ -70,7 +68,7 @@ export function ConfusionMatrix({ data }: Props) {
       </table>
       <div className="flex items-center gap-2 mt-3 text-[11px]" style={{ color: "var(--text-secondary)" }}>
         <span>0</span>
-        <div className="flex-1 h-1.5 rounded" style={{ background: "linear-gradient(to right, #161b22, #2dd4bf)" }} />
+        <div className="flex-1 h-1.5 rounded" style={{ background: "linear-gradient(to right, var(--bg-card2), #2dd4bf)" }} />
         <span>{max}</span>
       </div>
     </div>

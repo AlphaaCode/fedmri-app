@@ -13,6 +13,7 @@ import { AttentionOverlay } from "@/components/AttentionOverlay";
 import { FlTopology } from "@/components/FlTopology";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { DoctorSiloBanner } from "@/components/doctor/DoctorSiloBanner";
 import { apiSubmitFeedback } from "@/lib/api";
 import type { CaseResult } from "@/lib/types";
@@ -42,8 +43,7 @@ function BinaryPredictionCard({ result }: { result: CaseResult }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="rounded-xl border p-5"
-      style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+      className="glass hero-glow glow-border rounded-xl border p-5"
     >
       <div className="flex items-start justify-between mb-5">
         <div>
@@ -56,7 +56,7 @@ function BinaryPredictionCard({ result }: { result: CaseResult }) {
           </div>
         </div>
         <div className="text-xs font-semibold px-3 py-1 rounded-full" style={{ background: color + "20", color, border: `1px solid ${color}50` }}>
-          {Math.round(result.confidence * 100)}%
+          <AnimatedNumber value={Math.round(result.confidence * 100)} suffix="%" duration={0.9} />
         </div>
       </div>
 

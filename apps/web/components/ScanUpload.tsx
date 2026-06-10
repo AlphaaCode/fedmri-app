@@ -299,6 +299,24 @@ export function ScanUpload({ onUploaded, showSamples: enableSamples = true }: Pr
               <p className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)", color: "var(--text-primary)" }}>
                 Running inference
               </p>
+              {/* Pipeline stages light up as progress advances */}
+              <div className="flex items-center justify-center gap-2">
+                {["Preprocess", "Inference", "Attention"].map((s, i) => {
+                  const stageIdx = progress < 30 ? 0 : progress < 70 ? 1 : 2;
+                  const lit = i <= stageIdx;
+                  return (
+                    <span key={s} className="text-[10px] px-2 py-1 rounded-full transition-all duration-300"
+                      style={{
+                        background: lit ? "rgba(0,229,204,0.12)" : "var(--bg-card2)",
+                        color: lit ? "var(--teal)" : "var(--text-secondary)",
+                        border: `1px solid ${lit ? "rgba(0,229,204,0.4)" : "var(--border)"}`,
+                        opacity: lit ? 1 : 0.55,
+                      }}>
+                      {i < stageIdx ? "✓ " : ""}{s}
+                    </span>
+                  );
+                })}
+              </div>
               <p className="text-xs" style={{ fontFamily: "var(--font-mono)", color: "var(--text-secondary)", letterSpacing: "0.06em" }}>
                 {pendingFile?.name ?? sampleName}
               </p>
