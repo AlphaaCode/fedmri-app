@@ -153,6 +153,27 @@ export function ChatPanel({ role, caseId, starters, caseContext, heightClass = "
         <div className="px-4 pb-2 text-xs" style={{ color: "#fb7185" }}>{error}</div>
       )}
 
+      {/* Quick actions (case-aware) — explain the attention heatmap */}
+      {caseId && (
+        <div className="px-3 pt-2 flex flex-wrap gap-2">
+          <button
+            type="button"
+            disabled={streaming}
+            onClick={() =>
+              send(
+                role === "patient"
+                  ? "Can you explain the highlighted areas in my scan picture in simple terms?"
+                  : "Explain what the attention heatmap shows for this case — which slices/regions most drove the prediction and how to interpret the colour intensity.",
+              )
+            }
+            className="text-[11px] px-2.5 py-1 rounded-full transition-opacity disabled:opacity-40"
+            style={{ background: "var(--teal-glow)", color: "var(--teal-on-glow)", border: "1px solid #2dd4bf40" }}
+          >
+            🔍 Explain the heatmap
+          </button>
+        </div>
+      )}
+
       {/* Input */}
       <form
         onSubmit={(e) => { e.preventDefault(); send(input); }}
@@ -182,7 +203,7 @@ export function ChatPanel({ role, caseId, starters, caseContext, heightClass = "
       {role === "patient" && (
         <div
           className="px-3 py-2 text-[11px] border-t flex items-center gap-1.5"
-          style={{ background: "#f59e0b15", color: "#fbbf24", borderColor: "var(--border)" }}
+          style={{ background: "#f59e0b15", color: "var(--amber-on-glow)", borderColor: "var(--border)" }}
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M6 1l5 9H1L6 1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />

@@ -152,6 +152,31 @@ let CasesService = class CasesService {
             total,
         };
     }
+    /**
+     * Active-learning review queue: the cases the model is LEAST sure about
+     * (confidence closest to 0.5), still PENDING, scoped to the caller's silo.
+     * The doctor labels these first — uncertainty sampling — and each label feeds
+     * the AL fine-tune. uncertainty = 1 − |conf − 0.5|·2 (1 = maximally unsure).
+     */
+    async getReviewQueue(user, limit = 6) {
+        const where = user.role === 'DOCTOR'
+            ? { hospitalId: user.hospitalId }
+            : { userId: user.id };
+        where.status = client_1.CaseStatus.PENDING;
+        const rows = await this.prisma.case.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            take: 50,
+        });
+        return rows
+            .map((c) => ({
+            ...c,
+            probs: c.probs,
+            uncertainty: Number((1 - Math.abs(c.confidence - 0.5) * 2).toFixed(4)),
+        }))
+            .sort((a, b) => b.uncertainty - a.uncertainty)
+            .slice(0, limit);
+    }
     async getAttention(user, id) {
         // Reuse findOne for silo enforcement (throws ForbiddenException on mismatch);
         // it returns the case with imagePath, which real-mode attention needs.

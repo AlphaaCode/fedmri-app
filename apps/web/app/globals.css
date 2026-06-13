@@ -38,6 +38,9 @@
   --chart-axis: #8b949e;
   --chart-tooltip-bg: #161b22;
   --text-dim: #6e7681;
+  /* readable text colours for use ON tinted (-glow) chip/banner backgrounds */
+  --teal-on-glow: #2dd4bf;
+  --amber-on-glow: #fbbf24;
 }
 
 /* ── Light theme — overrides the dark defaults above ──────────────────────
@@ -70,6 +73,9 @@
   --chart-grid: #c7d0db;
   --chart-axis: #475569;
   --chart-tooltip-bg: #ffffff;
+  /* On light surfaces, text over a pale teal/amber tint must be DARK to read. */
+  --teal-on-glow: #0f766e;
+  --amber-on-glow: #b45309;
 }
 
 /* In light mode, drop the dark card shadows to soft neutral ones so cards lift
@@ -345,9 +351,10 @@ body {
 .heat-slider {
   -webkit-appearance: none;
   appearance: none;
-  height: 6px;
+  height: 8px;
   border-radius: 999px;
   background: var(--bg-card2);   /* fallback; overridden inline with the fill gradient */
+  border: 1px solid var(--border-solid);  /* visible track in BOTH themes */
   outline: none;
   cursor: pointer;
 }

@@ -7,9 +7,10 @@ function token(): string | null {
   return localStorage.getItem("token");
 }
 
-export async function downloadCasePdf(caseId: string): Promise<void> {
+export async function downloadCasePdf(caseId: string, lang?: string): Promise<void> {
   const t = token();
-  const res = await fetch(`${API_URL}/cases/${caseId}/pdf`, {
+  const q = lang && lang !== "en" ? `?lang=${encodeURIComponent(lang)}` : "";
+  const res = await fetch(`${API_URL}/cases/${caseId}/pdf${q}`, {
     headers: t ? { Authorization: `Bearer ${t}` } : {},
   });
 

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
+import PDFDocument from 'pdfkit';
 import { PrismaService } from '../prisma/prisma.service';
 import { FlService } from '../fl/fl.service';
 
@@ -151,6 +152,105 @@ export class ResearcherService {
       })),
       verdict: rawBytes === 0 ? 'COMPLIANT' : 'REVIEW',
     };
+  }
+
+  /**
+   * Downloadable, signed PDF compliance report for a node — the node audit
+   * rendered to a shareable document. The auditId (sha1 over node+timestamp)
+   * acts as the integrity/signature reference printed on the report.
+   */
+  async getNodeAuditReport(
+    flClientId: string,
+  ): Promise<{ buffer: Buffer; filename: string } | null> {
+    const audit = await this.getNodeAudit(flClientId);
+    if (!audit.found) return null;
+    const buffer = await this.renderAuditPdf(audit);
+    return { buffer, filename: `fedmri-compliance-${flClientId}-${audit.auditId}.pdf` };
+  }
+
+  private renderAuditPdf(a: any): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const doc = new PDFDocument({ margin: 50, size: 'A4' });
+      const chunks: Buffer[] = [];
+      doc.on('data', (c: Buffer) => chunks.push(c));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      const TEAL = '#0d9488';
+      const INK = '#0f172a';
+      const GREY = '#64748b';
+      const M = 50;
+      const RIGHT = 545;
+      const W = RIGHT - M;
+
+      // Header band
+      doc.rect(0, 0, doc.page.width, 84).fill('#0d1117');
+      doc.fontSize(13).fillColor('#2dd4bf').font('Helvetica-Bold').text('FedMRI', M, 30);
+      doc.fontSize(16).fillColor('#ffffff').font('Helvetica-Bold')
+        .text('Federated Node Compliance Report', M + 90, 28, { width: W - 90, align: 'right' });
+      doc.fontSize(8.5).fillColor('#8b949e').font('Helvetica')
+        .text(`Generated ${new Date(a.generatedAt).toLocaleString()}`, M + 90, 50, { width: W - 90, align: 'right' });
+
+      // Node + verdict
+      doc.y = 104;
+      doc.fontSize(15).fillColor(INK).font('Helvetica-Bold').text(a.node.displayName, M);
+      doc.fontSize(9).fillColor(GREY).font('Helvetica')
+        .text(`Client ${a.node.flClientId}  •  ${a.node.totalCases} scans  •  Audit #${a.auditId}`, M);
+      const vColor = a.verdict === 'COMPLIANT' ? TEAL : '#b45309';
+      doc.roundedRect(RIGHT - 130, 104, 130, 30, 6).lineWidth(1).strokeColor(vColor).stroke();
+      doc.fontSize(13).fillColor(vColor).font('Helvetica-Bold')
+        .text(a.verdict, RIGHT - 130, 113, { width: 130, align: 'center' });
+
+      // Summary line
+      doc.moveDown(1.5);
+      doc.fontSize(10).fillColor(INK).font('Helvetica')
+        .text(
+          `Raw patient data transmitted: ${a.summary.rawDataTransmitted} bytes  •  ` +
+            `Weight events: ${a.summary.privacyEvents}  •  Contributions: ${a.summary.contributions}  •  ` +
+            `Avg local F1: ${a.summary.avgLocalF1.toFixed(3)}`,
+          M,
+          undefined,
+          { width: W },
+        );
+
+      // Integrity checks
+      doc.moveDown(1);
+      doc.fontSize(11).fillColor(TEAL).font('Helvetica-Bold').text('INTEGRITY CHECKS', M);
+      doc.moveDown(0.3);
+      (a.checks ?? []).forEach((c: any) => {
+        const mark = c.status === 'pass' ? '[PASS]' : '[WARN]';
+        const col = c.status === 'pass' ? TEAL : '#b45309';
+        doc.fontSize(9.5).fillColor(col).font('Helvetica-Bold').text(mark, M, doc.y, { continued: true });
+        doc.fillColor(INK).font('Helvetica').text(`  ${c.label} — `, { continued: true });
+        doc.fillColor(GREY).text(c.detail);
+        doc.moveDown(0.2);
+      });
+
+      // Recent contributions
+      if ((a.recentContributions?.length ?? 0) > 0) {
+        doc.moveDown(0.8);
+        doc.fontSize(11).fillColor(TEAL).font('Helvetica-Bold').text('RECENT CONTRIBUTIONS', M);
+        doc.moveDown(0.3);
+        a.recentContributions.slice(0, 8).forEach((r: any) => {
+          doc.fontSize(9).fillColor(GREY).font('Helvetica')
+            .text(`Round ${r.round}  •  ${r.samplesUsed} samples  •  local F1 ${r.localF1After.toFixed(3)}  •  Δw ${r.weightDeltaNorm.toFixed(4)}`, M);
+        });
+      }
+
+      // Signature / footer
+      const footerY = doc.page.height - 80;
+      doc.moveTo(M, footerY).lineTo(RIGHT, footerY).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+      doc.fontSize(8).fillColor(GREY).font('Helvetica')
+        .text(
+          `This report is generated from the live federated audit log. Integrity reference (signature): ${a.auditId}. ` +
+            `Privacy invariant: raw patient data never leaves a hospital — only model weights are shared.`,
+          M,
+          footerY + 8,
+          { width: W, lineGap: 2 },
+        );
+
+      doc.end();
+    });
   }
 
   /**

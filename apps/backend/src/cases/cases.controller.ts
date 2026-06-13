@@ -77,6 +77,12 @@ export class CasesController {
     });
   }
 
+  // Declared before @Get(':id') so ':id' doesn't capture "review-queue".
+  @Get('review-queue')
+  reviewQueue(@CurrentUser() user: any) {
+    return this.casesService.getReviewQueue(user);
+  }
+
   @Get(':id')
   async findOne(@CurrentUser() user: any, @Param('id') id: string) {
     return this.casesService.findOne(user, id);
@@ -91,10 +97,11 @@ export class CasesController {
   async downloadPdf(
     @CurrentUser() user: any,
     @Param('id') id: string,
+    @Query('lang') lang: string | undefined,
     @Res() res: Response,
   ) {
     const caseData = await this.casesService.findOne(user, id);
-    const buf = await this.pdfService.generate(caseData);
+    const buf = await this.pdfService.generate(caseData, lang);
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename="fedmri-case-${id.slice(0, 8)}.pdf"`,

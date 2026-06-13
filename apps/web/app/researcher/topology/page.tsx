@@ -12,6 +12,7 @@ import {
   getTopology,
   getSystemLogs,
   getNodeAudit,
+  downloadNodeAuditReport,
   TopologyResponse,
   TopologyNode,
   SystemLogEvent,
@@ -339,7 +340,15 @@ function AuditModal({ audit, onClose }: { audit: NodeAudit | null; onClose: () =
                   <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
                     Generated {audit.generatedAt ? new Date(audit.generatedAt).toLocaleString() : "—"}
                   </span>
-                  <Button variant="teal" onClick={onClose}>Close audit</Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      onClick={() => audit.node && downloadNodeAuditReport(audit.node.flClientId).catch(() => {})}
+                    >
+                      ↓ Download report (PDF)
+                    </Button>
+                    <Button variant="teal" onClick={onClose}>Close audit</Button>
+                  </div>
                 </div>
               </>
             )}

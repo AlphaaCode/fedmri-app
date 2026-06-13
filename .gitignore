@@ -20,3 +20,7 @@ apps/ml-service/.al-state/al_state.json
 # Runtime scan uploads written by the backend (mounted into ml-service for attention)
 apps/backend/uploads-tmp/*
 !apps/backend/uploads-tmp/.gitkeep
+
+# Model checkpoints — large binaries (58 MB), mounted at runtime, never in git
+*.pt
+model_core/

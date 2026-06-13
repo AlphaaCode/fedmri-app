@@ -47,15 +47,19 @@ let CasesController = class CasesController {
             subjectLabel: body.subjectLabel,
         });
     }
+    // Declared before @Get(':id') so ':id' doesn't capture "review-queue".
+    reviewQueue(user) {
+        return this.casesService.getReviewQueue(user);
+    }
     async findOne(user, id) {
         return this.casesService.findOne(user, id);
     }
     async getAttention(user, id) {
         return this.casesService.getAttention(user, id);
     }
-    async downloadPdf(user, id, res) {
+    async downloadPdf(user, id, lang, res) {
         const caseData = await this.casesService.findOne(user, id);
-        const buf = await this.pdfService.generate(caseData);
+        const buf = await this.pdfService.generate(caseData, lang);
         res.set({
             'Content-Type': 'application/pdf',
             'Content-Disposition': `attachment; filename="fedmri-case-${id.slice(0, 8)}.pdf"`,
@@ -116,6 +120,13 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], CasesController.prototype, "createFromSample", null);
 __decorate([
+    (0, common_1.Get)('review-queue'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], CasesController.prototype, "reviewQueue", null);
+__decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id')),
@@ -135,9 +146,10 @@ __decorate([
     (0, common_1.Get)(':id/pdf'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id')),
-    __param(2, (0, common_1.Res)()),
+    __param(2, (0, common_1.Query)('lang')),
+    __param(3, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:paramtypes", [Object, String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], CasesController.prototype, "downloadPdf", null);
 __decorate([
