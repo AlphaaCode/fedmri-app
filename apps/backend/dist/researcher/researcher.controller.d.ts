@@ -24,8 +24,16 @@ export declare class ResearcherController {
     flTest(body: {
         strategy?: string;
         rounds?: number;
-    }): Promise<any>;
+        alpha?: number;
+    }): {
+        test_id: string;
+        status: string;
+        strategy: string;
+        rounds: number;
+    };
     topology(): Promise<any>;
+    nodeAudit(flClientId: string): Promise<any>;
+    insights(limit?: string): Promise<any>;
     datasets(): Promise<any>;
     systemLogs(page?: string, limit?: string, severity?: string): Promise<any>;
 }

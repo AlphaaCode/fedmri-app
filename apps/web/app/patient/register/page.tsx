@@ -5,28 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/lib/auth-store";
+import { apiRegister, apiLogin } from "@/lib/api";
 import { AuroraBackground } from "@/components/ui/AuroraBackground";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-
-async function apiRegister(email: string, password: string, name: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, name, role: "PATIENT" }),
-  });
-  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || "Registration failed");
-  return res.json();
-}
-
-async function apiLogin(email: string, password: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || "Login failed");
-  return res.json();
-}
 
 // Patient-facing copy only — no FL jargon (per project invariant). We say
 // "AI trained across 3 hospitals", never "federated learning".
@@ -162,6 +143,7 @@ export default function PatientRegisterPage() {
                   className="w-full rounded-lg text-sm px-3 py-2.5 outline-none"
                   style={{ background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
                   required
+                  minLength={key === "password" ? 8 : undefined}
                   autoComplete={key === "password" ? "new-password" : key === "email" ? "email" : "name"}
                 />
               </div>

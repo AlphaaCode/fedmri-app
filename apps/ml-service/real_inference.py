@@ -4,8 +4,8 @@ Loads the ConvNeXt-MIL model from the federated-learning-model repo and runs
 real predictions + attention. Run the service from the mri_thesis conda env.
 
 Env:
-    MODEL_V2_PATH  path to the model code (federated-learning-model repo)
-    FEDSCRT_CKPT   path to fedscrt_final.pt (real) or fedscrt_stub.pt
+    MODEL_V2_PATH  path to the model code repo (model-core/, contains model.py)
+    FEDSCRT_CKPT   path to fedscrt_final.pt (model_core/fedscrt_final.pt)
     MRI_NUM_CLASSES=2  (binary head; read at import time by model/main)
 """
 import os, sys, io, tempfile
@@ -15,18 +15,22 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-# Default to the in-repo model copy (apps/ml-service -> ../../model-core) so the
-# app loads the FedSCRT model + checkpoint from THIS repository with no external
-# path configuration. Override MODEL_V2_PATH / FEDSCRT_CKPT to point elsewhere.
-_REPO_MODEL_CORE = os.path.abspath(
+# Model source code lives in model-core/ (hyphen — contains model.py,
+# image_process.py). The checkpoint lives in model_core/ (underscore —
+# contains fedscrt_final.pt directly, no checkpoints/ subfolder).
+# Override MODEL_V2_PATH / FEDSCRT_CKPT to point elsewhere.
+_REPO_MODEL_CODE = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "model-core")
 )
-V2 = os.environ.get("MODEL_V2_PATH") or _REPO_MODEL_CORE
+_REPO_MODEL_CKPT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "model_core", "fedscrt_final.pt")
+)
+V2 = os.environ.get("MODEL_V2_PATH") or _REPO_MODEL_CODE
 if V2 and V2 not in sys.path:
     sys.path.insert(0, V2)
 os.environ.setdefault("MRI_NUM_CLASSES", "2")
 
-CKPT = os.environ.get("FEDSCRT_CKPT") or os.path.join(V2, "checkpoints", "fedscrt_final.pt")
+CKPT = os.environ.get("FEDSCRT_CKPT") or _REPO_MODEL_CKPT
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 LABELS = ["Luminal", "Non-Luminal"]
 HOST_WORKSPACE_ROOT = os.environ.get("HOST_WORKSPACE_ROOT")

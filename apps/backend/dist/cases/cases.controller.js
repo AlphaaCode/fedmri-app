@@ -31,8 +31,8 @@ let CasesController = class CasesController {
     async verify(file) {
         return this.casesService.verifyImage(file);
     }
-    async create(user, file) {
-        return this.casesService.create(user, file);
+    async create(user, file, body) {
+        return this.casesService.create(user, file, body);
     }
     async findAll(user, page, limit) {
         return this.casesService.findAll(user, { page, limit });
@@ -42,7 +42,10 @@ let CasesController = class CasesController {
         return this.casesService.listSamples();
     }
     createFromSample(user, body) {
-        return this.casesService.createFromSample(user, body.name);
+        return this.casesService.createFromSample(user, body.name, {
+            subjectType: body.subjectType,
+            subjectLabel: body.subjectLabel,
+        });
     }
     async findOne(user, id) {
         return this.casesService.findOne(user, id);
@@ -63,6 +66,9 @@ let CasesController = class CasesController {
     async submitFeedback(user, id, body) {
         return this.casesService.submitFeedback(user, id, body);
     }
+    async update(user, id, body) {
+        return this.casesService.updateCase(user, id, body);
+    }
 };
 exports.CasesController = CasesController;
 __decorate([
@@ -80,8 +86,9 @@ __decorate([
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', multer_config_1.multerOptions)),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.UploadedFile)()),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, Object, Object]),
     __metadata("design:returntype", Promise)
 ], CasesController.prototype, "create", null);
 __decorate([
@@ -143,6 +150,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, Object]),
     __metadata("design:returntype", Promise)
 ], CasesController.prototype, "submitFeedback", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], CasesController.prototype, "update", null);
 exports.CasesController = CasesController = __decorate([
     (0, common_1.Controller)('cases'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

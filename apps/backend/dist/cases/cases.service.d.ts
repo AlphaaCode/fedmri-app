@@ -14,8 +14,14 @@ export declare class CasesService {
         name: string;
     }[];
     /** Create a case from a bundled sample volume (runs the same real pipeline). */
-    createFromSample(user: any, name: string): Promise<any>;
-    create(user: any, file: Express.Multer.File): Promise<any>;
+    createFromSample(user: any, name: string, meta?: {
+        subjectType?: string;
+        subjectLabel?: string;
+    }): Promise<any>;
+    create(user: any, file: Express.Multer.File, meta?: {
+        subjectType?: string;
+        subjectLabel?: string;
+    }): Promise<any>;
     findAll(user: any, query?: {
         page?: number;
         limit?: number;
@@ -30,6 +36,17 @@ export declare class CasesService {
         topSlice?: number;
     }>;
     findOne(user: any, id: string): Promise<any>;
+    /**
+     * Update editable, doctor-owned fields of a case: the clinical note and the
+     * subject attribution (patient label / TEST). Silo-checked via findOne, and
+     * only the owning role may edit (doctors edit hospital cases; patients can
+     * annotate their own). Never touches prediction/privacy fields.
+     */
+    updateCase(user: any, id: string, body: {
+        clinicalNote?: string;
+        subjectType?: string;
+        subjectLabel?: string;
+    }): Promise<any>;
     verifyImage(file: Express.Multer.File): Promise<{
         valid: boolean;
         confidence: number;

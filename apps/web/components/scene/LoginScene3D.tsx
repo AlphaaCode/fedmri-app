@@ -36,7 +36,7 @@ export function LoginScene3D() {
             enableZoom={false}
             enablePan={false}
             autoRotate
-            autoRotateSpeed={1.8}
+            autoRotateSpeed={8}
             minPolarAngle={Math.PI * 0.25}
             maxPolarAngle={Math.PI * 0.75}
           />

@@ -7,7 +7,7 @@ import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import * as THREE from "three";
 
 // 1.5 × 1.2 = 1.8 — slightly bigger than previous reference
-const TARGET_SIZE = 1.8;
+const TARGET_SIZE = 2.2;
 
 export function BrainModel() {
   // @ts-ignore

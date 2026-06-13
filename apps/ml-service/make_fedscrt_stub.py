@@ -1,9 +1,8 @@
 """Generate a contract-shaped FedSCRT stub checkpoint so the real-mode
 pipeline is testable WITHOUT the user's 60 MB fedscrt_final.pt.
 
-The real checkpoint already exists at
-  C:\\Users\\akaro\\Documents\\GitHub\\federated-learning-model\\checkpoints\\fedscrt_final.pt
-so this stub is a lightweight fallback + a living document of the checkpoint
+The real checkpoint lives at  model_core/fedscrt_final.pt.
+This stub is a lightweight fallback + a living document of the checkpoint
 contract the loader (real_inference.py) depends on. Predictions from the stub
 are random (random head); point FEDSCRT_CKPT at fedscrt_final.pt for real ones.
 
@@ -13,13 +12,15 @@ Run from the mri_thesis conda env:
 import os, sys, torch
 
 os.environ.setdefault("MRI_NUM_CLASSES", "2")
-# Authoritative model code = the federated-learning-model repo (it produced the
-# real checkpoint via save_fedscrt_model.py). Override with MODEL_V2_PATH.
-V2 = os.environ.get(
+# Model code lives in model-core/ (hyphen); checkpoint output goes to model_core/ (underscore).
+MODEL_CODE = os.environ.get(
     "MODEL_V2_PATH",
-    r"C:\Users\akaro\Documents\GitHub\federated-learning-model",
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "model-core")),
 )
-sys.path.insert(0, V2)
+MODEL_CKPT_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "model_core")
+)
+sys.path.insert(0, MODEL_CODE)
 from model import ConvNeXtMILClassifier  # noqa: E402
 
 m = ConvNeXtMILClassifier(num_classes=2, proj_dim=256, attn_dim=128)
@@ -34,7 +35,7 @@ ckpt = {
     "fedscrt": True,
     "description": "FedSCRT stub (random head) — contract-shaped placeholder",
 }
-out = os.path.join(V2, "checkpoints", "fedscrt_stub.pt")
+out = os.path.join(MODEL_CKPT_DIR, "fedscrt_stub.pt")
 os.makedirs(os.path.dirname(out), exist_ok=True)
 torch.save(ckpt, out)
 print("wrote", out)

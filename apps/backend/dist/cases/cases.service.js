@@ -37,7 +37,7 @@ let CasesService = class CasesService {
             .map((name) => ({ name }));
     }
     /** Create a case from a bundled sample volume (runs the same real pipeline). */
-    async createFromSample(user, name) {
+    async createFromSample(user, name, meta) {
         if (!/^[\w.-]+\.(mha|nii|nii\.gz)$/.test(name)) {
             throw new common_1.ForbiddenException('bad sample name');
         }
@@ -45,9 +45,9 @@ let CasesService = class CasesService {
         if (!(0, fs_1.existsSync)(path))
             throw new common_1.ForbiddenException('sample not found');
         // Reuse create() with a multer-shaped object pointing at the sample on disk.
-        return this.create(user, { path, originalname: name });
+        return this.create(user, { path, originalname: name }, meta);
     }
-    async create(user, file) {
+    async create(user, file, meta) {
         if (!file) {
             throw new common_1.InternalServerErrorException('No file provided');
         }
@@ -74,12 +74,27 @@ let CasesService = class CasesService {
         catch (error) {
             throw new common_1.InternalServerErrorException(`Inference failed: ${error?.message || 'Unknown error'}`);
         }
+        // Subject attribution. Doctors tag who/what a scan is for (a patient study
+        // vs a TEST run); patient self-uploads are always their own PATIENT study.
+        let subjectType;
+        let subjectLabel;
+        if (user.role === 'DOCTOR') {
+            subjectType = meta?.subjectType === 'TEST' ? 'TEST' : 'PATIENT';
+            const label = (meta?.subjectLabel ?? '').toString().trim().slice(0, 120);
+            subjectLabel = label || (subjectType === 'TEST' ? 'Test scan' : null);
+        }
+        else {
+            subjectType = 'PATIENT';
+            subjectLabel = null;
+        }
         // Save case to DB
         const caseData = {
             id: caseId,
             scope,
             status: client_1.CaseStatus.PENDING,
             imagePath: finalPath,
+            subjectType,
+            subjectLabel,
             predictedSubtype: predictionResult.predicted_subtype,
             confidence: predictionResult.confidence,
             probs: predictionResult.probs,
@@ -162,6 +177,30 @@ let CasesService = class CasesService {
             ...caseData,
             probs: caseData.probs,
         };
+    }
+    /**
+     * Update editable, doctor-owned fields of a case: the clinical note and the
+     * subject attribution (patient label / TEST). Silo-checked via findOne, and
+     * only the owning role may edit (doctors edit hospital cases; patients can
+     * annotate their own). Never touches prediction/privacy fields.
+     */
+    async updateCase(user, id, body) {
+        await this.findOne(user, id); // silo enforcement (throws on mismatch)
+        const data = {};
+        if (body.clinicalNote !== undefined) {
+            data.clinicalNote = body.clinicalNote.toString().slice(0, 2000) || null;
+        }
+        // Subject attribution is a doctor concept; patients can't reclassify a study.
+        if (user.role === 'DOCTOR') {
+            if (body.subjectType !== undefined) {
+                data.subjectType = body.subjectType === 'TEST' ? 'TEST' : 'PATIENT';
+            }
+            if (body.subjectLabel !== undefined) {
+                data.subjectLabel = body.subjectLabel.toString().trim().slice(0, 120) || null;
+            }
+        }
+        const updated = await this.prisma.case.update({ where: { id }, data });
+        return { ...updated, probs: updated.probs };
     }
     async verifyImage(file) {
         return this.inferenceService.verifyImage(file.buffer, file.originalname || 'scan.jpg');

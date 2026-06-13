@@ -5,6 +5,8 @@ export declare class PdfService {
         confidence: number;
         modelVersion: number;
         createdAt: Date;
+        probs?: unknown;
+        subjectLabel?: string | null;
     }): Promise<Buffer>;
 }
 //# sourceMappingURL=pdf.service.d.ts.map

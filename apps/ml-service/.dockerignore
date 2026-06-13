@@ -1,0 +1,8 @@
+# Local Python virtualenv — never ship into the image (container uses system python)
+.venv_ml/
+.venv/
+__pycache__/
+*.pyc
+# Local logs / scratch
+*.log
+.env

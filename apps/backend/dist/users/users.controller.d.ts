@@ -4,11 +4,11 @@ export declare class UsersController {
     constructor(usersService: UsersService);
     getMe(req: any): Promise<any>;
     updateMe(req: any, data: any): Promise<{
-        id: string;
         email: string;
         name: string;
         role: import(".prisma/client").$Enums.Role;
         hospitalId: string | null;
+        id: string;
         onboardingDone: boolean;
     }>;
 }

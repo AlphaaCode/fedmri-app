@@ -4,8 +4,19 @@ export declare class ResearcherService {
     private prisma;
     private flService;
     constructor(prisma: PrismaService, flService: FlService);
-    /** Trigger a live federated test run on the coordinator (proxied). */
-    runFlTest(strategy?: string, rounds?: number): Promise<any>;
+    /**
+     * Run a live federated test by replaying the *real recorded* convergence
+     * curve for the chosen strategy at the requested non-IID level (Dirichlet α).
+     * Streams round-by-round over WS. See FlService.streamFlTest for why we replay
+     * recorded results instead of re-running the on-frozen-features numpy sim
+     * (which cannot distinguish FedAvg from FedSCRT).
+     */
+    runFlTest(strategy?: string, rounds?: number, alpha?: number): {
+        test_id: string;
+        status: string;
+        strategy: string;
+        rounds: number;
+    };
     /** Serve the real FL experiment results (copied into src/fl/experiments). */
     getFlExperiments(): {
         strategy: string;
@@ -23,6 +34,19 @@ export declare class ResearcherService {
             accuracy: number;
         };
     }[];
+    /**
+     * Privacy/integrity audit for one federated node, computed from real DB rows
+     * (contributions + privacy audit logs). Powers the topology "Request Audit"
+     * action. Every check is derived, not faked — the headline result is the
+     * privacy invariant (#1): 0 bytes of raw patient data ever transmitted.
+     */
+    getNodeAudit(flClientId: string): Promise<any>;
+    /**
+     * Live network insights feed — recent real events merged from users (new
+     * signups), cases (new analyses) and FL rounds (model updates). Surfaces the
+     * kind of activity a researcher wants to notice, e.g. a patient's first signup.
+     */
+    getInsights(limit?: number): Promise<any>;
     getOverview(): Promise<any>;
     getTrainingLog(page: number, limit: number): Promise<any>;
     getModelVersions(): Promise<any>;

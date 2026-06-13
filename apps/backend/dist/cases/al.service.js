@@ -44,29 +44,42 @@ let AlService = AlService_1 = class AlService {
                 const f1Macro = data.f1_macro;
                 const f1PerClass = data.f1_per_class;
                 const accuracy = data.accuracy;
-                // Derive the next version from our own metrics history rather than the
-                // ml-service's in-memory counter (which resets on restart and would
-                // collide with the unique modelVersion column).
-                const top = await this.prisma.modelMetrics.findFirst({
-                    orderBy: { modelVersion: 'desc' },
-                });
-                const newVersion = (top?.modelVersion ?? 1) + 1;
+                // Allocate the next version from our own metrics history (not the
+                // ml-service's in-memory counter, which resets on restart). Retry on the
+                // unique modelVersion constraint so concurrent feedback can't lose an
+                // update — two near-simultaneous fine-tunes would otherwise collide.
+                let newVersion = 0;
+                let prevF1 = f1Macro;
+                for (let attempt = 0;; attempt++) {
+                    const top = await this.prisma.modelMetrics.findFirst({
+                        orderBy: { modelVersion: 'desc' },
+                    });
+                    newVersion = (top?.modelVersion ?? 1) + 1;
+                    prevF1 = top?.f1Macro ?? f1Macro;
+                    try {
+                        await this.prisma.modelMetrics.create({
+                            data: {
+                                id: (0, crypto_1.randomUUID)(),
+                                modelVersion: newVersion,
+                                flRound: 0, // 0 indicates AL update (not FL round)
+                                accuracy,
+                                f1Macro,
+                                f1PerClass: f1PerClass,
+                                strategy: 'AL',
+                            },
+                        });
+                        break;
+                    }
+                    catch (e) {
+                        if (e?.code === 'P2002' && attempt < 4)
+                            continue; // version taken, retry
+                        throw e;
+                    }
+                }
                 await this.prisma.feedback.update({
                     where: { id: feedbackId },
                     data: { newModelVersion: newVersion },
                 });
-                await this.prisma.modelMetrics.create({
-                    data: {
-                        id: (0, crypto_1.randomUUID)(),
-                        modelVersion: newVersion,
-                        flRound: 0, // 0 indicates AL update (not FL round)
-                        accuracy,
-                        f1Macro,
-                        f1PerClass: f1PerClass,
-                        strategy: 'AL',
-                    },
-                });
-                const prevF1 = top?.f1Macro ?? f1Macro;
                 const f1Delta = Number((f1Macro - prevF1).toFixed(4));
                 this.gateway.server.to('doctors').emit('model:updated', {
                     modelVersion: newVersion,

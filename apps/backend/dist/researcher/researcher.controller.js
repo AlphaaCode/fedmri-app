@@ -35,10 +35,16 @@ let ResearcherController = class ResearcherController {
         return this.svc.getFlExperiments();
     }
     flTest(body) {
-        return this.svc.runFlTest(body?.strategy, body?.rounds ?? 10);
+        return this.svc.runFlTest(body?.strategy, body?.rounds ?? 10, body?.alpha);
     }
     topology() {
         return this.svc.getTopology();
+    }
+    nodeAudit(flClientId) {
+        return this.svc.getNodeAudit(flClientId);
+    }
+    insights(limit) {
+        return this.svc.getInsights(limit ? parseInt(limit, 10) : 10);
     }
     datasets() {
         return this.svc.getDatasets();
@@ -88,6 +94,20 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], ResearcherController.prototype, "topology", null);
+__decorate([
+    (0, common_1.Get)('node-audit/:flClientId'),
+    __param(0, (0, common_1.Param)('flClientId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ResearcherController.prototype, "nodeAudit", null);
+__decorate([
+    (0, common_1.Get)('insights'),
+    __param(0, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ResearcherController.prototype, "insights", null);
 __decorate([
     (0, common_1.Get)('datasets'),
     __metadata("design:type", Function),

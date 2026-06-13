@@ -169,12 +169,72 @@ let FlService = FlService_1 = class FlService {
             });
         }
     }
-    async runFlTest(strategy, rounds) {
-        const resp = await (0, rxjs_1.firstValueFrom)(this.httpService.post(`${this.flCoordinatorUrl}/fl-test/run`, {
+    /**
+     * Stream a *recorded* FL convergence curve round-by-round over WS.
+     *
+     * The previous implementation proxied to the coordinator's numpy sim, which
+     * trains a linear head on already-frozen feature caches — on frozen features
+     * "FedAvg" and "FedSCRT" are the same algorithm, so both produced identical
+     * curves that also did not match the real experiment results. Here we replay
+     * the genuine per-round history measured during the real training runs, so
+     * each strategy shows its true, distinct convergence (e.g. at α=0.5 FedAvg
+     * tops out ~0.52 macro-F1 while FedSCRT reaches ~0.66).
+     */
+    streamFlTest(strategy, history, rounds) {
+        const testId = (0, crypto_1.randomUUID)();
+        const points = this.resampleHistory(history, rounds);
+        // Fire-and-forget: pace the stream so the live chart climbs round-by-round.
+        void (async () => {
+            try {
+                for (let i = 0; i < points.length; i++) {
+                    if (i > 0) {
+                        await new Promise((r) => setTimeout(r, 900));
+                    }
+                    const p = points[i];
+                    this.gateway.emitTestProgress({
+                        testId,
+                        strategy,
+                        round: i + 1,
+                        f1: p.f1,
+                        auc: p.auc,
+                        accuracy: p.accuracy,
+                        clientSizes: [],
+                    });
+                }
+                const finalF1 = points.length ? points[points.length - 1].f1 : 0;
+                this.gateway.emitTestComplete({ testId, strategy, finalF1 });
+            }
+            catch (err) {
+                this.logger.error(`FL test stream failed: ${err?.message}`);
+                this.gateway.emitTestComplete({ testId, strategy, finalF1: 0 });
+            }
+        })();
+        return {
+            test_id: testId,
+            status: 'running',
             strategy,
-            rounds,
-        }));
-        return resp.data; // { test_id, status, ... }
+            rounds: points.length,
+        };
+    }
+    /**
+     * Down/identity-sample a recorded history to exactly `n` points while always
+     * keeping the true first and last entries, so the streamed curve preserves
+     * the real start and final values regardless of how many rounds the UI asks
+     * for.
+     */
+    resampleHistory(arr, n) {
+        if (arr.length === 0 || n <= 0)
+            return [];
+        if (n >= arr.length)
+            return arr.slice();
+        if (n === 1)
+            return [arr[arr.length - 1]];
+        const out = [];
+        for (let i = 0; i < n; i++) {
+            const idx = Math.round((i * (arr.length - 1)) / (n - 1));
+            out.push(arr[idx]);
+        }
+        return out;
     }
     async findRounds(page = 1, limit = 10) {
         const skip = (page - 1) * limit;

@@ -10,7 +10,10 @@ export declare class CasesController {
         confidence: number;
         reason: string;
     }>;
-    create(user: any, file: Express.Multer.File): Promise<any>;
+    create(user: any, file: Express.Multer.File, body: {
+        subjectType?: string;
+        subjectLabel?: string;
+    }): Promise<any>;
     findAll(user: any, page?: number, limit?: number): Promise<{
         data: any[];
         total: number;
@@ -20,6 +23,8 @@ export declare class CasesController {
     }[];
     createFromSample(user: any, body: {
         name: string;
+        subjectType?: string;
+        subjectLabel?: string;
     }): Promise<any>;
     findOne(user: any, id: string): Promise<any>;
     getAttention(user: any, id: string): Promise<{
@@ -33,6 +38,11 @@ export declare class CasesController {
         type: 'VALIDATE' | 'DISPUTE';
         correctSubtype?: string;
         justification?: string;
+    }): Promise<any>;
+    update(user: any, id: string, body: {
+        clinicalNote?: string;
+        subjectType?: string;
+        subjectLabel?: string;
     }): Promise<any>;
 }
 //# sourceMappingURL=cases.controller.d.ts.map
