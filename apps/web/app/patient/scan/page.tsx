@@ -67,7 +67,7 @@ function BinaryResultCard({ result, onReset }: { result: CaseResult; onReset: ()
         </div>
 
         {/* Advisory */}
-        <div className="rounded-lg p-3 text-xs leading-relaxed" style={{ background: "var(--teal-glow)", color: "#99f6e4", border: "1px solid var(--teal)30" }}>
+        <div className="rounded-lg p-3 text-xs leading-relaxed" style={{ background: "var(--teal-glow)", color: "var(--teal-on-glow)", border: "1px solid var(--teal)30" }}>
           {advisory}
         </div>
 
@@ -138,7 +138,7 @@ function StandardResultCard({ result, onReset }: { result: CaseResult; onReset: 
         </div>
 
         {advisory && (
-          <div className="rounded-lg p-3 text-xs leading-relaxed" style={{ background: "var(--teal-glow)", color: "#99f6e4", border: "1px solid var(--teal)30" }}>
+          <div className="rounded-lg p-3 text-xs leading-relaxed" style={{ background: "var(--teal-glow)", color: "var(--teal-on-glow)", border: "1px solid var(--teal)30" }}>
             {advisory}
           </div>
         )}

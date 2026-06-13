@@ -10,7 +10,7 @@ export function DoctorSiloBanner() {
       className="px-3 py-1.5 rounded-lg text-[11px] flex items-center gap-2"
       style={{
         background: active ? "#f59e0b15" : "var(--teal-glow)",
-        color: active ? "#fbbf24" : "#99f6e4",
+        color: active ? "var(--amber-on-glow)" : "var(--teal-on-glow)",
         border: "1px solid var(--border)",
       }}
     >

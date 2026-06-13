@@ -1,3 +1,4 @@
+import type { Response } from 'express';
 import { ResearcherService } from './researcher.service';
 export declare class ResearcherController {
     private svc;
@@ -33,6 +34,7 @@ export declare class ResearcherController {
     };
     topology(): Promise<any>;
     nodeAudit(flClientId: string): Promise<any>;
+    nodeAuditReport(flClientId: string, res: Response): Promise<void>;
     insights(limit?: string): Promise<any>;
     datasets(): Promise<any>;
     systemLogs(page?: string, limit?: string, severity?: string): Promise<any>;

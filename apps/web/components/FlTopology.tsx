@@ -229,7 +229,7 @@ export function FlTopology() {
         {/* Privacy pill */}
         <div
           className="text-[11px] rounded-lg px-3 py-2 flex items-center gap-1.5"
-          style={{ background: "var(--teal-glow)", color: "#99f6e4", border: "1px solid var(--teal)30" }}
+          style={{ background: "var(--teal-glow)", color: "var(--teal-on-glow)", border: "1px solid var(--teal)30" }}
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <path d="M5 1L8.5 2.5V5.5C8.5 7.2 6.9 8.6 5 9C3.1 8.6 1.5 7.2 1.5 5.5V2.5L5 1Z"

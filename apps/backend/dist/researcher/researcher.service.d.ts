@@ -42,6 +42,16 @@ export declare class ResearcherService {
      */
     getNodeAudit(flClientId: string): Promise<any>;
     /**
+     * Downloadable, signed PDF compliance report for a node — the node audit
+     * rendered to a shareable document. The auditId (sha1 over node+timestamp)
+     * acts as the integrity/signature reference printed on the report.
+     */
+    getNodeAuditReport(flClientId: string): Promise<{
+        buffer: Buffer;
+        filename: string;
+    } | null>;
+    private renderAuditPdf;
+    /**
      * Live network insights feed — recent real events merged from users (new
      * signups), cases (new analyses) and FL rounds (model updates). Surfaces the
      * kind of activity a researcher wants to notice, e.g. a patient's first signup.

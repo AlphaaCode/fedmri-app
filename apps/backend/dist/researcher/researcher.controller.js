@@ -43,6 +43,19 @@ let ResearcherController = class ResearcherController {
     nodeAudit(flClientId) {
         return this.svc.getNodeAudit(flClientId);
     }
+    async nodeAuditReport(flClientId, res) {
+        const r = await this.svc.getNodeAuditReport(flClientId);
+        if (!r) {
+            res.status(404).json({ message: 'Node not found' });
+            return;
+        }
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="${r.filename}"`,
+            'Content-Length': r.buffer.length,
+        });
+        res.end(r.buffer);
+    }
     insights(limit) {
         return this.svc.getInsights(limit ? parseInt(limit, 10) : 10);
     }
@@ -101,6 +114,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], ResearcherController.prototype, "nodeAudit", null);
+__decorate([
+    (0, common_1.Get)('node-audit/:flClientId/report'),
+    __param(0, (0, common_1.Param)('flClientId')),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], ResearcherController.prototype, "nodeAuditReport", null);
 __decorate([
     (0, common_1.Get)('insights'),
     __param(0, (0, common_1.Query)('limit')),

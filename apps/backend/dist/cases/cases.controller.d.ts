@@ -26,6 +26,7 @@ export declare class CasesController {
         subjectType?: string;
         subjectLabel?: string;
     }): Promise<any>;
+    reviewQueue(user: any): Promise<any[]>;
     findOne(user: any, id: string): Promise<any>;
     getAttention(user: any, id: string): Promise<{
         attention: number[];
@@ -33,7 +34,7 @@ export declare class CasesController {
         slicePng?: string;
         topSlice?: number;
     }>;
-    downloadPdf(user: any, id: string, res: Response): Promise<void>;
+    downloadPdf(user: any, id: string, lang: string | undefined, res: Response): Promise<void>;
     submitFeedback(user: any, id: string, body: {
         type: 'VALIDATE' | 'DISPUTE';
         correctSubtype?: string;

@@ -199,6 +199,61 @@ export default function FederatedPage() {
         </table>
       </div>
 
+      {/* ── Data heterogeneity explorer (non-IID story) ─────────────────── */}
+      {(() => {
+        const dist =
+          alpha === 0.5
+            ? [
+                { h: "Hospital A", lum: 0.8 },
+                { h: "Hospital B", lum: 0.45 },
+                { h: "Hospital C", lum: 0.25 },
+              ]
+            : [
+                { h: "Hospital A", lum: 0.66 },
+                { h: "Hospital B", lum: 0.63 },
+                { h: "Hospital C", lum: 0.67 },
+              ];
+        return (
+          <div className="glass rounded-xl border p-5" style={{ borderColor: "var(--border)" }}>
+            <div className="flex items-center justify-between mb-1">
+              <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                Data heterogeneity across hospitals
+              </div>
+              <span
+                className="text-xs px-2 py-0.5 rounded-full"
+                style={{ background: "var(--bg-card2)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
+              >
+                {alpha === 0.5 ? "Non-IID (α=0.5)" : "Near-IID (α=100)"}
+              </span>
+            </div>
+            <p className="text-xs mb-3" style={{ color: "var(--text-secondary)" }}>
+              Each hospital&apos;s class mix. Under non-IID data (low Dirichlet α) the splits diverge —
+              which is exactly what makes federated training hard and where <strong>FedSCRT</strong> wins.
+              Toggle α above to see the effect on both the curve and these splits.
+            </p>
+            <div className="space-y-2.5">
+              {dist.map((d) => (
+                <div key={d.h} className="flex items-center gap-3">
+                  <div className="w-24 text-xs shrink-0" style={{ color: "var(--text-primary)" }}>{d.h}</div>
+                  <div className="flex-1 h-4 rounded-md overflow-hidden flex" style={{ background: "var(--bg-base)" }}>
+                    <div className="h-full transition-all duration-500" style={{ width: `${d.lum * 100}%`, background: "var(--teal)" }} />
+                    <div className="h-full transition-all duration-500" style={{ width: `${(1 - d.lum) * 100}%`, background: "#f59e0b" }} />
+                  </div>
+                  <div className="w-24 text-right text-[11px] tabular-nums" style={{ color: "var(--text-secondary)" }}>
+                    {Math.round(d.lum * 100)}% / {Math.round((1 - d.lum) * 100)}%
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-4 mt-3 text-[11px]" style={{ color: "var(--text-secondary)" }}>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full" style={{ background: "var(--teal)" }} />Luminal</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full" style={{ background: "#f59e0b" }} />Non-Luminal</span>
+              <span className="ml-auto" style={{ opacity: 0.7 }}>Illustrative Dirichlet split</span>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ── Live FL test — demo theater ─────────────────────────────────── */}
       <div
         className={`glass rounded-xl border p-6 ${running ? "hero-glow glow-border" : ""}`}

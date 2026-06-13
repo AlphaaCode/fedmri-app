@@ -108,6 +108,8 @@ export interface CaseResult {
   subjectLabel?: string | null;
   // Doctor's editable, persisted clinical note for this case.
   clinicalNote?: string | null;
+  // Active-learning uncertainty (1 = model maximally unsure); set by review-queue.
+  uncertainty?: number;
   // Additive FedSCRT real-mode fields (present on a fresh real-mode prediction).
   f1?: number;
   auc?: number;

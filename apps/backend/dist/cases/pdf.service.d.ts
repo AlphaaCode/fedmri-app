@@ -7,6 +7,6 @@ export declare class PdfService {
         createdAt: Date;
         probs?: unknown;
         subjectLabel?: string | null;
-    }): Promise<Buffer>;
+    }, lang?: string): Promise<Buffer>;
 }
 //# sourceMappingURL=pdf.service.d.ts.map

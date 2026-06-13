@@ -15,8 +15,16 @@
 
 An educational web app that demonstrates **federated learning (FL)** for breast-MRI
 molecular-subtype classification. The model is trained "across 3 hospitals" without
-raw patient data ever leaving a hospital — only model weights move. The app has
-three portals, each telling the same story from a different angle:
+raw patient data ever leaving a hospital — only model weights move.
+
+> **In plain English.** Hospitals legally can't pool patient scans. So instead of
+> collecting the data in one place, each hospital trains the AI *on its own machines*
+> and sends back only the model's *lessons* (numeric weight updates) — never a scan. A
+> central server averages those lessons into one shared model that's smarter than any
+> single hospital's. FedMRI is a working demo of that idea, shown from three points of
+> view:
+
+The app has three portals, each telling the same story from a different angle:
 
 | Portal | Who | What they see |
 |---|---|---|
@@ -785,3 +793,100 @@ columns; `PATCH /cases/:id` (`CasesService.updateCase`); `ResearcherService.getN
 > **Applying these:** the ml-service change needs a container rebuild
 > (`docker compose up -d --build ml-service`) since its code is baked into the image. The
 > `Case` columns need `npm run db:push` (backend stopped). Web + backend hot-reload.
+
+### 17b. Second batch (2026-06-13)
+
+| Area | What changed | Where |
+|---|---|---|
+| **Active learning → review queue** | Doctor dashboard now shows the model's **least-confident** cases (uncertainty sampling); ✓/✗ inline feedback fine-tunes the model. | `GET /cases/review-queue`, `doctor/page.tsx` |
+| **Non-IID explorer** | Researcher Federated page shows each hospital's class mix and how Dirichlet α changes it (ties to the convergence curve). | `researcher/federated/page.tsx` |
+| **Patient trend** | Patient results page charts AI confidence per scan over time. | `patient/results/page.tsx` |
+| **Explain the heatmap** | Chat quick-action + sharper prompt so the assistant explains which slices/regions drove the prediction. | `ChatPanel.tsx`, `chat.service.ts` |
+| **Multi-language** | Patient portal in **EN / FR / AR** (with RTL) + PDF report in **EN / FR** (AR falls back to EN — pdfkit can't shape Arabic). | `lib/i18n.ts`, `patient/results/page.tsx`, `cases/pdf.service.ts` |
+| **Real Flower mode** | `FL_MODE=flower` now runs a **real, self-contained federated round** over the silo caches (per-hospital head training + FedAvg; uses flwr's `aggregate()` if installed, else numpy). No external client VMs / Ray needed. Default stays `mock`. | `engines/flower.py` |
+| **Signed compliance export** | Download a node's audit as a **PDF** (verdict, integrity checks, contributions, signature = `auditId`). | `GET /researcher/node-audit/:id/report` |
+| **Heatmap zoom + opacity** | Zoom/pan on the scan viewer; the opacity slider got a visible bordered track (it was invisible on light theme). | `AttentionOverlay.tsx`, `globals.css` |
+| **Light-mode contrast** | Teal/amber text on tinted chips/banners is now theme-aware (`--teal-on-glow` / `--amber-on-glow`) — fixes the unreadable green-on-green. | `globals.css` + call sites |
+
+---
+
+## 18. Questions a reviewer might ask (with answers)
+
+Short, honest answers to the things a researcher on the jury is likely to probe. (For
+*why each technology* — Postgres, Prisma, NestJS, etc. — see §16.)
+
+**Q: Why do you train with plain Python scripts instead of Jupyter notebooks?**
+Because the source model in `model-core/` was trained that way, and the app reuses those
+exact scripts (`model.py`, `image_process.py`, `real_inference.py`) for inference. Scripts
+are reproducible and version-controlled: they run head-less (no kernel, no hidden cell
+state, no out-of-order execution), they diff cleanly in git, and they're callable from a
+service and from CI. Notebooks are great for exploration but encourage hidden state and
+non-reproducible runs — not what you want as the single source of truth a live system
+depends on. So the pipeline is "one set of scripts, used identically in training and in
+the app," which is exactly why a prediction in the app matches the trained model.
+
+**Q: Is the model *actually* learning from doctor feedback, or is it a fake animation?**
+It's real and measurable, but be precise about *what* learns. The deep backbone is frozen;
+doctor feedback performs **online calibration of the classifier head's per-class bias**
+(`conf_bias`, logit space). `/predict` applies that bias, so the *same scan* returns higher
+confidence after an approval (verified: 0.55 → 0.69 after two approvals) and shifts toward
+the corrected class after a correction. This is a demo-scale version of the
+classifier-retraining FedSCRT itself does, not full backprop of the CNN. (See §7 / the AL
+section.)
+
+**Q: Is the live "Run FL test" a real training run?**
+It **replays the real recorded per-round convergence** measured during the actual training
+runs (`src/fl/experiments/fl_*.json`). We don't re-train live because, on frozen-backbone
+features, FedAvg and FedSCRT are the *same* procedure and wouldn't reproduce the published
+gap — the genuine difference only exists in the full runs. So replay is the honest choice.
+Separately, `FL_MODE=flower` does run a real, self-contained federated round over the silo
+caches (§17b).
+
+**Q: How do you actually prove no patient data leaves a hospital?**
+Three layers: (1) the Python↔Node boundary only ever transmits weights/metrics — scans are
+read locally and never serialised across it; (2) every `PrivacyAuditLog.rawDataTransmitted`
+is hard-coded `0` (the privacy claim as a DB column, invariant #1); (3) the topology
+**Request Audit** computes a live report from the audit log and `FlContribution` rows and
+you can download it as a signed PDF. The `HospitalSiloGuard` also blocks any cross-hospital
+case read.
+
+**Q: Why FedSCRT instead of plain FedAvg?**
+Under non-IID data (hospitals with different class mixes — see the heterogeneity explorer),
+FedAvg drifts and underperforms. FedSCRT **freezes the shared backbone and federates only a
+retrained classifier head (cRT)**, which is far more robust to that drift. Measured at
+α=0.5: FedAvg ≈ 0.52 macro-F1, FedSCRT ≈ 0.66, close to the centralized upper bound (≈ 0.69)
+while sharing 0 bytes of data.
+
+**Q: Why binary (Luminal vs Non-Luminal) and not the four molecular subtypes?**
+Data volume and label reliability. Collapsing to Luminal (hormone-receptor positive) vs
+Non-Luminal (HER2-enriched + triple-negative) gives a clinically meaningful, well-supported
+decision (does endocrine therapy apply?) that the available federated data can learn
+reliably. The 4-class path still exists in mock mode for illustration.
+
+**Q: Why ConvNeXt-Nano + Gated-Attention MIL?**
+An MRI is a 3D volume (many slices). We treat each slice as an instance and use
+**Multiple-Instance Learning** with gated attention so the model both predicts the subtype
+*and* tells you which slices/regions drove it (that's the heatmap). ConvNeXt-Nano is a small,
+modern CNN backbone — strong features without needing a GPU farm.
+
+**Q: How is the non-IID setting simulated, and why does α matter?**
+Each hospital's class distribution is drawn from a **Dirichlet(α)**. Low α (0.5) = very
+skewed, divergent hospitals (hard, realistic); high α (100) = nearly identical
+distributions (easy). The Federated page lets you toggle α and see both the data splits and
+the convergence curve change together.
+
+**Q: Is this real patient data?**
+No — it's an educational artifact. It runs fully offline with mock modes by default (no GPU,
+no cloud, no PHI). The federated math, privacy accounting, and model architecture are real;
+the demo data is synthetic/derived so it can be shared safely.
+
+**Q: Could this scale to real hospitals?**
+Yes, with the same architecture: flip `FL_MODE=flower` (the engine already does a real FedAvg
+round) and point it at real per-hospital clients; storage swaps to MinIO/S3 via `STORAGE_MODE`;
+the privacy/audit layer is already in place. What's *not* production-ready: real DP accounting
+(we expose ε but don't enforce a budget), secure aggregation, and authentication hardening.
+
+**Q: Biggest limitations / honest caveats?**
+Frozen-backbone AL (not full retraining), replayed FL-test curves, Dirichlet splits are
+illustrative, Arabic PDF falls back to English (font/shaping), and the dataset is
+educational. None of these affect the integrity of the privacy story, which is the thesis.

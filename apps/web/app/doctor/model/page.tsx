@@ -76,7 +76,7 @@ export default function ModelMetricsPage() {
       </div>
 
       {compare && (
-        <div className="rounded-xl p-3 text-xs" style={{ background: "var(--teal-glow)", border: "1px solid #2dd4bf30", color: "#99f6e4" }}>
+        <div className="rounded-xl p-3 text-xs" style={{ background: "var(--teal-glow)", border: "1px solid #2dd4bf30", color: "var(--teal-on-glow)" }}>
           <strong style={{ color: "var(--teal)" }}>Privacy cost of centralization:</strong>{" "}
           {compare.privacyCost.patientsProtected} patients' raw MRI scans would have been shared to achieve the
           centralized baseline. With federated learning, the {Math.abs(compare.gap).toFixed(2)} F1 gap is the price paid

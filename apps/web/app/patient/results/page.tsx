@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { apiFetch } from "@/lib/api";
 import { downloadCasePdf } from "@/lib/download-pdf";
 import { AttentionOverlay } from "@/components/AttentionOverlay";
 import { SUBTYPE_COLOR, SUBTYPE_PLAIN } from "@/lib/types";
+import { useLang, isRTL, LANGS, PATIENT_T, type Lang } from "@/lib/i18n";
 
 function subtypeColor(s: string): string {
   return (SUBTYPE_COLOR as Record<string, string>)[s] ?? "var(--text-secondary)";
@@ -17,11 +19,42 @@ function isBinary(s: string): boolean {
   return s === "Luminal" || s === "Non-Luminal";
 }
 
+// Longitudinal trend: AI confidence per scan over time. Plain-language, no jargon.
+function TrendChart({ cases, t }: { cases: any[]; t: Record<string, string> }) {
+  const data = [...cases]
+    .sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt))
+    .map((c) => ({
+      date: new Date(c.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
+      confidence: Math.round((c.confidence ?? 0) * 100),
+      subtype: c.predictedSubtype as string,
+    }));
+  return (
+    <div className="rounded-xl border p-4" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+      <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{t.trendTitle}</div>
+      <div className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>{t.trendSub}</div>
+      <div style={{ width: "100%", height: 170 }} dir="ltr">
+        <ResponsiveContainer>
+          <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -14 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+            <XAxis dataKey="date" stroke="var(--chart-axis)" fontSize={11} />
+            <YAxis domain={[0, 100]} stroke="var(--chart-axis)" fontSize={11} tickFormatter={(v: number) => `${v}%`} />
+            <Tooltip
+              contentStyle={{ background: "var(--chart-tooltip-bg)", border: "1px solid var(--border)" }}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              formatter={(v: any, _n: any, p: any) => [`${v}%`, p?.payload?.subtype ?? "confidence"]}
+            />
+            <Line type="monotone" dataKey="confidence" stroke="var(--teal)" strokeWidth={2.5} dot={{ r: 4, fill: "var(--teal)" }} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
 // Full-scan review: probability bars + the attention heatmap (real MRI slice in
 // real mode) + advisory. Patients open this from their results list.
-function ScanReview({ c }: { c: any }) {
+function ScanReview({ c, t, lang }: { c: any; t: Record<string, string>; lang: Lang }) {
   const subtype = c.predictedSubtype as string;
-  const color = subtypeColor(subtype);
   const probs: number[] = Array.isArray(c.probs) ? c.probs : [];
   const bars = isBinary(subtype)
     ? [
@@ -35,8 +68,8 @@ function ScanReview({ c }: { c: any }) {
       }));
   const advisory = isBinary(subtype)
     ? subtype === "Luminal"
-      ? "This result suggests hormone-sensitivity. Hormone therapy is often an option — discuss with your oncologist."
-      : "Less hormone-sensitive. Your oncologist will advise on the most appropriate treatment path."
+      ? t.luminalAdvisory
+      : t.nonLuminalAdvisory
     : subtypePlain(subtype);
 
   return (
@@ -55,7 +88,7 @@ function ScanReview({ c }: { c: any }) {
               return (
                 <div key={b.label} className="flex items-center gap-3">
                   <div className="w-24 text-xs shrink-0" style={{ color: isTop ? "var(--text-primary)" : "var(--text-secondary)" }}>{b.label}</div>
-                  <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-base)" }}>
+                  <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-base)" }} dir="ltr">
                     <motion.div className="h-full rounded-full" initial={{ width: 0 }} animate={{ width: `${Math.round(b.p * 100)}%` }}
                       transition={{ duration: 0.6, ease: "easeOut" }} style={{ background: isTop ? b.c : "var(--border)" }} />
                   </div>
@@ -64,13 +97,13 @@ function ScanReview({ c }: { c: any }) {
               );
             })}
           </div>
-          <div className="rounded-lg p-3 text-xs leading-relaxed" style={{ background: "var(--teal-glow)", color: "#99f6e4", border: "1px solid var(--teal)30" }}>
+          <div className="rounded-lg p-3 text-xs leading-relaxed" style={{ background: "var(--teal-glow)", color: "var(--teal-on-glow)", border: "1px solid var(--teal)30" }}>
             {advisory}
           </div>
-          <button onClick={() => downloadCasePdf(c.id).catch(() => {})}
+          <button onClick={() => downloadCasePdf(c.id, lang).catch(() => {})}
             className="text-xs px-3 py-1.5 rounded-lg font-medium"
             style={{ background: "var(--teal-glow)", color: "var(--teal)", border: "1px solid var(--teal)40" }}>
-            Download PDF report
+            {t.download}
           </button>
         </div>
         <AttentionOverlay caseId={c.id} />
@@ -83,6 +116,9 @@ export default function PatientResultsPage() {
   const [cases, setCases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [lang, setLang] = useLang();
+  const t = PATIENT_T[lang];
+  const rtl = isRTL(lang);
 
   useEffect(() => {
     apiFetch<{ data: any[] }>("/cases")
@@ -92,11 +128,33 @@ export default function PatientResultsPage() {
   }, []);
 
   return (
-    <div className="w-full space-y-4 p-1">
-      <div>
-        <h1 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>Your scan history</h1>
-        <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Tap a scan to review the full result — always confirm with your oncologist</p>
+    <div className="w-full space-y-4 p-1" dir={rtl ? "rtl" : "ltr"}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>{t.historyTitle}</h1>
+          <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>{t.historySub}</p>
+        </div>
+        {/* Language selector */}
+        <div className="flex gap-1 p-0.5 rounded-lg shrink-0" style={{ background: "var(--bg-card2)", border: "1px solid var(--border)" }} dir="ltr">
+          {LANGS.map((l) => (
+            <button
+              key={l.code}
+              type="button"
+              onClick={() => setLang(l.code)}
+              aria-label={l.label}
+              className="text-xs px-2.5 py-1 rounded-md font-medium transition-colors"
+              style={{
+                background: lang === l.code ? "var(--teal-glow)" : "transparent",
+                color: lang === l.code ? "var(--teal-on-glow)" : "var(--text-secondary)",
+              }}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {!loading && cases.length >= 2 && <TrendChart cases={cases} t={t} />}
 
       {loading ? (
         <div className="space-y-2">
@@ -104,7 +162,7 @@ export default function PatientResultsPage() {
         </div>
       ) : cases.length === 0 ? (
         <div className="text-center py-12 text-sm" style={{ color: "var(--text-secondary)" }}>
-          No scans yet — upload one to get started
+          {t.none}
         </div>
       ) : (
         <div className="space-y-2">
@@ -126,23 +184,23 @@ export default function PatientResultsPage() {
                 <button
                   type="button"
                   onClick={() => setOpenId(open ? null : c.id)}
-                  className="w-full flex items-center justify-between text-left"
+                  className="w-full flex items-center justify-between text-left gap-3"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold" style={{ color }}>{c.predictedSubtype}</div>
                     <div className="text-xs mt-0.5 max-w-xs truncate" style={{ color: "var(--text-secondary)" }}>{plain}</div>
                     {confidence !== null && (
-                      <div className="text-[11px] mt-1" style={{ color: "var(--text-secondary)" }}>Confidence {confidence}%</div>
+                      <div className="text-[11px] mt-1" style={{ color: "var(--text-secondary)" }}>{t.confidence} {confidence}%</div>
                     )}
                   </div>
-                  <div className="text-right shrink-0 ml-4">
+                  <div className="text-right shrink-0">
                     <div className="text-xs" style={{ color: "var(--text-secondary)" }}>{date}</div>
                     <div className="text-[11px] mt-1" style={{ color: "var(--teal)" }}>
-                      {open ? "Hide ▲" : "Review full scan ▼"}
+                      {open ? t.hide : t.review}
                     </div>
                   </div>
                 </button>
-                <AnimatePresence>{open && <ScanReview c={c} />}</AnimatePresence>
+                <AnimatePresence>{open && <ScanReview c={c} t={t} lang={lang} />}</AnimatePresence>
               </motion.div>
             );
           })}

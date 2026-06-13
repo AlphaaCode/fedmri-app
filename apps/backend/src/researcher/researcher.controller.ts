@@ -6,8 +6,10 @@ import {
   Param,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -59,6 +61,24 @@ export class ResearcherController {
   @Get('node-audit/:flClientId')
   nodeAudit(@Param('flClientId') flClientId: string) {
     return this.svc.getNodeAudit(flClientId);
+  }
+
+  @Get('node-audit/:flClientId/report')
+  async nodeAuditReport(
+    @Param('flClientId') flClientId: string,
+    @Res() res: Response,
+  ) {
+    const r = await this.svc.getNodeAuditReport(flClientId);
+    if (!r) {
+      res.status(404).json({ message: 'Node not found' });
+      return;
+    }
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${r.filename}"`,
+      'Content-Length': r.buffer.length,
+    });
+    res.end(r.buffer);
   }
 
   @Get('insights')

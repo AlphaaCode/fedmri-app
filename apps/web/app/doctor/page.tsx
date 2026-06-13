@@ -13,7 +13,9 @@ import { DataTable, type Column } from "@/components/ui/DataTable";
 import { NetworkPerformanceCard } from "@/components/doctor/NetworkPerformanceCard";
 import { AttentionOverlay } from "@/components/AttentionOverlay";
 import { DoctorSiloBanner } from "@/components/doctor/DoctorSiloBanner";
-import { getCases, getModelComparison, type CasesResponse, type ModelComparison } from "@/lib/doctor-api";
+import { getCases, getModelComparison, getReviewQueue, type CasesResponse, type ModelComparison } from "@/lib/doctor-api";
+import { apiSubmitFeedback } from "@/lib/api";
+import { useToastStore } from "@/components/ToastProvider";
 import { SUBTYPE_COLOR, type CaseResult, type Subtype } from "@/lib/types";
 
 const shortId = (id: string) => `#FED-${id.slice(-6).toUpperCase()}`;
@@ -22,6 +24,67 @@ function StatusCell({ status }: { status?: string }) {
   if (status === "VALIDATED") return <StatusBadge status="validated" />;
   if (status === "DISPUTED") return <StatusBadge status="disputed" />;
   return <StatusBadge status="pending" label="Awaiting review" />;
+}
+
+// Active-learning queue: the cases the model is least sure about. The doctor
+// confirms/corrects inline; each label fine-tunes the model (uncertainty sampling).
+function ReviewQueue() {
+  const [items, setItems] = useState<CaseResult[]>([]);
+  const [busy, setBusy] = useState<string | null>(null);
+  const push = useToastStore((s) => s.push);
+
+  useEffect(() => { getReviewQueue().then(setItems).catch(() => setItems([])); }, []);
+
+  async function act(c: CaseResult, correct: boolean) {
+    setBusy(c.id);
+    try {
+      if (correct) {
+        await apiSubmitFeedback(c.id, "VALIDATE");
+        push("Confirmed — model fine-tuning on your approval", "success");
+      } else {
+        const other = String(c.predictedSubtype).startsWith("Luminal") ? "Non-Luminal" : "Luminal";
+        await apiSubmitFeedback(c.id, "DISPUTE", other);
+        push(`Correction sent — model retraining on ${other}`, "success");
+      }
+      setItems((xs) => xs.filter((x) => x.id !== c.id));
+    } catch (e: any) {
+      push(e?.message || "Could not record feedback", "warning");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  if (items.length === 0) return null;
+  return (
+    <Panel
+      title="Needs your review"
+      subtitle="Cases the model is least sure about — your labels train it (active learning)"
+    >
+      <div className="space-y-2">
+        {items.map((c) => {
+          const conf = Math.round(c.confidence * 100);
+          const unc = Math.round((c.uncertainty ?? 0) * 100);
+          return (
+            <div key={c.id} className="flex items-center gap-3 rounded-lg border p-2.5" style={{ background: "var(--bg-card2)", borderColor: "var(--border)" }}>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-mono" style={{ color: "var(--text-primary)" }}>
+                  {shortId(c.id)} · <span style={{ color: SUBTYPE_COLOR[c.predictedSubtype as Subtype] }}>{c.predictedSubtype}</span>
+                </div>
+                <div className="text-[11px] flex items-center gap-2" style={{ color: "var(--text-secondary)" }}>
+                  <span>confidence {conf}%</span>
+                  <span className="px-1.5 rounded" style={{ background: "var(--amber)20", color: "var(--amber-on-glow)" }}>uncertainty {unc}%</span>
+                </div>
+              </div>
+              <div className="flex gap-1.5 shrink-0">
+                <button disabled={busy === c.id} onClick={() => act(c, true)} className="text-[11px] px-2.5 py-1 rounded-lg font-medium disabled:opacity-50" style={{ background: "var(--teal-glow)", color: "var(--teal-on-glow)", border: "1px solid #2dd4bf40" }}>✓ Correct</button>
+                <button disabled={busy === c.id} onClick={() => act(c, false)} className="text-[11px] px-2.5 py-1 rounded-lg font-medium disabled:opacity-50" style={{ background: "#fb718515", color: "#fb7185", border: "1px solid #fb718540" }}>✗ Wrong</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Panel>
+  );
 }
 
 export default function DoctorDashboardPage() {
@@ -59,6 +122,8 @@ export default function DoctorDashboardPage() {
         <StatCard label="FL Model" value={`v${version}`} accent="var(--blue-accent)" hint="Round 10 / 10" />
         <StatCard label="Global F1 Macro" value={f1.toFixed(2)} accent="var(--amber)" hint={`${protectedCount} patients protected`} />
       </div>
+
+      <ReviewQueue />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
         <Panel title="Recent Studies" action={<Link href="/doctor/history" className="text-xs" style={{ color: "var(--teal)" }}>View all →</Link>}>

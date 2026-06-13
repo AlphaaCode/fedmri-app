@@ -72,7 +72,7 @@ function NodeSyncArticle() {
       <h2 className="text-sm font-semibold mb-2 mt-4" style={{ color: "var(--text-primary)" }}>API implementation</h2>
       <CodeBlock />
 
-      <div className="rounded-lg p-3 mt-4 text-xs flex items-start gap-2" style={{ background: "var(--teal-glow)", border: "1px solid #2dd4bf30", color: "#99f6e4" }}>
+      <div className="rounded-lg p-3 mt-4 text-xs flex items-start gap-2" style={{ background: "var(--teal-glow)", border: "1px solid #2dd4bf30", color: "var(--teal-on-glow)" }}>
         <span style={{ color: "var(--teal)" }}>ⓘ</span>
         <span><strong style={{ color: "var(--teal)" }}>Privacy by construction:</strong> the silo guard blocks every cross-hospital read, and each round writes a privacy-audit record with rawDataTransmitted = 0.</span>
       </div>

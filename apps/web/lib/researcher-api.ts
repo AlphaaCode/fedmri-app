@@ -1,4 +1,4 @@
-import { apiFetch } from "./api";
+import { apiFetch, API_URL } from "./api";
 
 // ─── FL experiment types ──────────────────────────────────────────────────────
 
@@ -190,6 +190,23 @@ export interface NodeAudit {
 
 export function getNodeAudit(flClientId: string): Promise<NodeAudit> {
   return apiFetch(`/researcher/node-audit/${encodeURIComponent(flClientId)}`);
+}
+
+// Download the signed PDF compliance report for a node.
+export async function downloadNodeAuditReport(flClientId: string): Promise<void> {
+  const t = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const res = await fetch(
+    `${API_URL}/researcher/node-audit/${encodeURIComponent(flClientId)}/report`,
+    { headers: t ? { Authorization: `Bearer ${t}` } : {} },
+  );
+  if (!res.ok) throw new Error(`Report download failed (${res.status})`);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `fedmri-compliance-${flClientId}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ─── Network insights feed (Datasets) ───────────────────────────────────────────

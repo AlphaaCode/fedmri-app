@@ -29,6 +29,13 @@ export declare class CasesService {
         data: any[];
         total: number;
     }>;
+    /**
+     * Active-learning review queue: the cases the model is LEAST sure about
+     * (confidence closest to 0.5), still PENDING, scoped to the caller's silo.
+     * The doctor labels these first — uncertainty sampling — and each label feeds
+     * the AL fine-tune. uncertainty = 1 − |conf − 0.5|·2 (1 = maximally unsure).
+     */
+    getReviewQueue(user: any, limit?: number): Promise<any[]>;
     getAttention(user: any, id: string): Promise<{
         attention: number[];
         size: number;
