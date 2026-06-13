@@ -53,6 +53,36 @@ export async function apiLogin(
   return res.json();
 }
 
+export async function apiRegister(
+  email: string,
+  password: string,
+  name: string,
+  role: "PATIENT" | "DOCTOR" | "RESEARCHER" = "PATIENT",
+  hospitalId?: string,
+): Promise<{ accessToken: string; refreshToken: string; user: any }> {
+  const res = await fetch(`${API}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email,
+      password,
+      name,
+      role,
+      ...(hospitalId ? { hospitalId } : {}),
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({} as any));
+    // NestJS ValidationPipe returns `message` as a string OR a string[]
+    // (e.g. ["password must be longer than or equal to 8 characters"]).
+    const msg = Array.isArray(err?.message)
+      ? err.message.join(". ")
+      : err?.message;
+    throw new Error(msg || "Registration failed");
+  }
+  return res.json();
+}
+
 export async function apiVerifyImage(file: File): Promise<{ valid: boolean; confidence: number; reason: string }> {
   const form = new FormData();
   form.append("file", file);
@@ -64,10 +94,25 @@ export async function apiVerifyImage(file: File): Promise<{ valid: boolean; conf
   return res.json();
 }
 
-export async function apiUploadCase(file: File): Promise<any> {
+export interface CaseSubjectMeta {
+  subjectType?: "PATIENT" | "TEST";
+  subjectLabel?: string;
+}
+
+export async function apiUploadCase(file: File, meta?: CaseSubjectMeta): Promise<any> {
   const form = new FormData();
   form.append("file", file);
+  if (meta?.subjectType) form.append("subjectType", meta.subjectType);
+  if (meta?.subjectLabel) form.append("subjectLabel", meta.subjectLabel);
   return apiFetch("/cases", { method: "POST", body: form });
+}
+
+// Update editable case fields (doctor clinical note / subject attribution).
+export async function apiUpdateCase(
+  id: string,
+  body: { clinicalNote?: string; subjectType?: "PATIENT" | "TEST"; subjectLabel?: string },
+): Promise<any> {
+  return apiFetch(`/cases/${id}`, { method: "PATCH", body: JSON.stringify(body) });
 }
 
 export async function apiGetAttention(
@@ -80,10 +125,10 @@ export async function apiListSamples(): Promise<{ name: string }[]> {
   return apiFetch("/cases/samples");
 }
 
-export async function apiCreateFromSample(name: string): Promise<any> {
+export async function apiCreateFromSample(name: string, meta?: CaseSubjectMeta): Promise<any> {
   return apiFetch("/cases/from-sample", {
     method: "POST",
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, ...(meta ?? {}) }),
   });
 }
 

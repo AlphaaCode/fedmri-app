@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Param,
   Post,
   Query,
   UseGuards,
@@ -46,13 +47,23 @@ export class ResearcherController {
 
   @Post('fl-test')
   @HttpCode(202)
-  flTest(@Body() body: { strategy?: string; rounds?: number }) {
-    return this.svc.runFlTest(body?.strategy, body?.rounds ?? 10);
+  flTest(@Body() body: { strategy?: string; rounds?: number; alpha?: number }) {
+    return this.svc.runFlTest(body?.strategy, body?.rounds ?? 10, body?.alpha);
   }
 
   @Get('topology')
   topology() {
     return this.svc.getTopology();
+  }
+
+  @Get('node-audit/:flClientId')
+  nodeAudit(@Param('flClientId') flClientId: string) {
+    return this.svc.getNodeAudit(flClientId);
+  }
+
+  @Get('insights')
+  insights(@Query('limit') limit?: string) {
+    return this.svc.getInsights(limit ? parseInt(limit, 10) : 10);
   }
 
   @Get('datasets')

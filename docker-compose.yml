@@ -17,6 +17,12 @@ services:
       retries: 5
 
   backend:
+    # HYBRID-MODE NOTE: you run the backend locally (`cd apps/backend && npm run
+    # start:dev`), so this container is OPT-IN only. Without a profile it would also
+    # bind host port 3001 and collide with your local backend — and its localhost
+    # DB/Redis URLs don't resolve inside a container anyway. Start the full in-Docker
+    # stack (incl. this) with:  docker compose --profile full up
+    profiles: ["full"]
     build:
       context: .
       dockerfile: apps/backend/Dockerfile.dev
@@ -74,16 +80,66 @@ services:
     environment:
       - INFERENCE_MODE=real
       - ATTN_MODE=blob
+      # Active learning is ON by default. Doctor feedback shifts a per-subtype
+      # confidence bias that /predict applies, so the SAME scan gains confidence
+      # after approvals. State is persisted to the /al-state volume below, so it
+      # stays "alive" across container restarts.
+      - AL_MODE=mock
+      - AL_STATE_PATH=/al-state/al_state.json
       - MODEL_V2_PATH=/model-v2
-      - FEDSCRT_CKPT=/model-v2/checkpoints/fedscrt_final.pt
-      - HOST_WORKSPACE_ROOT=D:/study/BioInfo M2 (2026)/Memoir
+      - FEDSCRT_CKPT=/model-ckpt/fedscrt_final.pt
+      # Host repo root → container path, so real attention can read the scans the
+      # backend (running on the host) wrote to apps/backend/uploads-tmp.
+      - HOST_WORKSPACE_ROOT=C:/Users/Dynabook/Documents/GitHub/fedmri-app
       - CONTAINER_WORKSPACE_ROOT=/workspace-root
     ports:
       - "8001:8001"
     volumes:
-      # In-repo model copy (code + fedscrt_final.pt) — self-contained, no external path
+      # model-core/ (hyphen) = model source code (model.py, image_process.py)
       - ./model-core:/model-v2
-      - D:/study/BioInfo M2 (2026)/Memoir:/workspace-root
+      # model_core/ (underscore) = checkpoint (fedscrt_final.pt)
+      - ./model_core:/model-ckpt
+      # Uploaded scans, mounted at the translated host path so attention_for_path
+      # can resolve C:\...\apps\backend\uploads-tmp\<id>.mha inside the container.
+      - ./apps/backend/uploads-tmp:/workspace-root/apps/backend/uploads-tmp
+      # Persisted active-learning state (learned confidence bias + version).
+      - ./apps/ml-service/.al-state:/al-state
+    restart: unless-stopped
+
+  fl-coordinator:
+    build:
+      context: ./apps/fl-coordinator
+      dockerfile: Dockerfile
+    container_name: fedmri-fl-coordinator
+    # Inherit FL_MODE / FL_STRATEGY / FL_WEBHOOK_SECRET from the repo-root .env so
+    # the webhook secret always matches the backend.
+    env_file:
+      - .env
+    environment:
+      # The coordinator POSTs round results back to the backend. The backend runs
+      # on the HOST (hybrid topology), so from inside this container it is reached
+      # via host.docker.internal — NOT localhost (which would be the container).
+      - BACKEND_URL=http://host.docker.internal:3001
+      # Per-hospital feature caches the live FL-test (realfl.py) loads.
+      - FL_CACHE_DIR=/app/fl_cache
+    ports:
+      - "8002:8002"
+    extra_hosts:
+      # Docker Desktop (Win/Mac) provides host.docker.internal automatically;
+      # this line makes it resolve on Linux hosts too.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Live-reload the coordinator source and keep the fl_cache/*.npz available.
+      - ./apps/fl-coordinator:/app
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8002/health').status==200 else 1)"
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
 volumes:

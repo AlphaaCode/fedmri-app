@@ -40,30 +40,44 @@
   --text-dim: #6e7681;
 }
 
-/* ── Light theme — overrides the dark defaults above ──────────────────── */
+/* ── Light theme — overrides the dark defaults above ──────────────────────
+   Calibrated for readability (2026-06-13): a clearly GREY page with near-solid
+   white cards (not translucent) so surfaces separate and text stays high-
+   contrast. The previous values were too close to pure white — cards washed
+   into the page and secondary/dim text was unreadable. */
 :root[data-theme="light"] {
-  --bg-base: #eef2f6;
-  --bg-card: rgba(255, 255, 255, 0.72);
-  --bg-card2: #e7ecf2;
-  --border: rgba(15, 23, 42, 0.12);
+  --bg-base: #dce3ec;            /* distinctly grey page (slate-200/300) */
+  --bg-card: rgba(255, 255, 255, 0.96);  /* near-solid white card — reads clearly over grey */
+  --bg-card2: #eaeff5;           /* inner chips/tracks — soft grey, distinct from white card */
+  --border: rgba(15, 23, 42, 0.18);      /* stronger so card edges are visible */
   --bg-card-solid: #ffffff;
-  --border-solid: #d3dae3;
-  --aurora-teal: rgba(20, 184, 166, 0.22);
-  --aurora-blue: rgba(59, 130, 246, 0.16);
+  --border-solid: #c2cbd6;
+  --glass-blur: 6px;
+  --aurora-teal: rgba(20, 184, 166, 0.18);
+  --aurora-blue: rgba(59, 130, 246, 0.13);
   --hero-glow-border: rgba(13, 148, 136, 0.45);
   --hero-glow-shadow: 0 0 18px rgba(13, 148, 136, 0.14);
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-dim: #94a3b8;
+  --text-primary: #0b1220;       /* near-black for body copy */
+  --text-secondary: #3f4b5c;     /* darker slate — comfortably readable on white */
+  --text-dim: #5b6678;           /* was #94a3b8 (too light) — now actually legible */
   /* teal as text needs more contrast on light surfaces */
   --teal: #0d9488;
+  --teal-dim: #0d9488;
   --teal-deep: #0f766e;
-  --teal-glow: rgba(13, 148, 136, 0.12);
-  --blue-accent: #2563eb;
-  --blue: #2563eb;
-  --chart-grid: #d8dee6;
-  --chart-axis: #64748b;
+  --teal-glow: rgba(13, 148, 136, 0.14);
+  --blue-accent: #1d4ed8;
+  --blue: #1d4ed8;
+  --chart-grid: #c7d0db;
+  --chart-axis: #475569;
   --chart-tooltip-bg: #ffffff;
+}
+
+/* In light mode, drop the dark card shadows to soft neutral ones so cards lift
+   off the grey page instead of glowing. */
+:root[data-theme="light"] .card-hover:hover {
+  box-shadow:
+    0 0 0 1px rgba(13, 148, 136, 0.25),
+    0 8px 24px rgba(15, 23, 42, 0.12) !important;
 }
 
 @theme inline {
@@ -322,3 +336,52 @@ body {
   stroke-dasharray: 6 6;
   animation: data-flow 1.4s linear infinite;
 }
+
+/* ── Heatmap opacity slider — themed to the UI, used by AttentionOverlay ──
+   The filled portion (teal) is painted via an inline `background` gradient set
+   from the current value, so the track itself communicates the opacity level.
+   Replaces the default `accent-color` slider which looked foreign in both
+   themes. */
+.heat-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-card2);   /* fallback; overridden inline with the fill gradient */
+  outline: none;
+  cursor: pointer;
+}
+.heat-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--teal);
+  border: 2px solid var(--bg-card-solid);
+  box-shadow: 0 0 0 1px var(--border), 0 1px 4px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.heat-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.18);
+  box-shadow: 0 0 0 5px var(--teal-glow), 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+.heat-slider::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--teal);
+  border: 2px solid var(--bg-card-solid);
+  box-shadow: 0 0 0 1px var(--border), 0 1px 4px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.heat-slider::-moz-range-thumb:hover {
+  transform: scale(1.18);
+  box-shadow: 0 0 0 5px var(--teal-glow);
+}
+.heat-slider:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.heat-slider:disabled::-webkit-slider-thumb { background: var(--text-secondary); }
+.heat-slider:disabled::-moz-range-thumb { background: var(--text-secondary); }

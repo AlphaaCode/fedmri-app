@@ -94,6 +94,14 @@ model Case {
   scope            CaseScope
   imagePath        String
   storedLocally    Boolean    @default(true)
+  // Who/what the scan was uploaded for. subjectType: 'PATIENT' (a real patient
+  // study) vs 'TEST' (a doctor's own test/demo run). subjectLabel: free-text
+  // patient identifier/name or test description. Lets the doctor portal separate
+  // genuine patient studies from test scans (see ENGINEERING_GUIDE §6.3).
+  subjectType      String?
+  subjectLabel     String?
+  // Doctor's editable clinical note for this case (persisted, see PATCH /cases/:id).
+  clinicalNote     String?
   predictedSubtype String
   confidence       Float
   probs            Json

@@ -10,7 +10,13 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-load_dotenv()
+# Walk up to the monorepo root so the root .env is always loaded, regardless
+# of which directory the service is launched from (e.g. apps/ml-service/).
+_this_dir = Path(__file__).resolve().parent
+_root_env = _this_dir / ".." / ".." / ".env"
+load_dotenv(_root_env)
+# Also load a local .env if one exists (overrides root for local tuning)
+load_dotenv(_this_dir / ".env", override=True)
 
 app = FastAPI(title="FedMRI ML Service", version="1.0.0")
 
@@ -34,14 +40,87 @@ ATTN_MODE = os.getenv("ATTN_MODE", "blob")
 AL_MODE = os.getenv("AL_MODE", "mock")
 ATTN_GRID = 224
 
-# Active-learning state — in-memory model metrics, mutated by /feedback.
-# Seeded to the real trained FedSCRT binary baseline (macro-F1 0.662, acc 0.7027).
+# Active-learning state — model metrics + a learned confidence bias, mutated by
+# /feedback and PERSISTED to disk so learning survives restarts ("auto alive on
+# docker launch"). Seeded to the real trained FedSCRT binary baseline
+# (macro-F1 0.662, acc 0.7027).
 SUBTYPE_KEYS = ["Luminal", "Non-Luminal"]
+# Where learning persists. In docker we mount a volume at /al-state (see
+# docker-compose) so it survives container restarts/rebuilds.
+AL_STATE_PATH = os.getenv("AL_STATE_PATH", str(Path(__file__).parent / "al_state.json"))
+# Max |bias| in logit space. Big enough to visibly move confidence on the same
+# scan, small enough that clear-cut cases don't flip from a few confirmations.
+AL_BIAS_CAP = 1.2
 AL_STATE = {
     "model_version": 1,
     "f1_per_class": {"Luminal": 0.70, "Non-Luminal": 0.624},
     "accuracy": 0.7027,
+    # Per-subtype confidence bias (logit space) learned from doctor feedback.
+    # THIS is what makes the same scan's prediction change over time — it's added
+    # to the model's logits in /predict and re-softmaxed.
+    "conf_bias": {"Luminal": 0.0, "Non-Luminal": 0.0},
+    "feedback_count": 0,
 }
+
+
+def _load_al_state() -> None:
+    """Load persisted AL learning so confidence gains survive a restart."""
+    try:
+        if os.path.exists(AL_STATE_PATH):
+            with open(AL_STATE_PATH) as f:
+                data = json.load(f)
+            if isinstance(data, dict):
+                for k in ("model_version", "f1_per_class", "accuracy", "conf_bias", "feedback_count"):
+                    if k in data:
+                        AL_STATE[k] = data[k]
+            print(f"AL state loaded from {AL_STATE_PATH}: v{AL_STATE['model_version']}, bias={AL_STATE['conf_bias']}")
+    except Exception as e:
+        print(f"AL state load skipped ({e})")
+
+
+def _save_al_state() -> None:
+    """Atomically persist AL learning to disk."""
+    try:
+        os.makedirs(os.path.dirname(AL_STATE_PATH) or ".", exist_ok=True)
+        tmp = AL_STATE_PATH + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(AL_STATE, f)
+        os.replace(tmp, AL_STATE_PATH)
+    except Exception as e:
+        print(f"AL state save failed ({e})")
+
+
+def _apply_al_bias(result: dict) -> dict:
+    """Apply the learned per-subtype confidence bias to a base prediction.
+
+    This is the bridge that makes the model *actually learn over time*: doctor
+    feedback shifts `conf_bias`, and every prediction (real or mock) is adjusted
+    here — so re-running the SAME scan after an approval returns higher confidence
+    (and a correction shifts the same scan toward the corrected subtype). Bias is
+    applied in logit space, then re-softmaxed; predicted class + confidence are
+    recomputed. Always reports the current learned model_version.
+    """
+    import math
+
+    probs = result.get("probs") or []
+    bias = AL_STATE.get("conf_bias") or {}
+    result["model_version"] = AL_STATE["model_version"]
+    if len(probs) != len(SUBTYPE_KEYS) or not any(abs(float(v)) > 1e-6 for v in bias.values()):
+        return result  # nothing learned yet (or shape mismatch) — base prediction stands
+
+    logits = [
+        math.log(max(float(p), 1e-6)) + float(bias.get(SUBTYPE_KEYS[i], 0.0))
+        for i, p in enumerate(probs)
+    ]
+    m = max(logits)
+    exps = [math.exp(l - m) for l in logits]
+    s = sum(exps) or 1.0
+    adj = [e / s for e in exps]
+    top = max(range(len(adj)), key=lambda i: adj[i])
+    result["probs"] = [round(p, 4) for p in adj]
+    result["predicted_subtype"] = SUBTYPE_KEYS[top]
+    result["confidence"] = round(adj[top], 4)
+    return result
 
 
 @app.get("/health")
@@ -105,7 +184,9 @@ async def predict(file: UploadFile = File(...)):
             t.write(content)
             tmp = t.name
         try:
-            return real_inference.predict_path(tmp)
+            # Apply learned doctor-feedback bias so the same scan's confidence
+            # reflects everything the model has been taught since.
+            return _apply_al_bias(real_inference.predict_path(tmp))
         except RuntimeError as e:
             raise HTTPException(status_code=422, detail=f"Inference failed: {e}")
         except Exception as e:
@@ -132,7 +213,7 @@ async def predict(file: UploadFile = File(...)):
     # Simulate inference latency (1.5-3s)
     await asyncio.sleep(random.uniform(1.5, 3.0))
 
-    return result
+    return _apply_al_bias(result)
 
 
 def _gaussian_blob(grid: np.ndarray, cx: int, cy: int, sigma: float, amplitude: float) -> np.ndarray:
@@ -319,6 +400,23 @@ async def feedback(body: FeedbackPayload):
     f1_macro = sum(AL_STATE["f1_per_class"].values()) / len(SUBTYPE_KEYS)
     AL_STATE["accuracy"] = min(0.95, AL_STATE["accuracy"] + bump * 0.5)
 
+    # ── The part that actually changes future predictions ──────────────────────
+    # Shift the learned confidence bias toward the confirmed/corrected subtype so
+    # the SAME scan returns higher confidence next time. A correction pushes harder
+    # than a confirmation and also eases the (wrong) predicted class the other way.
+    cb = AL_STATE.setdefault("conf_bias", {k: 0.0 for k in SUBTYPE_KEYS})
+    step = 0.18 if is_validate else 0.45
+    cb[correct] = max(-AL_BIAS_CAP, min(AL_BIAS_CAP, cb.get(correct, 0.0) + step))
+    eased = (
+        body.predicted_subtype
+        if (not is_validate and body.predicted_subtype in SUBTYPE_KEYS and body.predicted_subtype != correct)
+        else next((k for k in SUBTYPE_KEYS if k != correct), None)
+    )
+    if eased:
+        cb[eased] = max(-AL_BIAS_CAP, min(AL_BIAS_CAP, cb.get(eased, 0.0) - step * 0.6))
+    AL_STATE["feedback_count"] = AL_STATE.get("feedback_count", 0) + 1
+    _save_al_state()
+
     return {
         "model_version": AL_STATE["model_version"],
         "f1_per_class": AL_STATE["f1_per_class"],
@@ -326,13 +424,16 @@ async def feedback(body: FeedbackPayload):
         "accuracy": round(AL_STATE["accuracy"], 4),
         "corrected_class": correct,
         "feedback_type": "VALIDATE" if is_validate else "DISPUTE",
+        "conf_bias": AL_STATE["conf_bias"],
+        "feedback_count": AL_STATE["feedback_count"],
     }
 
 
 @app.on_event("startup")
 async def startup():
     """Log startup info; in real mode, load FedSCRT once (fail loudly if missing)."""
-    print(f"FedMRI ML Service started in {INFERENCE_MODE} mode")
+    print(f"FedMRI ML Service started in {INFERENCE_MODE} mode (AL_MODE={AL_MODE})")
+    _load_al_state()  # restore learned confidence bias so AL is "alive" on launch
     if INFERENCE_MODE == "real":
         import real_inference
 

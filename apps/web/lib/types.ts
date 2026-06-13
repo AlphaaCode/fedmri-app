@@ -103,6 +103,11 @@ export interface CaseResult {
   hospitalId?: string | null;
   userId: string;
   createdAt: string;
+  // Subject attribution (doctor uploads): PATIENT study vs TEST run + a label.
+  subjectType?: "PATIENT" | "TEST" | null;
+  subjectLabel?: string | null;
+  // Doctor's editable, persisted clinical note for this case.
+  clinicalNote?: string | null;
   // Additive FedSCRT real-mode fields (present on a fresh real-mode prediction).
   f1?: number;
   auc?: number;

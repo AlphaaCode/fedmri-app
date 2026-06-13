@@ -11,9 +11,11 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/Button";
 import {
   getDatasets,
+  getInsights,
   DatasetsResponse,
   DatasetNode,
   DatasetCohort,
+  InsightEvent,
 } from "@/lib/researcher-api";
 import { GradientCard } from "@/components/ui/GradientCard";
 import { useToastStore } from "@/components/ToastProvider";
@@ -67,6 +69,19 @@ function NodeCard({ node, colorIdx }: { node: DatasetNode; colorIdx: number }) {
       </div>
     </GradientCard>
   );
+}
+
+// ─── Relative-time formatter for the insights feed ────────────────────────────
+
+function relTime(ts: string): string {
+  const diff = Date.now() - new Date(ts).getTime();
+  const m = Math.round(diff / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.round(h / 24);
+  return `${d}d ago`;
 }
 
 // ─── Unavailable inline note ──────────────────────────────────────────────────
@@ -156,6 +171,7 @@ export default function DatasetsPage() {
   const [dataErr, setDataErr] = useState<string | null>(null);
   const [addDatasetOpen, setAddDatasetOpen] = useState(false);
   const [newDataset, setNewDataset] = useState({ name: "", hospital: "Hospital A", records: "" });
+  const [insights, setInsights] = useState<InsightEvent[]>([]);
   const { push } = useToastStore();
 
   useEffect(() => {
@@ -169,6 +185,22 @@ export default function DatasetsPage() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  // Live network insights feed + auto-popup the most recent notable event
+  // (e.g. a patient's first signup) so the registry feels alive.
+  useEffect(() => {
+    getInsights(12)
+      .then((res) => {
+        setInsights(res.events);
+        const newest = res.events[0];
+        if (newest) {
+          const kind: "success" | "info" =
+            newest.severity === "success" ? "success" : "info";
+          push(`${newest.title} — ${newest.detail}`, kind);
+        }
+      })
+      .catch(() => setInsights([]));
+  }, [push]);
 
   // ── Action: Request Access ──
   function handleRequestAccess(designation: string) {
@@ -357,6 +389,50 @@ export default function DatasetsPage() {
               label="DICOM Header Integrity"
               pct={data ? (data.dataQuality.dicomIntegrity * 100).toFixed(1) : "0"}
             />
+          </div>
+        )}
+      </Panel>
+
+      {/* ── Network insights feed ── */}
+      <Panel title="Network insights" subtitle="Recent activity across the federated network">
+        {insights.length === 0 ? (
+          <Unavailable msg="No recent activity" />
+        ) : (
+          <div className="space-y-2">
+            {insights.map((ev) => {
+              const tone =
+                ev.severity === "accent"
+                  ? "var(--blue-accent)"
+                  : ev.severity === "success"
+                  ? "var(--teal)"
+                  : "var(--text-primary)";
+              return (
+                <div
+                  key={ev.id}
+                  className="flex items-start gap-3 rounded-lg border p-2.5"
+                  style={{ background: "var(--bg-card2)", borderColor: "var(--border)" }}
+                >
+                  <span
+                    className="mt-1 w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ background: tone }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-semibold" style={{ color: tone }}>
+                      {ev.title}
+                    </div>
+                    <div className="text-[11px] mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                      {ev.detail}
+                    </div>
+                  </div>
+                  <span
+                    className="text-[10px] shrink-0"
+                    style={{ color: "var(--text-secondary)", opacity: 0.7 }}
+                  >
+                    {relTime(ev.ts)}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
       </Panel>
