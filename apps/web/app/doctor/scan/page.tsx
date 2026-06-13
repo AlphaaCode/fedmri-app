@@ -237,6 +237,8 @@ function FeedbackBar({ result }: { result: CaseResult }) {
 export default function ScanPage() {
   usePortalTitle("Scan Analysis");
   const [result, setResult] = useState<CaseResult | null>(null);
+  const [subjectType, setSubjectType] = useState<"PATIENT" | "TEST">("PATIENT");
+  const [subjectLabel, setSubjectLabel] = useState("");
   const push = useToastStore((s) => s.push);
 
   return (
@@ -255,7 +257,46 @@ export default function ScanPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
         <div className="space-y-4 min-w-0">
-          <ScanUpload onUploaded={(r) => { setResult(r); push(`Prediction ready — ${r.predictedSubtype}`, "success"); }} />
+          {/* Scan subject — separates a real patient study from a test/demo run,
+              and records who the scan is for (shows up in Medical History). */}
+          <div className="rounded-xl border p-4" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+            <div className="flex items-center justify-between gap-3 mb-2.5">
+              <span className="text-xs uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Scan subject</span>
+              <div className="flex gap-1 p-0.5 rounded-lg" style={{ background: "var(--bg-card2)", border: "1px solid var(--border)" }}>
+                {(["PATIENT", "TEST"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setSubjectType(t)}
+                    className="text-xs px-3 py-1 rounded-md font-medium transition-colors"
+                    style={{
+                      background: subjectType === t ? "var(--teal-glow)" : "transparent",
+                      color: subjectType === t ? "var(--teal)" : "var(--text-secondary)",
+                    }}
+                  >
+                    {t === "PATIENT" ? "Patient study" : "Test scan"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <input
+              value={subjectLabel}
+              onChange={(e) => setSubjectLabel(e.target.value)}
+              placeholder={subjectType === "PATIENT" ? "Patient name or ID (e.g. MRN-4471)" : "Test description (optional)"}
+              className="w-full text-sm rounded-lg px-3 py-2 outline-none"
+              style={{ background: "var(--bg-base)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
+            />
+            <p className="text-[11px] mt-1.5" style={{ color: "var(--text-secondary)" }}>
+              {subjectType === "PATIENT"
+                ? "Labelled as a patient study in your case history."
+                : "Marked as a test scan — kept separate from patient studies."}
+            </p>
+          </div>
+
+          <ScanUpload
+            subjectMeta={{ subjectType, subjectLabel: subjectLabel.trim() || undefined }}
+            onUploaded={(r) => { setResult(r); push(`Prediction ready — ${r.predictedSubtype}`, "success"); }}
+          />
 
           <AnimatePresence>
             {result && (

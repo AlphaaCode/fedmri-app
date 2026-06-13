@@ -144,15 +144,72 @@ export function getFlExperiments(): Promise<FlExperiment[]> {
 export function runFlTest(
   strategy: "fedscrt" | "fedavg",
   rounds: number,
+  alpha = 0.5,
 ): Promise<{ test_id: string; status: string }> {
   return apiFetch("/researcher/fl-test", {
     method: "POST",
-    body: JSON.stringify({ strategy, rounds }),
+    body: JSON.stringify({ strategy, rounds, alpha }),
   });
 }
 
 export function getTopology(): Promise<TopologyResponse> {
   return apiFetch("/researcher/topology");
+}
+
+// ─── Node audit (topology "Request Audit") ──────────────────────────────────────
+
+export interface NodeAuditCheck {
+  label: string;
+  detail: string;
+  status: "pass" | "warn";
+}
+
+export interface NodeAudit {
+  found: boolean;
+  flClientId?: string;
+  auditId?: string;
+  generatedAt?: string;
+  node?: { displayName: string; flClientId: string; totalCases: number };
+  summary?: {
+    contributions: number;
+    privacyEvents: number;
+    bytesTransmitted: number;
+    rawDataTransmitted: number;
+    avgLocalF1: number;
+  };
+  checks?: NodeAuditCheck[];
+  recentContributions?: {
+    round: number;
+    samplesUsed: number;
+    localF1After: number;
+    weightDeltaNorm: number;
+    at: string;
+  }[];
+  verdict?: "COMPLIANT" | "REVIEW";
+}
+
+export function getNodeAudit(flClientId: string): Promise<NodeAudit> {
+  return apiFetch(`/researcher/node-audit/${encodeURIComponent(flClientId)}`);
+}
+
+// ─── Network insights feed (Datasets) ───────────────────────────────────────────
+
+export interface InsightEvent {
+  id: string;
+  kind: "signup" | "case" | "round";
+  title: string;
+  detail: string;
+  ts: string;
+  severity: "info" | "success" | "accent";
+}
+
+export interface InsightsResponse {
+  events: InsightEvent[];
+  stats: { hospitals: number; recentSignups: number; recentPatients: number };
+}
+
+export function getInsights(limit = 10): Promise<InsightsResponse> {
+  return apiFetch(`/researcher/insights?limit=${limit}`);
 }
 
 export function getDatasets(): Promise<DatasetsResponse> {
@@ -180,4 +237,26 @@ export function getModelHistory(): Promise<{ curves: Record<string, { round: num
 
 export function getConfusionMatrix(): Promise<{ subtypes: string[]; matrix: Record<string, Record<string, number>> }> {
   return apiFetch("/model/confusion-matrix");
+}
+
+export interface PerClassResponse {
+  subtypes: string[];
+  strategies: string[];
+  values: Record<string, Record<string, number>>;
+}
+
+export function getPerClass(): Promise<PerClassResponse> {
+  return apiFetch("/model/per-class");
+}
+
+export interface ModelComparison {
+  centralized: { f1Macro: number };
+  fedscrt?: { f1Macro: number };
+  gap: number;
+  privacyCost: { patientsProtected: number; bytesNeverShared?: number };
+  totalCases: number;
+}
+
+export function getModelComparison(): Promise<ModelComparison> {
+  return apiFetch("/model/comparison");
 }

@@ -6,3 +6,13 @@ node_modules
 
 # brainstorming visual companion artifacts
 .superpowers/
+
+# Python virtualenv — must NOT be committed. It is currently still tracked; untrack
+# once with:  git rm -r --cached apps/ml-service/.venv_ml
+apps/ml-service/.venv_ml/
+__pycache__/
+*.pyc
+
+# Active-learning runtime state (the learned confidence bias, persisted at runtime —
+# not source; mounted into the ml-service container at /al-state)
+apps/ml-service/.al-state/al_state.json

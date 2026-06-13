@@ -82,7 +82,7 @@ export default function FederatedPage() {
     setLive([]);
     setRunning(true);
     try {
-      await runFlTest(liveStrategy, TEST_ROUNDS);
+      await runFlTest(liveStrategy, TEST_ROUNDS, alpha);
     } catch {
       setRunning(false);
     }
@@ -210,7 +210,8 @@ export default function FederatedPage() {
               Live federated training
             </div>
             <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-              3 hospitals train locally on frozen-backbone features — only head weights travel.{" "}
+              Replays the measured per-round convergence for the selected strategy at{" "}
+              {alpha === 0.5 ? "Non-IID (α=0.5)" : "Near-IID (α=100)"} — matches the curve above.{" "}
               <span style={{ color: "var(--teal)" }}>0 bytes of raw data</span>.
             </div>
           </div>

@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Patch,
   Get,
   Param,
   Body,
@@ -44,8 +45,9 @@ export class CasesController {
   async create(
     @CurrentUser() user: any,
     @UploadedFile() file: Express.Multer.File,
+    @Body() body: { subjectType?: string; subjectLabel?: string },
   ) {
-    return this.casesService.create(user, file);
+    return this.casesService.create(user, file, body);
   }
 
   @Get()
@@ -65,8 +67,14 @@ export class CasesController {
 
   @Post('from-sample')
   @HttpCode(201)
-  createFromSample(@CurrentUser() user: any, @Body() body: { name: string }) {
-    return this.casesService.createFromSample(user, body.name);
+  createFromSample(
+    @CurrentUser() user: any,
+    @Body() body: { name: string; subjectType?: string; subjectLabel?: string },
+  ) {
+    return this.casesService.createFromSample(user, body.name, {
+      subjectType: body.subjectType,
+      subjectLabel: body.subjectLabel,
+    });
   }
 
   @Get(':id')
@@ -103,5 +111,14 @@ export class CasesController {
     @Body() body: { type: 'VALIDATE' | 'DISPUTE'; correctSubtype?: string; justification?: string },
   ) {
     return this.casesService.submitFeedback(user, id, body);
+  }
+
+  @Patch(':id')
+  async update(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() body: { clinicalNote?: string; subjectType?: string; subjectLabel?: string },
+  ) {
+    return this.casesService.updateCase(user, id, body);
   }
 }

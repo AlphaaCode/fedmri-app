@@ -4,16 +4,21 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiUploadCase, apiVerifyImage, apiListSamples, apiCreateFromSample } from "@/lib/api";
+import { apiUploadCase, apiVerifyImage, apiListSamples, apiCreateFromSample, type CaseSubjectMeta } from "@/lib/api";
 import type { CaseResult } from "@/lib/types";
 
-interface Props { onUploaded: (result: CaseResult) => void; showSamples?: boolean; }
+interface Props {
+  onUploaded: (result: CaseResult) => void;
+  showSamples?: boolean;
+  // When set (doctor portal), attributes the scan to a patient or a TEST run.
+  subjectMeta?: CaseSubjectMeta;
+}
 type Stage = "idle" | "verifying" | "warn" | "uploading";
 interface VerifyResult { valid: boolean; confidence: number; reason: string; }
 
 const MIN_VERIFY_MS = 700;
 
-export function ScanUpload({ onUploaded, showSamples: enableSamples = true }: Props) {
+export function ScanUpload({ onUploaded, showSamples: enableSamples = true, subjectMeta }: Props) {
   const [stage, setStage] = useState<Stage>("idle");
   const [progress, setProgress] = useState(0);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -24,6 +29,10 @@ export function ScanUpload({ onUploaded, showSamples: enableSamples = true }: Pr
   const [sampleName, setSampleName] = useState<string | null>(null);
   const onUploadedRef = useRef(onUploaded);
   onUploadedRef.current = onUploaded;
+  // Ref so the upload closures (captured by a []-dep useCallback) always read the
+  // latest subject attribution instead of a stale first-render value.
+  const subjectMetaRef = useRef(subjectMeta);
+  subjectMetaRef.current = subjectMeta;
 
   useEffect(() => {
     if (!enableSamples) return;
@@ -38,7 +47,7 @@ export function ScanUpload({ onUploaded, showSamples: enableSamples = true }: Pr
     setProgress(10);
     const ticker = setInterval(() => setProgress((p) => Math.min(p + Math.random() * 10, 88)), 280);
     try {
-      const r = (await apiCreateFromSample(name)) as CaseResult;
+      const r = (await apiCreateFromSample(name, subjectMetaRef.current)) as CaseResult;
       setProgress(100);
       clearInterval(ticker);
       setTimeout(() => {
@@ -60,7 +69,7 @@ export function ScanUpload({ onUploaded, showSamples: enableSamples = true }: Pr
     setProgress(0);
     const ticker = setInterval(() => setProgress((p) => Math.min(p + Math.random() * 10, 88)), 280);
     try {
-      const result = await apiUploadCase(file) as CaseResult;
+      const result = await apiUploadCase(file, subjectMetaRef.current) as CaseResult;
       setProgress(100);
       clearInterval(ticker);
       setTimeout(() => {
