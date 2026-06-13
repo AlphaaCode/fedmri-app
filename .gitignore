@@ -16,3 +16,7 @@ __pycache__/
 # Active-learning runtime state (the learned confidence bias, persisted at runtime —
 # not source; mounted into the ml-service container at /al-state)
 apps/ml-service/.al-state/al_state.json
+
+# Runtime scan uploads written by the backend (mounted into ml-service for attention)
+apps/backend/uploads-tmp/*
+!apps/backend/uploads-tmp/.gitkeep
